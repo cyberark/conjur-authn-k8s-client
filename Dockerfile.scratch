@@ -1,0 +1,16 @@
+FROM busybox
+
+#^ this layer is used to get binaries
+
+FROM scratch
+MAINTAINER Conjur Inc
+
+# copy tar and sleep from busybox
+COPY --from=0 /bin/tar /bin/tar
+COPY --from=0 /bin/sleep /bin/sleep
+
+VOLUME /run/conjur
+
+ADD authenticator /bin
+
+CMD ["authenticator"]
