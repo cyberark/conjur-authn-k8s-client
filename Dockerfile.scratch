@@ -5,9 +5,18 @@ FROM busybox
 FROM scratch
 MAINTAINER Conjur Inc
 
-# copy tar and sleep from busybox
+# copy a few commands from busybox
 COPY --from=0 /bin/tar /bin/tar
 COPY --from=0 /bin/sleep /bin/sleep
+COPY --from=0 /bin/sh /bin/sh
+COPY --from=0 /bin/ls /bin/ls
+COPY --from=0 /bin/id /bin/id
+COPY --from=0 /bin/whoami /bin/whoami
+COPY --from=0 /bin/mkdir /bin/mkdir
+COPY --from=0 /bin/chmod /bin/chmod
+
+# allow anyone to write to this dir, container may not run as root
+RUN mkdir -p /etc/conjur/ssl && chmod 777 /etc/conjur/ssl
 
 VOLUME /run/conjur
 

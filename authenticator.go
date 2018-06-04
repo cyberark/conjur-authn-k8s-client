@@ -5,29 +5,29 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/asn1"
+	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
-	"io/ioutil"
-	"encoding/pem"
 	"os"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
 
 type AuthenticatorConfig struct {
-	URL             string
-	Username        string
-	PodName         string
-	PodNamespace    string
-	SSLCertificate  []byte
+	URL            string
+	Username       string
+	PodName        string
+	PodNamespace   string
+	SSLCertificate []byte
 }
 
 type Authenticator struct {
 	AuthenticatorConfig
-	privateKey   *rsa.PrivateKey
-	publicCert	 *x509.Certificate
-	client		 *http.Client
+	privateKey *rsa.PrivateKey
+	publicCert *x509.Certificate
+	client     *http.Client
 }
 
 func NewAuthenticator(config AuthenticatorConfig) (auth *Authenticator, err error) {
@@ -54,7 +54,7 @@ func (auth *Authenticator) GenerateCSR() ([]byte, error) {
 	return generateCSR(auth.privateKey, auth.Username, sanURI)
 }
 
-func (auth *Authenticator) Login() (error) {
+func (auth *Authenticator) Login() error {
 	csrRawBytes, err := auth.GenerateCSR()
 
 	csrBytes := pem.EncodeToMemory(&pem.Block{
@@ -97,7 +97,6 @@ func (auth *Authenticator) Login() (error) {
 
 	return nil
 }
-
 
 func (auth *Authenticator) Authenticate() ([]byte, error) {
 	privDer := x509.MarshalPKCS1PrivateKey(auth.privateKey)

@@ -15,9 +15,9 @@ The sidecar is designed to have a light footprint both in terms of storage and m
 The sidecar authenticator is configured entirely through environment variables. These are listed below.
 
 ## Orchestrator
-The values in this section can be retrieved using the [downwards API](https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information)
-- `MY_POD_NAME`: Pod name
-- `MY_POD_NAMESPACE`: Pod namespace
+- `MY_POD_NAME`: Pod name (see [downwards API](https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information))
+- `MY_POD_NAMESPACE`: Pod namespace (see [downwards API](https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information))
+- `CONTAINER_MODE`: Set this to `init` to run as an init container that will exit after performing authentication. All other values (including blank) will cause the container to run as a sidecar.
 
 ## Conjur
 - `CONJUR_ACCOUNT`: Conjur account name (v4)

@@ -37,6 +37,7 @@ func main() {
 	authnLogin := os.Getenv("CONJUR_AUTHN_LOGIN")
 	podNamespace := os.Getenv("MY_POD_NAMESPACE")
 	podName := os.Getenv("MY_POD_NAME")
+	containerMode := os.Getenv("CONTAINER_MODE")
 
 	// Load CA cert
 	ConjurCACert, err := ReadSSLCert()
@@ -84,6 +85,10 @@ func main() {
 				} else {
 					errLogger.Printf("on authenticate: %s", err.Error())
 					return err
+				}
+			} else {
+				if containerMode == "init" {
+					os.Exit(0)
 				}
 			}
 
