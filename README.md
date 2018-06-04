@@ -1,10 +1,10 @@
-# conjur-kubernetes-authenticator
+# conjur-authn-k8s-client
 
 On DockerHub: https://hub.docker.com/r/cyberark/conjur-kubernetes-authenticator/
 
 ## What's inside ?
 
-The sidecar is designed to have a light footprint both in terms of storage and memory consumption. It has very few components
+The Conjur Kubernetes authenticator client is designed to have a light footprint both in terms of storage and memory consumption. It has very few components
 
 + a static binary for the authenticator
 + the sleep binary from busybox for debugging
@@ -12,7 +12,7 @@ The sidecar is designed to have a light footprint both in terms of storage and m
 
 ## Configuration
 
-The sidecar authenticator is configured entirely through environment variables. These are listed below.
+The client is configured entirely through environment variables. These are listed below.
 
 ## Orchestrator
 - `MY_POD_NAME`: Pod name (see [downwards API](https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information))
@@ -27,11 +27,11 @@ The sidecar authenticator is configured entirely through environment variables. 
 
 Flow:
 
-The sidecar's process logs its flow to `stdout` and `stderr`. 
+The client's process logs its flow to `stdout` and `stderr`. 
 + Exponential backoff is exercised when an error occurs
-+ Sidecar will re-login when certificate has expired
++ Client will re-login when certificate has expired
 
-1. Sidecar goes through login by presenting certificate signing request (CSR) -> Server (authn-k8s running inside the appliance) injects signed client certificate out of band into requesting pod
-2. Sidecar picks up signed client certificate, deletes it from disk and uses to authenticator via mutual TLS -> Server responds with auth token (retrieved via authn-local) encrypted with the public key of the sidecar.
-3. Sidecar decrypts the auth token and writes it to to the shared memory volume (`/run/conjur/access-token`) 
-4. Sidecar proceeds to authenticate time and time again
+1. Client goes through login by presenting certificate signing request (CSR) -> Server (authn-k8s running inside the appliance) injects signed client certificate out of band into requesting pod
+1. Client picks up signed client certificate, deletes it from disk and uses to authenticator via mutual TLS -> Server responds with auth token (retrieved via authn-local) encrypted with the public key of the client.
+1. Client decrypts the auth token and writes it to to the shared memory volume (`/run/conjur/access-token`) 
+1. Client proceeds to authenticate time and time again
