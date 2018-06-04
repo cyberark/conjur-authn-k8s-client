@@ -10,9 +10,6 @@ pipeline {
 
   stages {
     stage('Build client Docker image') {
-      when {
-        branch 'master'
-      }
       steps {
         sh './build.sh'
       }
