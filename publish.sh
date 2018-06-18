@@ -13,4 +13,5 @@ docker tag conjur-authn-k8s-client:dev-redhat "$REDHAT_IMAGE:$VERSION_TAG"
 
 docker push $DOCKERHUB_IMAGE
 docker push "$DOCKERHUB_IMAGE:$VERSION_TAG"
-docker push "$REDHAT_IMAGE:$VERSION_TAG"
+
+docker push "$REDHAT_IMAGE:$VERSION_TAG" || { echo 'Red Hat push FAILED!'; exit 0; }  # you can't push the same tag twice to redhat registry, so ignore errors
