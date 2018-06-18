@@ -1,0 +1,27 @@
+FROM registry.access.redhat.com/rhel
+
+MAINTAINER Conjur Inc
+
+ARG VERSION
+
+LABEL name="conjur-authn-k8s-client"
+LABEL vendor="CyberArk"
+LABEL version="$VERSION"
+LABEL release="$VERSION"
+LABEL summary="Conjur OpenShift Authentication Client for use with Conjur"
+LABEL description="The authentication client required to expose secrets from a Conjur server to applications running within OpenShift"
+
+# allow anyone to write to this dir, container may not run as root
+RUN mkdir -p /etc/conjur/ssl && chmod 777 /etc/conjur/ssl && mkdir -p /licenses
+
+RUN useradd -ms /bin/bash conjur
+
+VOLUME /run/conjur
+
+ADD authenticator /bin
+
+ADD licenses/LICENSE.md /licenses
+
+USER conjur
+
+CMD ["authenticator"]
