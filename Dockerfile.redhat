@@ -2,8 +2,6 @@ FROM registry.access.redhat.com/rhel
 
 MAINTAINER Conjur Inc
 
-ARG VERSION
-
 # allow anyone to write to this dir, container may not run as root
 RUN mkdir -p /etc/conjur/ssl && chmod 777 /etc/conjur/ssl && mkdir -p /licenses
 
@@ -18,6 +16,8 @@ ADD licenses/LICENSE.md /licenses
 USER conjur
 
 CMD ["authenticator"]
+
+ARG VERSION
 
 LABEL name="conjur-kubernetes-authenticator"
 LABEL vendor="CyberArk"
