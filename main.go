@@ -21,6 +21,7 @@ func main() {
 	var err error
 
 	for _, envvar := range([]string{
+		"CONJUR_VERSION",
 		"CONJUR_AUTHN_URL",
 		"CONJUR_AUTHN_LOGIN",
 		"MY_POD_NAMESPACE",
@@ -33,6 +34,7 @@ func main() {
 		}
 	}
 
+	conjurVersion := os.Getenv("CONJUR_VERSION")
 	authnURL := os.Getenv("CONJUR_AUTHN_URL")
 	authnLogin := os.Getenv("CONJUR_AUTHN_LOGIN")
 	podNamespace := os.Getenv("MY_POD_NAMESPACE")
@@ -44,6 +46,7 @@ func main() {
 	handleMainError(err)
 
 	auth, err := NewAuthenticator(AuthenticatorConfig{
+		conjurVersion,
 		authnURL,
 		authnLogin,
 		podName,

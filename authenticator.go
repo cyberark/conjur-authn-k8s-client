@@ -16,6 +16,7 @@ import (
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
 
 type AuthenticatorConfig struct {
+	ConjurVersion  string
 	URL            string
 	Username       string
 	PodName        string
@@ -60,7 +61,7 @@ func (auth *Authenticator) Login() error {
 	csrBytes := pem.EncodeToMemory(&pem.Block{
 		Type: "CERTIFICATE REQUEST", Bytes: csrRawBytes,
 	})
-	req, err := LoginRequest(auth.URL, csrBytes)
+	req, err := LoginRequest(auth.URL, auth.ConjurVersion, csrBytes)
 	if err != nil {
 		return err
 	}
@@ -109,7 +110,7 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 		return nil, err
 	}
 
-	req, err := AuthenticateRequest(auth.URL, auth.Username)
+	req, err := AuthenticateRequest(auth.URL, auth.ConjurVersion, auth.Username)
 	if err != nil {
 		return nil, err
 	}

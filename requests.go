@@ -8,8 +8,14 @@ import (
 	"io/ioutil"
 )
 
-func LoginRequest(authnURL string, csrBytes []byte) (*http.Request, error) {
-	authenticateURL := fmt.Sprintf("%s/users/login", authnURL)
+func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte) (*http.Request, error) {
+	var authenticateURL string
+
+	if conjurVersion == "4" {
+		authenticateURL = fmt.Sprintf("%s/users/login", authnURL)
+	} else if conjurVersion == "5" {
+		authenticateURL = fmt.Sprintf("%s/inject_client_cert", authnURL)
+	}
 
 	req, err := http.NewRequest("POST", authenticateURL, bytes.NewBuffer(csrBytes))
 	if err != nil {
@@ -20,8 +26,14 @@ func LoginRequest(authnURL string, csrBytes []byte) (*http.Request, error) {
 	return req, nil
 }
 
-func AuthenticateRequest(authnURL, username string) (*http.Request, error) {
-	authenticateURL := fmt.Sprintf("%s/users/%s/authenticate", authnURL, url.QueryEscape(username))
+func AuthenticateRequest(authnURL string, conjurVersion string, username string) (*http.Request, error) {
+	var authenticateURL string
+	
+	if conjurVersion == "4" {
+		authenticateURL = fmt.Sprintf("%s/users/%s/authenticate", authnURL, url.QueryEscape(username))
+	} else if conjurVersion == "5" {
+		authenticateURL = fmt.Sprintf("%s/%s/authenticate", authnURL, url.QueryEscape(username))
+	}
 
 	req, err := http.NewRequest("POST", authenticateURL, nil)
 	if err != nil {
