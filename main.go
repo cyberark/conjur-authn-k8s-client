@@ -128,12 +128,15 @@ func Authenticate(auth *Authenticator) (error) {
 
 	var content []byte
 	
-	//infoLogger.Printf("decrypting token ...")
+	// Token is only encrypted in Conjur v4
 	if auth.ConjurVersion == "4" {
+		//infoLogger.Printf("decrypting token ...")
+		
 		content, err = decodeFromPEM(resp, auth.publicCert, auth.privateKey)
 		if err != nil {
 			return err
 		}
+		
 		//infoLogger.Printf("successfully decrypted token.")
 	} else if auth.ConjurVersion == "5" {
 		content = resp
