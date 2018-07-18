@@ -11,11 +11,14 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
 
 type AuthenticatorConfig struct {
+	ConjurVersion  string
+	Account        string
 	URL            string
 	Username       string
 	PodName        string
@@ -51,7 +54,11 @@ func (auth *Authenticator) GenerateCSR() ([]byte, error) {
 		return nil, err
 	}
 
-	return generateCSR(auth.privateKey, auth.Username, sanURI)
+	// The CSR only uses the :namespace/:resource_type/:resource_id part of the username
+	usernameSplit := strings.Split(auth.Username, "/")
+	usernameCSR := strings.Join(usernameSplit[len(usernameSplit)-3:], "/")
+
+	return generateCSR(auth.privateKey, usernameCSR, sanURI)
 }
 
 func (auth *Authenticator) Login() error {
@@ -60,12 +67,13 @@ func (auth *Authenticator) Login() error {
 	csrBytes := pem.EncodeToMemory(&pem.Block{
 		Type: "CERTIFICATE REQUEST", Bytes: csrRawBytes,
 	})
-	req, err := LoginRequest(auth.URL, csrBytes)
+	req, err := LoginRequest(auth.URL, auth.ConjurVersion, csrBytes)
 	if err != nil {
 		return err
 	}
 
 	resp, err := auth.client.Do(req)
+
 	if err != nil {
 		return err
 	}
@@ -109,7 +117,7 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 		return nil, err
 	}
 
-	req, err := AuthenticateRequest(auth.URL, auth.Username)
+	req, err := AuthenticateRequest(auth.URL, auth.ConjurVersion, auth.Account, auth.Username, certPEMBlock)
 	if err != nil {
 		return nil, err
 	}

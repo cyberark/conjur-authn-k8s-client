@@ -14,6 +14,7 @@ COPY --from=0 /bin/id /bin/id
 COPY --from=0 /bin/whoami /bin/whoami
 COPY --from=0 /bin/mkdir /bin/mkdir
 COPY --from=0 /bin/chmod /bin/chmod
+COPY --from=0 /bin/cat /bin/cat
 
 # allow anyone to write to this dir, container may not run as root
 RUN mkdir -p /etc/conjur/ssl && chmod 777 /etc/conjur/ssl

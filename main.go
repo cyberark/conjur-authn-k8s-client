@@ -22,6 +22,7 @@ func main() {
 
 	for _, envvar := range([]string{
 		"CONJUR_AUTHN_URL",
+		"CONJUR_ACCOUNT",
 		"CONJUR_AUTHN_LOGIN",
 		"MY_POD_NAMESPACE",
 		"MY_POD_NAME",
@@ -33,7 +34,13 @@ func main() {
 		}
 	}
 
+	conjurVersion := os.Getenv("CONJUR_VERSION")
+	if len(conjurVersion) == 0 {
+		conjurVersion = "5"
+	}
+	
 	authnURL := os.Getenv("CONJUR_AUTHN_URL")
+	account := os.Getenv("CONJUR_ACCOUNT")
 	authnLogin := os.Getenv("CONJUR_AUTHN_LOGIN")
 	podNamespace := os.Getenv("MY_POD_NAMESPACE")
 	podName := os.Getenv("MY_POD_NAME")
@@ -44,6 +51,8 @@ func main() {
 	handleMainError(err)
 
 	auth, err := NewAuthenticator(AuthenticatorConfig{
+		conjurVersion,
+		account,
 		authnURL,
 		authnLogin,
 		podName,
@@ -70,6 +79,8 @@ func main() {
 		for {
 			err = Authenticate(auth)
 			if err != nil {
+				errLogger.Printf("on authenticate: %s", err.Error())
+				
 				if autherr, ok := err.(*AuthenticatorError); ok {
 					if autherr.CertExpired() {
 						infoLogger.Printf("certificate expired re-logging in.")
@@ -112,25 +123,34 @@ func Login(auth *Authenticator)(error) {
 
 func Authenticate(auth *Authenticator) (error) {
 	infoLogger.Printf(fmt.Sprintf("authenticating as %s ...", auth.Username))
-	tokenPemBlock, err := auth.Authenticate()
+	resp, err := auth.Authenticate()
 	if err != nil {
 		return err
 	}
 	infoLogger.Printf("valid authentication response.")
 
-	//debugLogger.Printf("decrypting token ...")
-	content, err := decodeFromPEM(tokenPemBlock, auth.publicCert, auth.privateKey)
-	if err != nil {
-		return err
+	var content []byte
+	
+	// Token is only encrypted in Conjur v4
+	if auth.ConjurVersion == "4" {
+		//infoLogger.Printf("decrypting token ...")
+		
+		content, err = decodeFromPEM(resp, auth.publicCert, auth.privateKey)
+		if err != nil {
+			return err
+		}
+		
+		//infoLogger.Printf("successfully decrypted token.")
+	} else if auth.ConjurVersion == "5" {
+		content = resp
 	}
-	//debugLogger.Printf("successfully decrypted token.")
 
-	//debugLogger.Printf("writing token to shared volume ...")
+	//infoLogger.Printf("writing token to shared volume ...")
 	err = ioutil.WriteFile(TOKEN_FILE_PATH, content, 0644)
 	if err != nil {
 		return err
 	}
-	//debugLogger.Printf("token, successfully, written token to shared volume.")
+	//infoLogger.Printf("token, successfully, written token to shared volume.")
 
 	infoLogger.Printf("successfully authenticated.")
 	return nil
