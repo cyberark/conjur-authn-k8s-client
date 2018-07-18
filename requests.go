@@ -17,7 +17,7 @@ func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte) (*http
 		authenticateURL = fmt.Sprintf("%s/inject_client_cert", authnURL)
 	}
 
-	//infoLogger.Printf("making login request to %s", authenticateURL)
+	infoLogger.Printf("making login request to %s", authenticateURL)
 	
 	req, err := http.NewRequest("POST", authenticateURL, bytes.NewBuffer(csrBytes))
 	if err != nil {
@@ -43,7 +43,7 @@ func AuthenticateRequest(authnURL string, conjurVersion string, account string, 
 		body = bytes.NewReader(cert)
 	}
 	
-	//infoLogger.Printf("making authn request to %s", authenticateURL)
+	infoLogger.Printf("making authn request to %s", authenticateURL)
 
 	req, err := http.NewRequest("POST", authenticateURL, body)
 	if err != nil {
