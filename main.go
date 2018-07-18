@@ -21,7 +21,6 @@ func main() {
 	var err error
 
 	for _, envvar := range([]string{
-		"CONJUR_VERSION",
 		"CONJUR_AUTHN_URL",
 		"CONJUR_ACCOUNT",
 		"CONJUR_AUTHN_LOGIN",
@@ -36,6 +35,10 @@ func main() {
 	}
 
 	conjurVersion := os.Getenv("CONJUR_VERSION")
+	if len(conjurVersion) == 0 {
+		conjurVersion = "5"
+	}
+	
 	authnURL := os.Getenv("CONJUR_AUTHN_URL")
 	account := os.Getenv("CONJUR_ACCOUNT")
 	authnLogin := os.Getenv("CONJUR_AUTHN_LOGIN")

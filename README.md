@@ -20,10 +20,11 @@ The client is configured entirely through environment variables. These are liste
 - `CONTAINER_MODE`: Set this to `init` to run as an init container that will exit after performing authentication. All other values (including blank) will cause the container to run as a sidecar.
 
 ## Conjur
-- `CONJUR_ACCOUNT`: Conjur account name (v4)
+- `CONJUR_VERSION`: Conjur version (4 or 5, defaults to 5)
+- `CONJUR_ACCOUNT`: Conjur account name
 - `CONJUR_AUTHN_URL`: URL pointing to authenticator service endpoint
 - `CONJUR_AUTHN_LOGIN`: Host login for pod e.g. `namespace/service_account/some_service_account`
-- `CONJUR_SSL_CERTIFICATE`: Public SSL cert for Conjur connection (v4)
+- `CONJUR_SSL_CERTIFICATE`: Public SSL cert for Conjur connection
 
 Flow:
 
