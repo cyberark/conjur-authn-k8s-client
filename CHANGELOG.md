@@ -1,3 +1,7 @@
+# 0.11.0
+
+- Adds support for Conjur v5.
+
 # 0.10.2
 
 - Added a RedHat-certified version of the image.
