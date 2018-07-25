@@ -11,7 +11,7 @@ pipeline {
   stages {
     stage('Build client Docker image') {
       steps {
-        sh './build.sh'
+        sh './bin/build'
       }
     }
 
@@ -20,7 +20,7 @@ pipeline {
         branch 'master'
       }
       steps {
-        sh './publish.sh'
+        sh './bin/publish'
       }
     }
   }
