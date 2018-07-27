@@ -31,6 +31,8 @@ func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte) (*http
 
 func AuthenticateRequest(authnURL string, conjurVersion string, account string, username string, cert []byte) (*http.Request, error) {
 	var authenticateURL string
+	var err error
+	var req *http.Request
 
 	if conjurVersion == "4" {
 		authenticateURL = fmt.Sprintf("%s/users/%s/authenticate", authnURL, url.QueryEscape(username))
@@ -39,9 +41,6 @@ func AuthenticateRequest(authnURL string, conjurVersion string, account string, 
 	}
 
 	log.Printf("making authn request to %s", authenticateURL)
-
-	var req *http.Request
-	var err error
 
 	if conjurVersion == "5" {
 		body := bytes.NewReader(cert)

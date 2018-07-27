@@ -1,16 +1,16 @@
 package authenticator
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
+	"io/ioutil"
+	"encoding/json"
 	"strings"
 )
 
 type AuthenticatorError struct {
-	Code    int
-	Message string
-	Details *AuthenticatorErrorDetails `json:"error"`
+	Code      int
+	Message   string
+	Details   *AuthenticatorErrorDetails  `json:"error"`
 }
 
 type AuthenticatorErrorDetails struct {
