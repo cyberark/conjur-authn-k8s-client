@@ -37,15 +37,18 @@ func AuthenticateRequest(authnURL string, conjurVersion string, account string, 
 		authenticateURL = fmt.Sprintf("%s/%s/%s/authenticate", authnURL, account, url.QueryEscape(username))
 	}
 
-	var body *bytes.Reader
-
-	if conjurVersion == "5" {
-		body = bytes.NewReader(cert)
-	}
-	
 	infoLogger.Printf("making authn request to %s", authenticateURL)
+	
+	var req *http.Request
+	var err error
+	
+	if conjurVersion == "5" {
+		body := bytes.NewReader(cert)
+		req, err = http.NewRequest("POST", authenticateURL, body)
+	} else {
+		req, err = http.NewRequest("POST", authenticateURL, nil)
+	}
 
-	req, err := http.NewRequest("POST", authenticateURL, body)
 	if err != nil {
 		return nil, err
 	}
