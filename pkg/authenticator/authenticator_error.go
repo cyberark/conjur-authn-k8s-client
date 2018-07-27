@@ -1,31 +1,34 @@
 package authenticator
 
 import (
-	"net/http"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
 	"strings"
 )
 
-type AuthenticatorError struct {
-	Code      int
-	Message   string
-	Details   *AuthenticatorErrorDetails  `json:"error"`
+// Error includes the error info for Authenticator-related errors
+type Error struct {
+	Code    int
+	Message string
+	Details *ErrorDetails `json:"error"`
 }
 
-type AuthenticatorErrorDetails struct {
+// ErrorDetails includes JSON data on authenticator.Errors
+type ErrorDetails struct {
 	Message string `json:"message"`
 	Code    string `json:"code"`
 }
 
-func NewAuthenticatorError(resp *http.Response) error {
+// NewError creates a new instance of authenticator.Error
+func NewError(resp *http.Response) error {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	autherr := AuthenticatorError{}
+	autherr := Error{}
 	autherr.Code = resp.StatusCode
 	err = json.Unmarshal(body, &autherr)
 	if err != nil {
@@ -34,14 +37,16 @@ func NewAuthenticatorError(resp *http.Response) error {
 	return &autherr
 }
 
-func (autherr *AuthenticatorError) Error() string {
+// Error returns the error message
+func (autherr *Error) Error() string {
 	if autherr.Details != nil && autherr.Details.Message != "" {
 		return autherr.Details.Message
-	} else {
-		return autherr.Message
 	}
+
+	return autherr.Message
 }
 
-func (autherr *AuthenticatorError) CertExpired() bool {
+// CertExpired checks if the Error is a "cert_expired" error
+func (autherr *Error) CertExpired() bool {
 	return autherr.Details != nil && autherr.Details.Code == "cert_expired"
 }

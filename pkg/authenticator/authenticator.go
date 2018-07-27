@@ -22,9 +22,9 @@ import (
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
 
-// AuthenticatorConfig defines the configuration parameters
+// Config defines the configuration parameters
 // for the authentication requests
-type AuthenticatorConfig struct {
+type Config struct {
 	ConjurVersion  string
 	Account        string
 	URL            string
@@ -39,7 +39,7 @@ type AuthenticatorConfig struct {
 // Authenticator contains the configuration and client
 // for the authentication connection to Conjur
 type Authenticator struct {
-	Config     AuthenticatorConfig
+	Config     Config
 	privateKey *rsa.PrivateKey
 	publicCert *x509.Certificate
 	client     *http.Client
@@ -53,7 +53,7 @@ const (
 )
 
 // New returns a new Authenticator
-func New(config AuthenticatorConfig) (auth *Authenticator, err error) {
+func New(config Config) (auth *Authenticator, err error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		return nil, err

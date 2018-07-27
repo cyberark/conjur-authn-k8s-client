@@ -58,12 +58,12 @@ func main() {
 	}
 
 	// Load CA cert
-	ConjurCACert, err := ReadSSLCert()
+	ConjurCACert, err := readSSLCert()
 	handleMainError(err)
 
 	// Create new Authenticator
 	authn, err := authenticator.New(
-		authenticator.AuthenticatorConfig{
+		authenticator.Config{
 			ConjurVersion:  conjurVersion,
 			Account:        account,
 			URL:            authnURL,
@@ -100,7 +100,7 @@ func main() {
 			if err != nil {
 				errLogger.Printf("on authenticate: %s", err.Error())
 
-				if autherr, ok := err.(*authenticator.AuthenticatorError); ok {
+				if autherr, ok := err.(*authenticator.Error); ok {
 					if autherr.CertExpired() {
 						infoLogger.Printf("certificate expired re-logging in.")
 
@@ -134,7 +134,7 @@ func main() {
 	}
 }
 
-func ReadSSLCert() ([]byte, error) {
+func readSSLCert() ([]byte, error) {
 	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
 	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
 	if SSLCert == "" && SSLCertPath == "" {
