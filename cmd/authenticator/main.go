@@ -1,12 +1,14 @@
 package main
 
 import (
-	"io/ioutil"
-	"os"
 	"fmt"
-	"time"
+	"io/ioutil"
 	"log"
+	"os"
+	"time"
+
 	"github.com/cenkalti/backoff"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 )
 
 const CLIENT_CERT_PATH = "/etc/conjur/ssl/client.pem"
@@ -20,16 +22,16 @@ var infoLogger = log.New(os.Stdout, "INFO: ", log.LUTC|log.Ldate|log.Ltime|log.L
 func main() {
 	var err error
 
-	for _, envvar := range([]string{
+	for _, envvar := range []string{
 		"CONJUR_AUTHN_URL",
 		"CONJUR_ACCOUNT",
 		"CONJUR_AUTHN_LOGIN",
 		"MY_POD_NAMESPACE",
 		"MY_POD_NAME",
-		}) {
+	} {
 		if os.Getenv(envvar) == "" {
 			err = fmt.Errorf(
-			"%s must be provided", envvar)
+				"%s must be provided", envvar)
 			handleMainError(err)
 		}
 	}
@@ -38,7 +40,7 @@ func main() {
 	if len(conjurVersion) == 0 {
 		conjurVersion = "5"
 	}
-	
+
 	authnURL := os.Getenv("CONJUR_AUTHN_URL")
 	account := os.Getenv("CONJUR_ACCOUNT")
 	authnLogin := os.Getenv("CONJUR_AUTHN_LOGIN")
@@ -50,7 +52,7 @@ func main() {
 	ConjurCACert, err := ReadSSLCert()
 	handleMainError(err)
 
-	auth, err := NewAuthenticator(AuthenticatorConfig{
+	auth, err := authenticator.NewAuthenticator(authenticator.AuthenticatorConfig{
 		conjurVersion,
 		account,
 		authnURL,
@@ -80,8 +82,8 @@ func main() {
 			err = Authenticate(auth)
 			if err != nil {
 				errLogger.Printf("on authenticate: %s", err.Error())
-				
-				if autherr, ok := err.(*AuthenticatorError); ok {
+
+				if autherr, ok := err.(*authenticator.AuthenticatorError); ok {
 					if autherr.CertExpired() {
 						infoLogger.Printf("certificate expired re-logging in.")
 
@@ -116,12 +118,12 @@ func main() {
 	}
 }
 
-func Login(auth *Authenticator)(error) {
+func Login(auth *authenticator.Authenticator) error {
 	infoLogger.Printf(fmt.Sprintf("logging in as %s.", auth.Username))
 	return auth.Login()
 }
 
-func Authenticate(auth *Authenticator) (error) {
+func Authenticate(auth *authenticator.Authenticator) error {
 	infoLogger.Printf(fmt.Sprintf("authenticating as %s ...", auth.Username))
 	resp, err := auth.Authenticate()
 	if err != nil {
@@ -130,16 +132,16 @@ func Authenticate(auth *Authenticator) (error) {
 	infoLogger.Printf("valid authentication response.")
 
 	var content []byte
-	
+
 	// Token is only encrypted in Conjur v4
 	if auth.ConjurVersion == "4" {
 		//infoLogger.Printf("decrypting token ...")
-		
-		content, err = decodeFromPEM(resp, auth.publicCert, auth.privateKey)
+
+		content, err = authenticator.DecodeFromPEM(resp, auth.PublicCert, auth.PrivateKey)
 		if err != nil {
 			return err
 		}
-		
+
 		//infoLogger.Printf("successfully decrypted token.")
 	} else if auth.ConjurVersion == "5" {
 		content = resp

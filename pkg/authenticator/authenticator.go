@@ -1,4 +1,4 @@
-package main
+package authenticator
 
 import (
 	"crypto/rand"
@@ -16,6 +16,9 @@ import (
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
 
+const CLIENT_CERT_PATH = "/etc/conjur/ssl/client.pem"
+const TOKEN_FILE_PATH = "/run/conjur/access-token"
+
 type AuthenticatorConfig struct {
 	ConjurVersion  string
 	Account        string
@@ -28,8 +31,8 @@ type AuthenticatorConfig struct {
 
 type Authenticator struct {
 	AuthenticatorConfig
-	privateKey *rsa.PrivateKey
-	publicCert *x509.Certificate
+	PrivateKey *rsa.PrivateKey
+	PublicCert *x509.Certificate
 	client     *http.Client
 }
 
@@ -44,7 +47,7 @@ func NewAuthenticator(config AuthenticatorConfig) (auth *Authenticator, err erro
 		return nil, err
 	}
 
-	return &Authenticator{AuthenticatorConfig: config, client: client, privateKey: signingKey}, nil
+	return &Authenticator{AuthenticatorConfig: config, client: client, PrivateKey: signingKey}, nil
 }
 
 func (auth *Authenticator) GenerateCSR() ([]byte, error) {
@@ -58,7 +61,7 @@ func (auth *Authenticator) GenerateCSR() ([]byte, error) {
 	usernameSplit := strings.Split(auth.Username, "/")
 	usernameCSR := strings.Join(usernameSplit[len(usernameSplit)-3:], "/")
 
-	return generateCSR(auth.privateKey, usernameCSR, sanURI)
+	return generateCSR(auth.PrivateKey, usernameCSR, sanURI)
 }
 
 func (auth *Authenticator) Login() error {
@@ -98,7 +101,7 @@ func (auth *Authenticator) Login() error {
 		return err
 	}
 
-	auth.publicCert = cert
+	auth.PublicCert = cert
 
 	// clean up the client cert so it's only available in memory
 	os.Remove(CLIENT_CERT_PATH)
@@ -107,10 +110,10 @@ func (auth *Authenticator) Login() error {
 }
 
 func (auth *Authenticator) Authenticate() ([]byte, error) {
-	privDer := x509.MarshalPKCS1PrivateKey(auth.privateKey)
+	privDer := x509.MarshalPKCS1PrivateKey(auth.PrivateKey)
 	keyPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privDer})
 
-	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: auth.publicCert.Raw})
+	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: auth.PublicCert.Raw})
 
 	client, err := newHTTPSClient(auth.SSLCertificate, certPEMBlock, keyPEMBlock)
 	if err != nil {

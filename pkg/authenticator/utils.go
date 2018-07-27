@@ -1,18 +1,19 @@
-package main
+package authenticator
 
 import (
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/asn1"
-	"strings"
-	"fmt"
-	"net/url"
-	"net"
 	"encoding/pem"
+	"fmt"
+	"net"
+	"net/url"
+	"strings"
+
 	"github.com/fullsailor/pkcs7"
-	"crypto"
 )
 
 const (
@@ -45,7 +46,7 @@ func marshalSANs(dnsNames, emailAddresses []string, ipAddresses []net.IP, uris [
 }
 
 // generateSANURI returns the formatted uri(SPIFFEE format for now) for the certificate.
-func generateSANURI(namespace,  podname string) (string, error) {
+func generateSANURI(namespace, podname string) (string, error) {
 	if namespace == "" || podname == "" {
 		return "", fmt.Errorf(
 			"namespace or podname can't be empty namespace=%v podname=%v", namespace, podname)
@@ -56,11 +57,11 @@ func generateSANURI(namespace,  podname string) (string, error) {
 func generateCSR(privateKey *rsa.PrivateKey, id string, sanURI *url.URL) ([]byte, error) {
 	commonName := strings.Replace(id, "/", ".", -1)
 	subj := pkix.Name{
-		CommonName:         commonName,
+		CommonName: commonName,
 	}
 
 	template := x509.CertificateRequest{
-		Subject:         	subj,
+		Subject:            subj,
 		SignatureAlgorithm: x509.SHA256WithRSA,
 	}
 
@@ -81,7 +82,7 @@ func generateCSR(privateKey *rsa.PrivateKey, id string, sanURI *url.URL) ([]byte
 	return x509.CreateCertificateRequest(rand.Reader, &template, privateKey)
 }
 
-func decodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey crypto.PrivateKey) ([]byte, error) {
+func DecodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey crypto.PrivateKey) ([]byte, error) {
 	tokenDerBlock, _ := pem.Decode(PEMBlock)
 	p7, err := pkcs7.Parse(tokenDerBlock.Bytes)
 	if err != nil {
