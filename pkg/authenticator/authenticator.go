@@ -212,12 +212,11 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		content = response
 	}
 
-	// log.Printf("writing token to shared volume ...")
+	// log.Printf("writing token %v to shared volume ...", content)
 	err = ioutil.WriteFile(auth.Config.TokenFilePath, content, 0644)
 	if err != nil {
 		return err
 	}
-	// log.Printf("token, successfully, written token to shared volume.")
 
 	log.Printf("successfully authenticated.")
 
@@ -256,11 +255,19 @@ func marshalSANs(dnsNames, emailAddresses []string, ipAddresses []net.IP, uris [
 }
 
 func decodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey crypto.PrivateKey) ([]byte, error) {
+
+	var decodedPEM []byte
+
 	tokenDerBlock, _ := pem.Decode(PEMBlock)
 	p7, err := pkcs7.Parse(tokenDerBlock.Bytes)
 	if err != nil {
 		return nil, err
 	}
 
-	return p7.Decrypt(publicCert, privateKey)
+	decodedPEM, err = p7.Decrypt(publicCert, privateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return decodedPEM, nil
 }
