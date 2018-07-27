@@ -1,3 +1,7 @@
+# 0.11.1
+
+- Fixed bug with request body during v4 authentication.
+
 # 0.11.0
 
 - Added support for Conjur v5.
