@@ -83,7 +83,32 @@ func (auth *Authenticator) GenerateCSR() ([]byte, error) {
 	usernameSplit := strings.Split(auth.Config.Username, "/")
 	usernameCSR := strings.Join(usernameSplit[len(usernameSplit)-3:], "/")
 
-	return generateCSR(auth.privateKey, usernameCSR, sanURI)
+	// Generate CSR
+	commonName := strings.Replace(usernameCSR, "/", ".", -1)
+	subj := pkix.Name{
+		CommonName: commonName,
+	}
+
+	template := x509.CertificateRequest{
+		Subject:            subj,
+		SignatureAlgorithm: x509.SHA256WithRSA,
+	}
+
+	subjectAltNamesValue, err := marshalSANs(nil, nil, nil, []*url.URL{
+		sanURI,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	extSubjectAltName := pkix.Extension{
+		Id:       oidExtensionSubjectAltName,
+		Critical: false,
+		Value:    subjectAltNamesValue,
+	}
+	template.ExtraExtensions = []pkix.Extension{extSubjectAltName}
+
+	return x509.CreateCertificateRequest(rand.Reader, &template, auth.privateKey)
 }
 
 // Login sends Conjur a CSR and verifies that the client cert is
@@ -242,32 +267,4 @@ func decodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey cry
 	}
 
 	return decodedPEM, nil
-}
-
-func generateCSR(privateKey *rsa.PrivateKey, id string, sanURI *url.URL) ([]byte, error) {
-	commonName := strings.Replace(id, "/", ".", -1)
-	subj := pkix.Name{
-		CommonName: commonName,
-	}
-
-	template := x509.CertificateRequest{
-		Subject:            subj,
-		SignatureAlgorithm: x509.SHA256WithRSA,
-	}
-
-	subjectAltNamesValue, err := marshalSANs(nil, nil, nil, []*url.URL{
-		sanURI,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	extSubjectAltName := pkix.Extension{
-		Id:       oidExtensionSubjectAltName,
-		Critical: false,
-		Value:    subjectAltNamesValue,
-	}
-	template.ExtraExtensions = []pkix.Extension{extSubjectAltName}
-
-	return x509.CreateCertificateRequest(rand.Reader, &template, privateKey)
 }
