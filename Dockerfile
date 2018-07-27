@@ -1,7 +1,7 @@
-FROM golang:1.8
+FROM golang:1.10.3-stretch
 MAINTAINER Conjur Inc
 
-RUN apt-get update && apt-get install jq
+RUN apt-get -y update && apt-get -y install jq
 RUN go get -u github.com/jstemmer/go-junit-report
 RUN go get -u github.com/golang/dep/cmd/dep
 RUN go get github.com/smartystreets/goconvey
