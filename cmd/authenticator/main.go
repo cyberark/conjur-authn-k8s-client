@@ -1,67 +1,82 @@
 package main
 
 import (
-	"io/ioutil"
-	"os"
+	"flag"
 	"fmt"
-	"time"
+	"io/ioutil"
 	"log"
+	"os"
+	"time"
+
 	"github.com/cenkalti/backoff"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 )
 
-const CLIENT_CERT_PATH = "/etc/conjur/ssl/client.pem"
-const TOKEN_FILE_PATH = "/run/conjur/access-token"
-const AUTHENTICATE_CYCLE_DURATION = 6 * time.Minute
+// AuthenticateCycleDuration is the default time the system waits to
+// reauthenticate on error
+const AuthenticateCycleDuration = 6 * time.Minute
 
 // logging
 var errLogger = log.New(os.Stderr, "ERROR: ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
 var infoLogger = log.New(os.Stdout, "INFO: ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
 
 func main() {
+
 	var err error
 
-	for _, envvar := range([]string{
+	// Parse any flags for client cert / token paths, and set default values if not passed
+	clientCertPath := flag.String("c", "/etc/conjur/ssl/client.pem",
+		"Path to client certificate")
+	tokenFilePath := flag.String("t", "/run/conjur/access-token",
+		"Path to Conjur access token")
+
+	// Check that required environment variables are set
+	for _, envvar := range []string{
 		"CONJUR_AUTHN_URL",
 		"CONJUR_ACCOUNT",
 		"CONJUR_AUTHN_LOGIN",
 		"MY_POD_NAMESPACE",
 		"MY_POD_NAME",
-		}) {
+	} {
 		if os.Getenv(envvar) == "" {
 			err = fmt.Errorf(
-			"%s must be provided", envvar)
+				"%s must be provided", envvar)
 			handleMainError(err)
 		}
 	}
 
-	conjurVersion := os.Getenv("CONJUR_VERSION")
-	if len(conjurVersion) == 0 {
-		conjurVersion = "5"
-	}
-	
+	// Load configuration from the environment
 	authnURL := os.Getenv("CONJUR_AUTHN_URL")
 	account := os.Getenv("CONJUR_ACCOUNT")
 	authnLogin := os.Getenv("CONJUR_AUTHN_LOGIN")
 	podNamespace := os.Getenv("MY_POD_NAMESPACE")
 	podName := os.Getenv("MY_POD_NAME")
 	containerMode := os.Getenv("CONTAINER_MODE")
+	conjurVersion := os.Getenv("CONJUR_VERSION")
+	if len(conjurVersion) == 0 {
+		conjurVersion = "5"
+	}
 
 	// Load CA cert
-	ConjurCACert, err := ReadSSLCert()
+	ConjurCACert, err := readSSLCert()
 	handleMainError(err)
 
-	auth, err := NewAuthenticator(AuthenticatorConfig{
-		conjurVersion,
-		account,
-		authnURL,
-		authnLogin,
-		podName,
-		podNamespace,
-		ConjurCACert,
-	})
+	// Create new Authenticator
+	authn, err := authenticator.New(
+		authenticator.Config{
+			ConjurVersion:  conjurVersion,
+			Account:        account,
+			URL:            authnURL,
+			Username:       authnLogin,
+			PodName:        podName,
+			PodNamespace:   podNamespace,
+			SSLCertificate: ConjurCACert,
+			ClientCertPath: *clientCertPath,
+			TokenFilePath:  *tokenFilePath,
+		})
 	handleMainError(err)
 
-	// configure exponential backoff
+	// Configure exponential backoff
 	expBackoff := backoff.NewExponentialBackOff()
 	expBackoff.InitialInterval = 2 * time.Second
 	expBackoff.RandomizationFactor = 0.5
@@ -70,23 +85,26 @@ func main() {
 	expBackoff.MaxElapsedTime = 2 * time.Minute
 
 	err = backoff.Retry(func() error {
-		err = Login(auth)
-		if err != nil {
-			errLogger.Printf("on login: %s", err.Error())
+		if err = authn.Login(); err != nil {
+			errLogger.Printf("on login: %v", err.Error())
 			return err
 		}
 
 		for {
-			err = Authenticate(auth)
+			infoLogger.Printf(fmt.Sprintf("authenticating as %s ...", authn.Config.Username))
+			resp, err := authn.Authenticate()
+			if err == nil {
+				infoLogger.Printf("valid authentication response")
+				err = authn.ParseAuthenticationResponse(resp)
+			}
 			if err != nil {
 				errLogger.Printf("on authenticate: %s", err.Error())
-				
-				if autherr, ok := err.(*AuthenticatorError); ok {
+
+				if autherr, ok := err.(*authenticator.Error); ok {
 					if autherr.CertExpired() {
 						infoLogger.Printf("certificate expired re-logging in.")
 
-						err = Login(auth)
-						if err != nil {
+						if err = authn.Login(); err != nil {
 							return err
 						}
 
@@ -107,7 +125,7 @@ func main() {
 			expBackoff.Reset()
 
 			infoLogger.Printf("waiting for 6 minutes to re-authenticate.")
-			time.Sleep(AUTHENTICATE_CYCLE_DURATION)
+			time.Sleep(AuthenticateCycleDuration)
 		}
 	}, expBackoff)
 	if err != nil {
@@ -116,47 +134,7 @@ func main() {
 	}
 }
 
-func Login(auth *Authenticator)(error) {
-	infoLogger.Printf(fmt.Sprintf("logging in as %s.", auth.Username))
-	return auth.Login()
-}
-
-func Authenticate(auth *Authenticator) (error) {
-	infoLogger.Printf(fmt.Sprintf("authenticating as %s ...", auth.Username))
-	resp, err := auth.Authenticate()
-	if err != nil {
-		return err
-	}
-	infoLogger.Printf("valid authentication response.")
-
-	var content []byte
-	
-	// Token is only encrypted in Conjur v4
-	if auth.ConjurVersion == "4" {
-		//infoLogger.Printf("decrypting token ...")
-		
-		content, err = decodeFromPEM(resp, auth.publicCert, auth.privateKey)
-		if err != nil {
-			return err
-		}
-		
-		//infoLogger.Printf("successfully decrypted token.")
-	} else if auth.ConjurVersion == "5" {
-		content = resp
-	}
-
-	//infoLogger.Printf("writing token to shared volume ...")
-	err = ioutil.WriteFile(TOKEN_FILE_PATH, content, 0644)
-	if err != nil {
-		return err
-	}
-	//infoLogger.Printf("token, successfully, written token to shared volume.")
-
-	infoLogger.Printf("successfully authenticated.")
-	return nil
-}
-
-func ReadSSLCert() ([]byte, error) {
+func readSSLCert() ([]byte, error) {
 	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
 	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
 	if SSLCert == "" && SSLCertPath == "" {

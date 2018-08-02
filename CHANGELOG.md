@@ -1,3 +1,7 @@
+# 0.12.0
+
+- Reorganized file structure of project to make importable
+
 # 0.11.1
 
 - Fixed bug with request body during v4 authentication.
