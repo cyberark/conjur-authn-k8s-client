@@ -2,6 +2,7 @@ package authenticator
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -39,11 +40,12 @@ func NewError(resp *http.Response) error {
 
 // Error returns the error message
 func (autherr *Error) Error() string {
+	msg := autherr.Message
 	if autherr.Details != nil && autherr.Details.Message != "" {
-		return autherr.Details.Message
+		msg = autherr.Details.Message
 	}
 
-	return autherr.Message
+	return fmt.Sprintf("status code %v, %s", autherr.Code, msg)
 }
 
 // CertExpired checks if the Error is a "cert_expired" error
