@@ -179,7 +179,6 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 		auth.Config.ConjurVersion,
 		auth.Config.Account,
 		auth.Config.Username,
-		certPEMBlock,
 	)
 	if err != nil {
 		return nil, err

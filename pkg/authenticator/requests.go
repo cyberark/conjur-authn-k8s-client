@@ -31,7 +31,7 @@ func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte) (*http
 }
 
 // AuthenticateRequest sends an authenticate request
-func AuthenticateRequest(authnURL string, conjurVersion string, account string, username string, cert []byte) (*http.Request, error) {
+func AuthenticateRequest(authnURL string, conjurVersion string, account string, username string) (*http.Request, error) {
 	var authenticateURL string
 	var err error
 	var req *http.Request
@@ -44,16 +44,10 @@ func AuthenticateRequest(authnURL string, conjurVersion string, account string, 
 
 	log.Printf("making authn request to %s", authenticateURL)
 
-	if conjurVersion == "5" {
-		body := bytes.NewReader(cert)
-		req, err = http.NewRequest("POST", authenticateURL, body)
-	} else {
-		req, err = http.NewRequest("POST", authenticateURL, nil)
-	}
-
-	if err != nil {
+	if req, err = http.NewRequest("POST", authenticateURL, nil); err != nil {
 		return nil, err
 	}
+
 	req.Header.Set("Content-Type", "text/plain")
 
 	return req, nil
