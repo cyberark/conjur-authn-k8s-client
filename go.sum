@@ -1,6 +1,6 @@
 github.com/cenkalti/backoff v2.0.0+incompatible h1:5IIPUHhlnUZbcHQsQou5k1Tn58nJkeJL9U+ig5CHJbY=
 github.com/cenkalti/backoff v2.0.0+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
-github.com/fullsailor/pkcs7 v0.0.0-20180223002317-1d5002593acb h1:KsyJkIhScW6qiLqmYCyJvgYih0rZ0Pnrb+aPMdaJryo=
-github.com/fullsailor/pkcs7 v0.0.0-20180223002317-1d5002593acb/go.mod h1:KnogPXtdwXqoenmZCw6S+25EAm2MkxbG0deNDu4cbSA=
+github.com/fullsailor/pkcs7 v0.0.0-20180613152042-8306686428a5 h1:v+vxrd9XS8uWIXG2RK0BHCnXc30qLVQXVqbK+IOmpXk=
+github.com/fullsailor/pkcs7 v0.0.0-20180613152042-8306686428a5/go.mod h1:KnogPXtdwXqoenmZCw6S+25EAm2MkxbG0deNDu4cbSA=
 golang.org/x/net v0.0.0-20180416171110-a35a21de978d h1:O2P57H5Cc+d+DJos+iweraI9rmzMYwV+45vkZdDY0Oo=
 golang.org/x/net v0.0.0-20180416171110-a35a21de978d/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
