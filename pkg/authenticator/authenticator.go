@@ -16,11 +16,14 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/fullsailor/pkcs7"
 )
 
+var infoLogger = log.New(os.Stdout, "INFO: ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
+var bufferTime = 30 * time.Second
 
 // Config defines the configuration parameters
 // for the authentication requests
@@ -115,7 +118,7 @@ func (auth *Authenticator) GenerateCSR() ([]byte, error) {
 // successfully retrieved
 func (auth *Authenticator) Login() error {
 
-	log.Printf(fmt.Sprintf("logging in as %s.", auth.Config.Username))
+	infoLogger.Printf(fmt.Sprintf("logging in as %s.", auth.Config.Username))
 
 	csrRawBytes, err := auth.GenerateCSR()
 
@@ -159,6 +162,18 @@ func (auth *Authenticator) Login() error {
 	os.Remove(auth.Config.ClientCertPath)
 
 	return nil
+}
+
+// Parses the certificate on disk
+func (auth *Authenticator) IsCertExpired() bool {
+	certExpiresOn := auth.publicCert.NotAfter
+	currentDate := time.Now()
+
+	infoLogger.Printf("Cert expires: %v", certExpiresOn.UTC())
+	infoLogger.Printf("Current date: %v", currentDate.UTC())
+	infoLogger.Printf("Buffer time:  %v", bufferTime)
+
+	return currentDate.Add(bufferTime).After(certExpiresOn)
 }
 
 // Authenticate sends Conjur an authenticate request and returns
@@ -209,13 +224,13 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		content = response
 	}
 
-	// log.Printf("writing token %v to shared volume ...", content)
+	// infoLogger.Printf("writing token %v to shared volume ...", content)
 	err = ioutil.WriteFile(auth.Config.TokenFilePath, content, 0644)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("successfully authenticated.")
+	infoLogger.Printf("successfully authenticated.")
 
 	return nil
 }
