@@ -91,40 +91,39 @@ func main() {
 		}
 
 		for {
-			infoLogger.Printf(fmt.Sprintf("authenticating as %s ...", authn.Config.Username))
-			resp, err := authn.Authenticate()
-			if err == nil {
-				infoLogger.Printf("valid authentication response")
-				err = authn.ParseAuthenticationResponse(resp)
-			}
-			if err != nil {
-				errLogger.Printf("on authenticate: %s", err.Error())
+			if authn.IsCertExpired() {
+				infoLogger.Printf("Certificate expired. Re-logging in...")
 
-				if autherr, ok := err.(*authenticator.Error); ok {
-					if autherr.CertExpired() {
-						infoLogger.Printf("certificate expired re-logging in.")
-
-						if err = authn.Login(); err != nil {
-							return err
-						}
-
-						// if the cert expired and login worked then con
-						continue
-					}
-				} else {
-					errLogger.Printf("on authenticate: %s", err.Error())
+				if err = authn.Login(); err != nil {
 					return err
 				}
-			} else {
-				if containerMode == "init" {
-					os.Exit(0)
-				}
+
+				infoLogger.Printf("Logged in. Continuing authentication.")
+			}
+
+			infoLogger.Printf(fmt.Sprintf("authenticating as %s ...", authn.Config.Username))
+			resp, err := authn.Authenticate()
+			if err != nil {
+				errLogger.Printf("on authenticate: %s", err.Error())
+				return err
+			}
+
+			infoLogger.Printf("valid authentication response")
+			err = authn.ParseAuthenticationResponse(resp)
+			if err != nil {
+				errLogger.Printf("on response parse: %s", err.Error())
+				return err
+			}
+
+			if containerMode == "init" {
+				os.Exit(0)
 			}
 
 			// Reset exponential backoff
 			expBackoff.Reset()
 
-			infoLogger.Printf("waiting for 6 minutes to re-authenticate.")
+			infoLogger.Printf("waiting for %s to re-authenticate.", AuthenticateCycleDuration)
+			fmt.Println()
 			time.Sleep(AuthenticateCycleDuration)
 		}
 	}, expBackoff)
