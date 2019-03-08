@@ -10,7 +10,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -21,7 +20,6 @@ import (
 	"github.com/fullsailor/pkcs7"
 )
 
-var infoLogger = log.New(os.Stdout, "INFO: ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
 var bufferTime = 30 * time.Second
 
@@ -118,7 +116,7 @@ func (auth *Authenticator) GenerateCSR() ([]byte, error) {
 // successfully retrieved
 func (auth *Authenticator) Login() error {
 
-	infoLogger.Printf(fmt.Sprintf("logging in as %s.", auth.Config.Username))
+	InfoLogger.Printf(fmt.Sprintf("logging in as %s.", auth.Config.Username))
 
 	csrRawBytes, err := auth.GenerateCSR()
 
@@ -169,9 +167,9 @@ func (auth *Authenticator) IsCertExpired() bool {
 	certExpiresOn := auth.PublicCert.NotAfter
 	currentDate := time.Now()
 
-	infoLogger.Printf("Cert expires: %v", certExpiresOn.UTC())
-	infoLogger.Printf("Current date: %v", currentDate.UTC())
-	infoLogger.Printf("Buffer time:  %v", bufferTime)
+	InfoLogger.Printf("Cert expires: %v", certExpiresOn.UTC())
+	InfoLogger.Printf("Current date: %v", currentDate.UTC())
+	InfoLogger.Printf("Buffer time:  %v", bufferTime)
 
 	return currentDate.Add(bufferTime).After(certExpiresOn)
 }
@@ -224,13 +222,13 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		content = response
 	}
 
-	// infoLogger.Printf("writing token %v to shared volume ...", content)
+	// InfoLogger.Printf("writing token %v to shared volume ...", content)
 	err = ioutil.WriteFile(auth.Config.TokenFilePath, content, 0644)
 	if err != nil {
 		return err
 	}
 
-	infoLogger.Printf("successfully authenticated.")
+	InfoLogger.Printf("successfully authenticated.")
 
 	return nil
 }
