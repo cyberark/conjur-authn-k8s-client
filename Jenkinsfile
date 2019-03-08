@@ -15,15 +15,11 @@ pipeline {
       }
     }
 
-    stage('Build test Docker image') {
-      steps {
-        sh './bin/build_test'
-      }
-    }
-
     stage('Run Tests') {
       steps {
         sh './bin/test'
+        
+        junit 'test/junit.xml'
       }
     }
 

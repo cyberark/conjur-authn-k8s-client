@@ -1,10 +1,18 @@
 FROM golang:1.12.0-alpine3.9
+MAINTAINER Conjur Inc.
+LABEL id="conjur-authn-k8s-client-test-runner"
 
-RUN apk update && \
-  apk upgrade --update-cache --available
-RUN apk add git make curl perl bash build-base zlib-dev ucl-dev
-
-ADD . /conjur-authn-k8s-client
+ENTRYPOINT [ "go", "test", "-v", "-timeout", "3m" ]
 WORKDIR /conjur-authn-k8s-client
 
-RUN go build ./...
+RUN apk add -u curl \
+               gcc \
+               git \
+               mercurial \
+               musl-dev
+
+COPY go.mod go.sum /conjur-authn-k8s-client/
+
+RUN go mod download
+
+COPY . .
