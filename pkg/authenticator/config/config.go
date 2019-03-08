@@ -23,9 +23,9 @@ type Config struct {
 	TokenRefreshTimeout time.Duration
 }
 
-// AuthenticateCycleDuration is the default time the system waits to
+// DefaultTokenRefreshTimeout is the default time the system waits to
 // reauthenticate on error
-const AuthenticateCycleDuration = 6 * time.Minute
+const DefaultTokenRefreshTimeout = 6 * time.Minute
 
 // New returns a new authenticator configuration object
 func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
@@ -65,6 +65,18 @@ func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
 		conjurVersion = "5"
 	}
 
+	// Parse token refresh rate if one is provided from env
+	tokenRefreshTimeout := DefaultTokenRefreshTimeout
+	tokenRefreshTimeoutString := os.Getenv("CONJUR_TOKEN_TIMEOUT")
+	if len(tokenRefreshTimeoutString) > 0 {
+		parsedTokenRefreshTimeout, err := time.ParseDuration(tokenRefreshTimeoutString)
+		if err != nil {
+			return nil, err
+		}
+
+		tokenRefreshTimeout = parsedTokenRefreshTimeout
+	}
+
 	return &Config{
 		ContainerMode:       containerMode,
 		ConjurVersion:       conjurVersion,
@@ -76,7 +88,7 @@ func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
 		SSLCertificate:      caCert,
 		ClientCertPath:      *clientCertPath,
 		TokenFilePath:       *tokenPath,
-		TokenRefreshTimeout: AuthenticateCycleDuration,
+		TokenRefreshTimeout: tokenRefreshTimeout,
 	}, nil
 }
 
