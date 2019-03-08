@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 )
 
@@ -21,7 +22,7 @@ type Config struct {
 }
 
 // New returns a new authenticator configuration object
-func NewFromEnv(caCert []byte, clientCertPath *string, tokenPath *string) (*Config, error) {
+func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
 	var err error
 
 	// Check that required environment variables are set
@@ -37,6 +38,12 @@ func NewFromEnv(caCert []byte, clientCertPath *string, tokenPath *string) (*Conf
 				"%s must be provided", envvar)
 			return nil, err
 		}
+	}
+
+	// Load CA cert
+	caCert, err := readSSLCert()
+	if err != nil {
+		return nil, err
 	}
 
 	// Load configuration from the environment
@@ -65,4 +72,18 @@ func NewFromEnv(caCert []byte, clientCertPath *string, tokenPath *string) (*Conf
 		ClientCertPath: *clientCertPath,
 		TokenFilePath:  *tokenPath,
 	}, nil
+}
+
+func readSSLCert() ([]byte, error) {
+	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
+	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
+	if SSLCert == "" && SSLCertPath == "" {
+		return nil, fmt.Errorf(
+			"at least one of CONJUR_SSL_CERTIFICATE and CONJUR_CERT_FILE must be provided")
+	}
+
+	if SSLCert != "" {
+		return []byte(SSLCert), nil
+	}
+	return ioutil.ReadFile(SSLCertPath)
 }
