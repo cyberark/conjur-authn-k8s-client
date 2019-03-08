@@ -18,29 +18,17 @@ import (
 	"time"
 
 	"github.com/fullsailor/pkcs7"
+
+	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
 var bufferTime = 30 * time.Second
 
-// Config defines the configuration parameters
-// for the authentication requests
-type Config struct {
-	ConjurVersion  string
-	Account        string
-	URL            string
-	Username       string
-	PodName        string
-	PodNamespace   string
-	SSLCertificate []byte
-	ClientCertPath string
-	TokenFilePath  string
-}
-
 // Authenticator contains the configuration and client
 // for the authentication connection to Conjur
 type Authenticator struct {
-	Config     Config
+	Config     authnConfig.Config
 	privateKey *rsa.PrivateKey
 	PublicCert *x509.Certificate
 	client     *http.Client
@@ -54,7 +42,7 @@ const (
 )
 
 // New returns a new Authenticator
-func New(config Config) (auth *Authenticator, err error) {
+func New(config authnConfig.Config) (auth *Authenticator, err error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		return nil, err

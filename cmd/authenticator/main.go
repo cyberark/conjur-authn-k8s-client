@@ -9,6 +9,7 @@ import (
 
 	"github.com/cenkalti/backoff"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
+	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 )
 
 // AuthenticateCycleDuration is the default time the system waits to
@@ -29,50 +30,15 @@ func main() {
 	tokenFilePath := flag.String("t", "/run/conjur/access-token",
 		"Path to Conjur access token")
 
-	// Check that required environment variables are set
-	for _, envvar := range []string{
-		"CONJUR_AUTHN_URL",
-		"CONJUR_ACCOUNT",
-		"CONJUR_AUTHN_LOGIN",
-		"MY_POD_NAMESPACE",
-		"MY_POD_NAME",
-	} {
-		if os.Getenv(envvar) == "" {
-			err = fmt.Errorf(
-				"%s must be provided", envvar)
-			handleMainError(err)
-		}
-	}
-
-	// Load configuration from the environment
-	authnURL := os.Getenv("CONJUR_AUTHN_URL")
-	account := os.Getenv("CONJUR_ACCOUNT")
-	authnLogin := os.Getenv("CONJUR_AUTHN_LOGIN")
-	podNamespace := os.Getenv("MY_POD_NAMESPACE")
-	podName := os.Getenv("MY_POD_NAME")
-	containerMode := os.Getenv("CONTAINER_MODE")
-	conjurVersion := os.Getenv("CONJUR_VERSION")
-	if len(conjurVersion) == 0 {
-		conjurVersion = "5"
-	}
-
 	// Load CA cert
 	ConjurCACert, err := readSSLCert()
 	handleMainError(err)
 
+	config, err := authnConfig.NewFromEnv(ConjurCACert, clientCertPath, tokenFilePath)
+	handleMainError(err)
+
 	// Create new Authenticator
-	authn, err := authenticator.New(
-		authenticator.Config{
-			ConjurVersion:  conjurVersion,
-			Account:        account,
-			URL:            authnURL,
-			Username:       authnLogin,
-			PodName:        podName,
-			PodNamespace:   podNamespace,
-			SSLCertificate: ConjurCACert,
-			ClientCertPath: *clientCertPath,
-			TokenFilePath:  *tokenFilePath,
-		})
+	authn, err := authenticator.New(*config)
 	handleMainError(err)
 
 	// Configure exponential backoff
@@ -114,7 +80,7 @@ func main() {
 				return err
 			}
 
-			if containerMode == "init" {
+			if authn.Config.ContainerMode == "init" {
 				os.Exit(0)
 			}
 
