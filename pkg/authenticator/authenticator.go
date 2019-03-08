@@ -150,7 +150,12 @@ func (auth *Authenticator) Login() error {
 	return nil
 }
 
-// Parses the certificate on disk
+// Returns true if we are logged in (have a cert)
+func (auth *Authenticator) IsLoggedIn() bool {
+	return auth.PublicCert != nil
+}
+
+// Returns true if certificate is expired or close to expiring
 func (auth *Authenticator) IsCertExpired() bool {
 	certExpiresOn := auth.PublicCert.NotAfter
 	currentDate := time.Now()
@@ -163,8 +168,19 @@ func (auth *Authenticator) IsCertExpired() bool {
 }
 
 // Authenticate sends Conjur an authenticate request and returns
-// the response data
+// the response data. Also manages state of certificates.
 func (auth *Authenticator) Authenticate() ([]byte, error) {
+	if !auth.IsLoggedIn() {
+		InfoLogger.Printf("Not logged in. Trying to log in...")
+
+		if err := auth.Login(); err != nil {
+			ErrorLogger.Printf("Login failed: %v", err.Error())
+			return nil, err
+		}
+
+		InfoLogger.Printf("Logged in")
+	}
+
 	if auth.IsCertExpired() {
 		InfoLogger.Printf("Certificate expired. Re-logging in...")
 

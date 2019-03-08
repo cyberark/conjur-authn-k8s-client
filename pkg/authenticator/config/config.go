@@ -4,22 +4,28 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 // Config defines the configuration parameters
 // for the authentication requests
 type Config struct {
-	ContainerMode  string
-	ConjurVersion  string
-	Account        string
-	URL            string
-	Username       string
-	PodName        string
-	PodNamespace   string
-	SSLCertificate []byte
-	ClientCertPath string
-	TokenFilePath  string
+	ContainerMode       string
+	ConjurVersion       string
+	Account             string
+	URL                 string
+	Username            string
+	PodName             string
+	PodNamespace        string
+	SSLCertificate      []byte
+	ClientCertPath      string
+	TokenFilePath       string
+	TokenRefreshTimeout time.Duration
 }
+
+// AuthenticateCycleDuration is the default time the system waits to
+// reauthenticate on error
+const AuthenticateCycleDuration = 6 * time.Minute
 
 // New returns a new authenticator configuration object
 func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
@@ -34,8 +40,7 @@ func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
 		"MY_POD_NAME",
 	} {
 		if os.Getenv(envvar) == "" {
-			err = fmt.Errorf(
-				"%s must be provided", envvar)
+			err = fmt.Errorf("Environment variable %s must be provided", envvar)
 			return nil, err
 		}
 	}
@@ -61,16 +66,17 @@ func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
 	}
 
 	return &Config{
-		ContainerMode:  containerMode,
-		ConjurVersion:  conjurVersion,
-		Account:        account,
-		URL:            authnURL,
-		Username:       authnLogin,
-		PodName:        podName,
-		PodNamespace:   podNamespace,
-		SSLCertificate: caCert,
-		ClientCertPath: *clientCertPath,
-		TokenFilePath:  *tokenPath,
+		ContainerMode:       containerMode,
+		ConjurVersion:       conjurVersion,
+		Account:             account,
+		URL:                 authnURL,
+		Username:            authnLogin,
+		PodName:             podName,
+		PodNamespace:        podNamespace,
+		SSLCertificate:      caCert,
+		ClientCertPath:      *clientCertPath,
+		TokenFilePath:       *tokenPath,
+		TokenRefreshTimeout: AuthenticateCycleDuration,
 	}, nil
 }
 
@@ -78,8 +84,9 @@ func readSSLCert() ([]byte, error) {
 	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
 	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
 	if SSLCert == "" && SSLCertPath == "" {
-		return nil, fmt.Errorf(
-			"at least one of CONJUR_SSL_CERTIFICATE and CONJUR_CERT_FILE must be provided")
+		err := fmt.Errorf(
+			"At least one of CONJUR_SSL_CERTIFICATE and CONJUR_CERT_FILE must be provided")
+		return nil, err
 	}
 
 	if SSLCert != "" {
