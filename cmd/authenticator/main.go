@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"time"
 
@@ -17,8 +16,8 @@ import (
 const AuthenticateCycleDuration = 6 * time.Minute
 
 // logging
-var errLogger = log.New(os.Stderr, "ERROR: ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
-var infoLogger = log.New(os.Stdout, "INFO: ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
+var errLogger = authenticator.ErrorLogger
+var infoLogger = authenticator.InfoLogger
 
 func main() {
 
