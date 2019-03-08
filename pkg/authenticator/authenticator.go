@@ -44,7 +44,7 @@ type Config struct {
 type Authenticator struct {
 	Config     Config
 	privateKey *rsa.PrivateKey
-	publicCert *x509.Certificate
+	PublicCert *x509.Certificate
 	client     *http.Client
 }
 
@@ -156,7 +156,7 @@ func (auth *Authenticator) Login() error {
 		return err
 	}
 
-	auth.publicCert = cert
+	auth.PublicCert = cert
 
 	// clean up the client cert so it's only available in memory
 	os.Remove(auth.Config.ClientCertPath)
@@ -166,7 +166,7 @@ func (auth *Authenticator) Login() error {
 
 // Parses the certificate on disk
 func (auth *Authenticator) IsCertExpired() bool {
-	certExpiresOn := auth.publicCert.NotAfter
+	certExpiresOn := auth.PublicCert.NotAfter
 	currentDate := time.Now()
 
 	infoLogger.Printf("Cert expires: %v", certExpiresOn.UTC())
@@ -182,7 +182,7 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 	privDer := x509.MarshalPKCS1PrivateKey(auth.privateKey)
 	keyPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privDer})
 
-	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: auth.publicCert.Raw})
+	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: auth.PublicCert.Raw})
 
 	client, err := newHTTPSClient(auth.Config.SSLCertificate, certPEMBlock, keyPEMBlock)
 	if err != nil {
@@ -216,7 +216,7 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 
 	// Token is only encrypted in Conjur v4
 	if auth.Config.ConjurVersion == "4" {
-		content, err = decodeFromPEM(response, auth.publicCert, auth.privateKey)
+		content, err = decodeFromPEM(response, auth.PublicCert, auth.privateKey)
 		if err != nil {
 			return err
 		}
