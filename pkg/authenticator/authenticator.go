@@ -104,7 +104,7 @@ func (auth *Authenticator) GenerateCSR() ([]byte, error) {
 // successfully retrieved
 func (auth *Authenticator) Login() error {
 
-	InfoLogger.Printf(fmt.Sprintf("logging in as %s.", auth.Config.Username))
+	InfoLogger.Printf(fmt.Sprintf("Logging in as %s.", auth.Config.Username))
 
 	csrRawBytes, err := auth.GenerateCSR()
 
@@ -236,13 +236,13 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		content = response
 	}
 
-	// InfoLogger.Printf("writing token %v to shared volume ...", content)
+	// InfoLogger.Printf("Writing token %v to shared volume ...", content)
 	err = ioutil.WriteFile(auth.Config.TokenFilePath, content, 0644)
 	if err != nil {
 		return err
 	}
 
-	InfoLogger.Printf("successfully authenticated.")
+	InfoLogger.Printf("Successfully authenticated!")
 
 	return nil
 }
