@@ -165,6 +165,16 @@ func (auth *Authenticator) IsCertExpired() bool {
 // Authenticate sends Conjur an authenticate request and returns
 // the response data
 func (auth *Authenticator) Authenticate() ([]byte, error) {
+	if auth.IsCertExpired() {
+		InfoLogger.Printf("Certificate expired. Re-logging in...")
+
+		if err := auth.Login(); err != nil {
+			return nil, err
+		}
+
+		InfoLogger.Printf("Logged in. Continuing authentication.")
+	}
+
 	privDer := x509.MarshalPKCS1PrivateKey(auth.privateKey)
 	keyPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privDer})
 

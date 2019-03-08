@@ -51,16 +51,6 @@ func main() {
 		}
 
 		for {
-			if authn.IsCertExpired() {
-				infoLogger.Printf("Certificate expired. Re-logging in...")
-
-				if err = authn.Login(); err != nil {
-					return err
-				}
-
-				infoLogger.Printf("Logged in. Continuing authentication.")
-			}
-
 			infoLogger.Printf(fmt.Sprintf("authenticating as %s ...", authn.Config.Username))
 			resp, err := authn.Authenticate()
 			if err != nil {
