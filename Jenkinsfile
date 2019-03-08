@@ -17,7 +17,7 @@ pipeline {
 
     stage('Build test Docker image') {
       steps {
-        sh './bin/build_test
+        sh './bin/build_test'
       }
     }
 
