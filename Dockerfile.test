@@ -1,0 +1,10 @@
+FROM golang:1.12.0-alpine3.9
+
+RUN apk update && \
+  apk upgrade --update-cache --available
+RUN apk add git make curl perl bash build-base zlib-dev ucl-dev
+
+ADD . /conjur-authn-k8s-client
+WORKDIR /conjur-authn-k8s-client
+
+RUN go build ./...
