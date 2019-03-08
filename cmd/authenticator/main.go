@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -30,11 +29,7 @@ func main() {
 	tokenFilePath := flag.String("t", "/run/conjur/access-token",
 		"Path to Conjur access token")
 
-	// Load CA cert
-	ConjurCACert, err := readSSLCert()
-	handleMainError(err)
-
-	config, err := authnConfig.NewFromEnv(ConjurCACert, clientCertPath, tokenFilePath)
+	config, err := authnConfig.NewFromEnv(clientCertPath, tokenFilePath)
 	handleMainError(err)
 
 	// Create new Authenticator
@@ -96,20 +91,6 @@ func main() {
 		// Handle error.
 		errLogger.Printf("backoff exhausted: %s", err.Error())
 	}
-}
-
-func readSSLCert() ([]byte, error) {
-	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
-	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
-	if SSLCert == "" && SSLCertPath == "" {
-		return nil, fmt.Errorf(
-			"at least one of CONJUR_SSL_CERTIFICATE and CONJUR_CERT_FILE must be provided")
-	}
-
-	if SSLCert != "" {
-		return []byte(SSLCert), nil
-	}
-	return ioutil.ReadFile(SSLCertPath)
 }
 
 func handleMainError(err error) {
