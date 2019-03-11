@@ -157,11 +157,11 @@ func (auth *Authenticator) IsLoggedIn() bool {
 
 // Returns true if certificate is expired or close to expiring
 func (auth *Authenticator) IsCertExpired() bool {
-	certExpiresOn := auth.PublicCert.NotAfter
-	currentDate := time.Now()
+	certExpiresOn := auth.PublicCert.NotAfter.UTC()
+	currentDate := time.Now().UTC()
 
-	InfoLogger.Printf("Cert expires: %v", certExpiresOn.UTC())
-	InfoLogger.Printf("Current date: %v", currentDate.UTC())
+	InfoLogger.Printf("Cert expires: %v", certExpiresOn)
+	InfoLogger.Printf("Current date: %v", currentDate)
 	InfoLogger.Printf("Buffer time:  %v", bufferTime)
 
 	return currentDate.Add(bufferTime).After(certExpiresOn)
