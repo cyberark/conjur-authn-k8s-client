@@ -47,8 +47,3 @@ func (autherr *Error) Error() string {
 
 	return fmt.Sprintf("status code %v, %s", autherr.Code, msg)
 }
-
-// CertExpired checks if the Error is a "cert_expired" error
-func (autherr *Error) CertExpired() bool {
-	return autherr.Details != nil && autherr.Details.Code == "cert_expired"
-}

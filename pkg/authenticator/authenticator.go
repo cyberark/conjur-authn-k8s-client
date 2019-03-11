@@ -10,38 +10,27 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/fullsailor/pkcs7"
+
+	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
-
-// Config defines the configuration parameters
-// for the authentication requests
-type Config struct {
-	ConjurVersion  string
-	Account        string
-	URL            string
-	Username       string
-	PodName        string
-	PodNamespace   string
-	SSLCertificate []byte
-	ClientCertPath string
-	TokenFilePath  string
-}
+var bufferTime = 30 * time.Second
 
 // Authenticator contains the configuration and client
 // for the authentication connection to Conjur
 type Authenticator struct {
-	Config     Config
+	Config     authnConfig.Config
 	privateKey *rsa.PrivateKey
-	publicCert *x509.Certificate
+	PublicCert *x509.Certificate
 	client     *http.Client
 }
 
@@ -53,7 +42,7 @@ const (
 )
 
 // New returns a new Authenticator
-func New(config Config) (auth *Authenticator, err error) {
+func New(config authnConfig.Config) (auth *Authenticator, err error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		return nil, err
@@ -115,7 +104,7 @@ func (auth *Authenticator) GenerateCSR() ([]byte, error) {
 // successfully retrieved
 func (auth *Authenticator) Login() error {
 
-	log.Printf(fmt.Sprintf("logging in as %s.", auth.Config.Username))
+	InfoLogger.Printf(fmt.Sprintf("Logging in as %s.", auth.Config.Username))
 
 	csrRawBytes, err := auth.GenerateCSR()
 
@@ -153,7 +142,7 @@ func (auth *Authenticator) Login() error {
 		return err
 	}
 
-	auth.publicCert = cert
+	auth.PublicCert = cert
 
 	// clean up the client cert so it's only available in memory
 	os.Remove(auth.Config.ClientCertPath)
@@ -161,13 +150,51 @@ func (auth *Authenticator) Login() error {
 	return nil
 }
 
+// Returns true if we are logged in (have a cert)
+func (auth *Authenticator) IsLoggedIn() bool {
+	return auth.PublicCert != nil
+}
+
+// Returns true if certificate is expired or close to expiring
+func (auth *Authenticator) IsCertExpired() bool {
+	certExpiresOn := auth.PublicCert.NotAfter.UTC()
+	currentDate := time.Now().UTC()
+
+	InfoLogger.Printf("Cert expires: %v", certExpiresOn)
+	InfoLogger.Printf("Current date: %v", currentDate)
+	InfoLogger.Printf("Buffer time:  %v", bufferTime)
+
+	return currentDate.Add(bufferTime).After(certExpiresOn)
+}
+
 // Authenticate sends Conjur an authenticate request and returns
-// the response data
+// the response data. Also manages state of certificates.
 func (auth *Authenticator) Authenticate() ([]byte, error) {
+	if !auth.IsLoggedIn() {
+		InfoLogger.Printf("Not logged in. Trying to log in...")
+
+		if err := auth.Login(); err != nil {
+			ErrorLogger.Printf("Login failed: %v", err.Error())
+			return nil, err
+		}
+
+		InfoLogger.Printf("Logged in")
+	}
+
+	if auth.IsCertExpired() {
+		InfoLogger.Printf("Certificate expired. Re-logging in...")
+
+		if err := auth.Login(); err != nil {
+			return nil, err
+		}
+
+		InfoLogger.Printf("Logged in. Continuing authentication.")
+	}
+
 	privDer := x509.MarshalPKCS1PrivateKey(auth.privateKey)
 	keyPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privDer})
 
-	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: auth.publicCert.Raw})
+	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: auth.PublicCert.Raw})
 
 	client, err := newHTTPSClient(auth.Config.SSLCertificate, certPEMBlock, keyPEMBlock)
 	if err != nil {
@@ -201,7 +228,7 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 
 	// Token is only encrypted in Conjur v4
 	if auth.Config.ConjurVersion == "4" {
-		content, err = decodeFromPEM(response, auth.publicCert, auth.privateKey)
+		content, err = decodeFromPEM(response, auth.PublicCert, auth.privateKey)
 		if err != nil {
 			return err
 		}
@@ -209,13 +236,13 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		content = response
 	}
 
-	// log.Printf("writing token %v to shared volume ...", content)
+	// InfoLogger.Printf("Writing token %v to shared volume ...", content)
 	err = ioutil.WriteFile(auth.Config.TokenFilePath, content, 0644)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("successfully authenticated.")
+	InfoLogger.Printf("Successfully authenticated!")
 
 	return nil
 }

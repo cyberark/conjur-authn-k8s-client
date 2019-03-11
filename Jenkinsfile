@@ -15,6 +15,14 @@ pipeline {
       }
     }
 
+    stage('Run Tests') {
+      steps {
+        sh './bin/test'
+        
+        junit 'test/junit.xml'
+      }
+    }
+
     stage('Publish client Docker image') {
       when {
         branch 'master'
