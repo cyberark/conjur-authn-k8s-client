@@ -25,7 +25,7 @@ The client is configured entirely through environment variables. These are liste
 - `CONJUR_AUTHN_URL`: URL pointing to authenticator service endpoint
 - `CONJUR_AUTHN_LOGIN`: Host login for pod e.g. `namespace/service_account/some_service_account`
 - `CONJUR_SSL_CERTIFICATE`: Public SSL cert for Conjur connection
-- `CONJUR_TOKEN_TIMEOUT`: Timeout for fetching a new token (defaults to 6 minutes). In most cases, this variable shoudl not be modified.
+- `CONJUR_TOKEN_TIMEOUT`: Timeout for fetching a new token (defaults to 6 minutes). In most cases, this variable should not be modified.
 
 Flow:
 
