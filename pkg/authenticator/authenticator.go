@@ -116,17 +116,20 @@ func (auth *Authenticator) Login() error {
 		return err
 	}
 
+	InfoLogger.Printf("Sending login request")
 	resp, err := auth.client.Do(req)
 	if err != nil {
 		return err
 	}
 
+	InfoLogger.Printf("Checking for empty login response")
 	err = EmptyResponse(resp)
 	if err != nil {
 		return err
 	}
 
 	// load client cert
+	InfoLogger.Printf("Loading client certificate")
 	certPEMBlock, err := ioutil.ReadFile(auth.Config.ClientCertPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -136,6 +139,7 @@ func (auth *Authenticator) Login() error {
 		return err
 	}
 
+	InfoLogger.Printf("Parsing client certificate")
 	certDERBlock, certPEMBlock := pem.Decode(certPEMBlock)
 	cert, err := x509.ParseCertificate(certDERBlock.Bytes)
 	if err != nil {
@@ -144,6 +148,7 @@ func (auth *Authenticator) Login() error {
 
 	auth.PublicCert = cert
 
+	InfoLogger.Printf("Removing client certificate")
 	// clean up the client cert so it's only available in memory
 	os.Remove(auth.Config.ClientCertPath)
 
