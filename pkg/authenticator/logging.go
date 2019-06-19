@@ -1,9 +1,8 @@
 package authenticator
 
 import (
-	"log"
-	"os"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar/logging"
 )
 
-var InfoLogger = log.New(os.Stdout, "INFO: ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
-var ErrorLogger = log.New(os.Stderr, "ERROR: ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
+var InfoLogger = logging.InfoLogger
+var ErrorLogger = logging.ErrorLogger

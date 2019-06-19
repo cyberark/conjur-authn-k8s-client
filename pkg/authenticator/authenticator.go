@@ -20,6 +20,7 @@ import (
 	"github.com/fullsailor/pkcs7"
 
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
+	sidecar "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
@@ -48,7 +49,7 @@ func New(config authnConfig.Config) (auth *Authenticator, err error) {
 		return nil, err
 	}
 
-	client, err := newHTTPSClient(config.SSLCertificate, nil, nil)
+	client, err := sidecar.NewHTTPSClient(config.SSLCertificate, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +197,7 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 
 	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: auth.PublicCert.Raw})
 
-	client, err := newHTTPSClient(auth.Config.SSLCertificate, certPEMBlock, keyPEMBlock)
+	client, err := sidecar.NewHTTPSClient(auth.Config.SSLCertificate, certPEMBlock, keyPEMBlock)
 	if err != nil {
 		return nil, err
 	}

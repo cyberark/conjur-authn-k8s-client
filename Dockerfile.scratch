@@ -2,6 +2,8 @@ FROM busybox
 
 #^ this layer is used to get binaries
 
+FROM summon:builder as summon
+
 FROM scratch
 MAINTAINER Conjur Inc
 
@@ -21,6 +23,6 @@ RUN mkdir -p /etc/conjur/ssl && chmod 777 /etc/conjur/ssl
 
 VOLUME /run/conjur
 
-ADD authenticator /bin
+ADD conjur-sidecar /bin
 
-CMD ["authenticator"]
+CMD ["conjur-sidecar"]
