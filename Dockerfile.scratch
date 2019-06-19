@@ -2,8 +2,6 @@ FROM busybox
 
 #^ this layer is used to get binaries
 
-FROM summon:builder as summon
-
 FROM scratch
 MAINTAINER Conjur Inc
 
