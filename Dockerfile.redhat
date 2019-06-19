@@ -9,13 +9,13 @@ RUN useradd -ms /bin/bash conjur
 
 VOLUME /run/conjur
 
-ADD authenticator /bin
+ADD conjur-sidecar /bin
 
 ADD licenses/LICENSE.md /licenses
 
 USER conjur
 
-CMD ["authenticator"]
+CMD ["conjur-sidecar"]
 
 ARG VERSION
 
