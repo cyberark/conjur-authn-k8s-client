@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 )
@@ -10,17 +9,11 @@ import (
 // Config defines the configuration parameters
 // for the authentication requests
 type Config struct {
-	ContainerMode       string
-	ConjurVersion       string
-	Account             string
-	URL                 string
-	Username            string
-	PodName             string
-	PodNamespace        string
-	SSLCertificate      []byte
-	ClientCertPath      string
-	TokenFilePath       string
-	TokenRefreshTimeout time.Duration
+	PodNamespace    string
+	TokenFilePath   string
+	SecretsYamlPath string
+	KubeSecretName  string
+	SecretsDirPath  string
 }
 
 // DefaultTokenRefreshTimeout is the default time the system waits to
@@ -28,16 +21,16 @@ type Config struct {
 const DefaultTokenRefreshTimeout = 6 * time.Minute
 
 // New returns a new authenticator configuration object
-func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
+func NewFromEnv(tokenPath *string) (*Config, error) {
 	var err error
 
 	// Check that required environment variables are set
 	for _, envvar := range []string{
-		"CONJUR_AUTHN_URL",
+		"CONJUR_APPLIANCE_URL",
 		"CONJUR_ACCOUNT",
 		"CONJUR_AUTHN_LOGIN",
+		"CONJUR_AUTHN_URL",
 		"MY_POD_NAMESPACE",
-		"MY_POD_NAME",
 	} {
 		if os.Getenv(envvar) == "" {
 			err = fmt.Errorf("Environment variable %s must be provided", envvar)
@@ -45,64 +38,29 @@ func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
 		}
 	}
 
-	// Load CA cert
-	caCert, err := readSSLCert()
-	if err != nil {
-		return nil, err
-	}
-
 	// Load configuration from the environment
-	authnURL := os.Getenv("CONJUR_AUTHN_URL")
-	account := os.Getenv("CONJUR_ACCOUNT")
-	authnLogin := os.Getenv("CONJUR_AUTHN_LOGIN")
 	podNamespace := os.Getenv("MY_POD_NAMESPACE")
-	podName := os.Getenv("MY_POD_NAME")
 
-	containerMode := os.Getenv("CONTAINER_MODE")
-
-	conjurVersion := os.Getenv("CONJUR_VERSION")
-	if len(conjurVersion) == 0 {
-		conjurVersion = "5"
+	secretsYamlPath := os.Getenv("SECRETS_YML_PATH")
+	if len(secretsYamlPath) == 0 {
+		secretsYamlPath = "secrets.yml"
 	}
 
-	// Parse token refresh rate if one is provided from env
-	tokenRefreshTimeout := DefaultTokenRefreshTimeout
-	tokenRefreshTimeoutString := os.Getenv("CONJUR_TOKEN_TIMEOUT")
-	if len(tokenRefreshTimeoutString) > 0 {
-		parsedTokenRefreshTimeout, err := time.ParseDuration(tokenRefreshTimeoutString)
-		if err != nil {
-			return nil, err
-		}
+	kubeSecretName := os.Getenv("K8S_SECRET_NAME")
+	if len(kubeSecretName) == 0 {
+		kubeSecretName = "dap-secret"
+	}
 
-		tokenRefreshTimeout = parsedTokenRefreshTimeout
+	secretsDirPath := os.Getenv("SECRETS_DIR_PATH")
+	if len(secretsDirPath) == 0 {
+		secretsDirPath = "/run/conjur/secrets"
 	}
 
 	return &Config{
-		ContainerMode:       containerMode,
-		ConjurVersion:       conjurVersion,
-		Account:             account,
-		URL:                 authnURL,
-		Username:            authnLogin,
-		PodName:             podName,
-		PodNamespace:        podNamespace,
-		SSLCertificate:      caCert,
-		ClientCertPath:      *clientCertPath,
-		TokenFilePath:       *tokenPath,
-		TokenRefreshTimeout: tokenRefreshTimeout,
+		PodNamespace:    podNamespace,
+		TokenFilePath:   *tokenPath,
+		SecretsYamlPath: secretsYamlPath,
+		KubeSecretName:  kubeSecretName,
+		SecretsDirPath:  secretsDirPath,
 	}, nil
-}
-
-func readSSLCert() ([]byte, error) {
-	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
-	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
-	if SSLCert == "" && SSLCertPath == "" {
-		err := fmt.Errorf(
-			"At least one of CONJUR_SSL_CERTIFICATE and CONJUR_CERT_FILE must be provided")
-		return nil, err
-	}
-
-	if SSLCert != "" {
-		return []byte(SSLCert), nil
-	}
-	return ioutil.ReadFile(SSLCertPath)
 }

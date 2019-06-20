@@ -40,7 +40,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	configSecrets, err := secretsConfig.NewFromEnv(clientCertPath, tokenFilePath)
+	configSecrets, err := secretsConfig.NewFromEnv(tokenFilePath)
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
@@ -76,9 +76,9 @@ func main() {
 				return err
 			}
 
-			secretsResp, err := secrets.FetchSecrets()
+			secretsResp, err := secrets.LoadSecrets()
 			if err != nil {
-				errLogger.Printf("Failure fetching secrets: %s", err.Error())
+				errLogger.Printf("Failure loading secrets: %s", err.Error())
 				return err
 			}
 

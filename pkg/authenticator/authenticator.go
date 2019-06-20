@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -238,6 +239,12 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 	}
 
 	// InfoLogger.Printf("Writing token %v to shared volume ...", content)
+	// Create the directory if it doesn't exist
+	tokenDir := filepath.Dir(auth.Config.TokenFilePath)
+	if _, err := os.Stat(tokenDir); os.IsNotExist(err) {
+		os.MkdirAll(tokenDir, 755)
+	}
+
 	err = ioutil.WriteFile(auth.Config.TokenFilePath, content, 0644)
 	if err != nil {
 		return err
