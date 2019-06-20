@@ -48,7 +48,7 @@ func NewFromEnv(tokenPath *string) (*Config, error) {
 
 	kubeSecretName := os.Getenv("K8S_SECRET_NAME")
 	if len(kubeSecretName) == 0 {
-		kubeSecretName = "dap-secret"
+		kubeSecretName = "dap-secrets"
 	}
 
 	secretsDirPath := os.Getenv("SECRETS_DIR_PATH")
