@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"sync"
 	"time"
 
@@ -16,6 +17,13 @@ import (
 	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	sidecar "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar"
 	"github.com/cyberark/summon/secretsyml"
+
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	//
+	// Uncomment to load all auth plugins
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
@@ -160,17 +168,14 @@ func (secrets *Secrets) FetchSecrets() (*SecretResponse, error) {
 func (secrets *Secrets) HandleSecretsResponse(response *SecretResponse) error {
 	InfoLogger.Printf("Writing secrets to destinations...")
 
-	// Write secrets to K8s secrets manager
-	// See: https://github.com/kubernetes/client-go/tree/master/examples/in-cluster-client-configuration
+	err := storeSecretsInVolume(&secrets.Config, response.Secrets)
+	if err != nil {
+		return fmt.Errorf("Error writing secrets to volume: %s", err)
+	}
 
-	// Write secrets to volume
-	os.Mkdir("/run/conjur/secrets", 0744)
-	for _, secret := range response.Secrets {
-		InfoLogger.Printf("Storing secret '%s'", secret.Key)
-		err := ioutil.WriteFile(fmt.Sprintf("/run/conjur/secrets/%s", secret.Key), secret.SecretBytes, 0644)
-		if err != nil {
-			return err
-		}
+	err = storeSecretsInKubeSecrets(&secrets.Config, response.Secrets)
+	if err != nil {
+		return fmt.Errorf("Error writing secrets to K8s secrets: %s", err)
 	}
 
 	return nil
@@ -194,4 +199,64 @@ func NewProvider(tokenData []byte) (Provider, error) {
 
 type Provider interface {
 	RetrieveSecret(string) ([]byte, error)
+}
+
+func storeSecretsInVolume(config *secretsConfig.Config, secrets []Secret) error {
+	secretsDir := "/run/conjur/secrets"
+
+	// Create the directory if it doesn't exist
+	if _, err := os.Stat(secretsDir); os.IsNotExist(err) {
+		InfoLogger.Printf("Creating secrets directory: %s", secretsDir)
+		os.MkdirAll(secretsDir, 755)
+	}
+
+	for _, secret := range secrets {
+		InfoLogger.Printf("Storing secret, %s, in volume '%s'", secret.Key, secretsDir)
+		err := ioutil.WriteFile(path.Join(secretsDir, secret.Key), secret.SecretBytes, 0644)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func storeSecretsInKubeSecrets(config *secretsConfig.Config, secrets []Secret) error {
+	secretName := "dap-secrets"
+
+	// Write secrets to K8s secrets manager
+	// See: https://github.com/kubernetes/client-go/tree/master/examples/in-cluster-client-configuration
+	// creates the in-cluster config
+	kubeConfig, err := rest.InClusterConfig()
+	if err != nil {
+		return err
+	}
+
+	secretsData := make(map[string][]byte)
+	for _, secret := range secrets {
+		secretsData[secret.Key] = secret.SecretBytes
+	}
+
+	// creates the clientset
+	InfoLogger.Print("Creating Kubernetes client")
+	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
+	if err != nil {
+		return err
+	}
+
+	InfoLogger.Printf("Creating the Kubernetes secret '%s'", secretName)
+	_, err = kubeClient.CoreV1().Secrets(config.PodNamespace).Create(&v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: secretName,
+		},
+		Data: secretsData,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	InfoLogger.Printf("Secret created")
+
+	return nil
 }
