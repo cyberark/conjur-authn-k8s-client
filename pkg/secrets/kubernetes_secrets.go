@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -41,6 +42,12 @@ func storeSecretsInKubeSecrets(namespace string, secretName string, secrets []Se
 	// Store the secret in Kubernetes
 	InfoLogger.Printf("Creating the Kubernetes secret '%s' in namespace '%s'...", secretName, namespace)
 	_, err = kubeClient.CoreV1().Secrets(namespace).Create(&secret)
+
+	if errors.IsAlreadyExists(err) {
+		err = nil
+		_, err = kubeClient.CoreV1().Secrets(namespace).Update(&secret)
+	}
+
 	if err != nil {
 		return fmt.Errorf("Failed to write Kubernetes secret: %s", err)
 	}
