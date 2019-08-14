@@ -107,6 +107,9 @@ func (secrets *Secrets) UpdateK8sSecretsMapWithConjurSecrets(k8sSecretsMap *K8sS
 		k8sSecretName := locationInK8sSecretsMap[0]
 		k8sSecretDataEntryKey := locationInK8sSecretsMap[1]
 		k8sSecretsMap.K8sSecrets[k8sSecretName][k8sSecretDataEntryKey] = secret
+
+		// Clear secret from memory
+		secret = nil
 	}
 
 	return k8sSecretsMap, nil

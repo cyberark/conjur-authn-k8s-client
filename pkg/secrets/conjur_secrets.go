@@ -10,7 +10,7 @@ type ConjurProvider interface {
 }
 
 func GetVariableIDsToRetrieve(pathMap map[string]string) []string {
-	variableIDs := make([]string, 0, len(pathMap))
+	variableIDs := make([]string, len(pathMap))
 	for key := range pathMap {
 		variableIDs = append(variableIDs, key)
 	}
