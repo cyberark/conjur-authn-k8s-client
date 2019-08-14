@@ -4,6 +4,12 @@ import (
 	"strings"
 )
 
+// Performs the fmt.Printf equivalent for byte arrays, without converting the slices
+// to string at any time.
+// Usage example:
+// key := []byte{'k', 'e', 'y'}
+// value := []byte{'v', 'a', 'l', 'u', 'e'}
+// utils.ByteSlicePrintf(`%v: %v`, "%v", key, value)
 func ByteSlicePrintf(tmplt string, separator string, subByteSlices ...[]byte) []byte {
 	tmpltChunks := strings.Split(tmplt, separator)
 	tmpltChunkByteSlices := make([][]byte, len(tmpltChunks))
