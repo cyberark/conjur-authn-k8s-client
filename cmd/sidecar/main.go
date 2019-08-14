@@ -76,17 +76,27 @@ func main() {
 				return err
 			}
 
-			secretsResp, err := secrets.LoadSecrets()
+			// ------------ START LOGIC ------------
+
+			k8sSecretsMap, err := secrets.RetrieveK8sSecrets()
 			if err != nil {
-				errLogger.Printf("Failure loading secrets: %s", err.Error())
+				errLogger.Printf("Failed to retrieve k8s secrets: %s", err.Error())
 				return err
 			}
 
-			err = secrets.HandleSecretsResponse(secretsResp)
+			k8sSecretsMap, err = secrets.UpdateK8sSecretsMapWithConjurSecrets(k8sSecretsMap)
 			if err != nil {
-				errLogger.Printf("Failure handling secrets response: %s", err.Error())
+				errLogger.Printf("Failed to update K8s Secrets map: %s", err.Error())
 				return err
 			}
+
+			err = secrets.PatchK8sSecrets(k8sSecretsMap)
+			if err != nil {
+				errLogger.Printf("Failed to patch K8s Secrets: %s", err.Error())
+				return err
+			}
+
+			// ------------ END LOGIC ------------
 
 			if authn.Config.ContainerMode == "init" {
 				os.Exit(0)
