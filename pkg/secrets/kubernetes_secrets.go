@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"fmt"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -57,22 +58,65 @@ func patchK8sSecret(namespace string, secretName string, stringDataEntriesMap ma
 
 	// TODO: extract until here
 
-	// TODO: improve this code
-	data := []byte("{\"stringData\":{")
-	for key, value := range stringDataEntriesMap {
-		entry := []byte(fmt.Sprintf("\"%s\": \"", key))
-		entry = append(append(entry, value...), []byte("\"")...)
-		entry = append(entry, []byte(",")...)
-		data = append(data, entry...)
-	}
-	// TODO: remove last comma
-	data = append(data, []byte("}}")...)
+	stringDataEntry := generateStringDataEntry(stringDataEntriesMap)
 
 	InfoLogger.Printf("Patching Kubernetes secret '%s' in namespace '%s'...", secretName, namespace)
-	_, err = kubeClient.CoreV1().Secrets(namespace).Patch(secretName, types.StrategicMergePatchType, data)
+	_, err = kubeClient.CoreV1().Secrets(namespace).Patch(secretName, types.StrategicMergePatchType, stringDataEntry)
+	// Clear secret from memory
+	stringDataEntry = nil
 	if err != nil {
 		return fmt.Errorf("failed to patch Kubernetes secret: %s", err)
 	}
 
 	return nil
+}
+
+func generateStringDataEntry(stringDataEntriesMap map[string][]byte) []byte {
+	var entry []byte
+	index := 0
+	entries := make([][]byte, len(stringDataEntriesMap))
+	// Parse every key-value pair in the map to a "key:value" byte array
+	for key, value := range stringDataEntriesMap {
+		entry = utils.ByteSlicePrintf(
+			`"%v":"%v"`,
+			"%v",
+			[]byte(key),
+			value,
+		)
+		entries[index] = entry
+		index++
+
+		// Clear secret from memory
+		value = nil
+		entry = nil
+	}
+
+	// Add a comma between each pair of entries
+	numEntries := len(entries)
+	entriesCombined := entries[0]
+	for i := range entries {
+		if i < numEntries-1 {
+			entriesCombined = utils.ByteSlicePrintf(
+				`%v,%v`,
+				"%v",
+				entriesCombined,
+				entries[i+1],
+			)
+		}
+
+		// Clear secret from memory
+		entries[i] = nil
+	}
+
+	// Wrap all the entries
+	stringDataEntry := utils.ByteSlicePrintf(
+		`{"stringData":{%v}}`,
+		"%v",
+		entriesCombined,
+	)
+
+	// Clear secret from memory
+	entriesCombined = nil
+
+	return stringDataEntry
 }
