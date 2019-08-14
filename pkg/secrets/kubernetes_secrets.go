@@ -71,6 +71,15 @@ func patchK8sSecret(namespace string, secretName string, stringDataEntriesMap ma
 	return nil
 }
 
+// Convert the data entry map to a stringData entry for the PATCH request.
+// for example, the map:
+// {
+//   "username": "theuser",
+//   "password": "supersecret"
+// }
+// will be parsed to the stringData entry "{\"stringData\":{\"username\": \"theuser\", \"password\": \"supersecret\"}}"
+//
+// we need the values to always stay as byte arrays so we don't have Conjur secrets stored as string.
 func generateStringDataEntry(stringDataEntriesMap map[string][]byte) []byte {
 	var entry []byte
 	index := 0

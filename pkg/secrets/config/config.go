@@ -19,6 +19,8 @@ type Config struct {
 // reauthenticate on error
 const DefaultTokenRefreshTimeout = 6 * time.Minute
 
+const CONJUR_MAP_KEY = "conjur-map"
+
 // New returns a new authenticator configuration object
 func NewFromEnv(tokenPath *string) (*Config, error) {
 	var err error
