@@ -54,7 +54,7 @@ func (secrets *Secrets) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
 		// This map holds data entries that will be added to the k8s secret after we retrieve their values from Conjur
 		newDataEntriesMap := make(map[string][]byte)
 		for key, value := range k8sSecret.Secret.Data {
-			if key == "conjur-map" {
+			if key == secretsConfig.CONJUR_MAP_KEY {
 				// The data value is Base-64 encoded. We decode it before parsing it.
 				decodedMap := make([]byte, base64.StdEncoding.DecodedLen(len(value)))
 				_, err := base64.StdEncoding.Decode(decodedMap, value)
