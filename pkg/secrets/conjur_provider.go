@@ -6,7 +6,7 @@ import (
 	"github.com/cyberark/conjur-api-go/conjurapi"
 )
 
-func conjurProvider(tokenData []byte) (Provider, error) {
+func conjurProvider(tokenData []byte) (ConjurProvider, error) {
 	InfoLogger.Printf("Creating Conjur client...")
 	config, err := conjurapi.LoadConfig()
 	if err != nil {

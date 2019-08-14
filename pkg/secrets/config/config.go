@@ -3,22 +3,23 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
 // Config defines the configuration parameters
 // for the authentication requests
 type Config struct {
-	PodNamespace    string
-	TokenFilePath   string
-	SecretsYamlPath string
-	KubeSecretName  string
-	SecretsDirPath  string
+	PodNamespace       string
+	TokenFilePath      string
+	RequiredK8sSecrets []string
 }
 
 // DefaultTokenRefreshTimeout is the default time the system waits to
 // reauthenticate on error
 const DefaultTokenRefreshTimeout = 6 * time.Minute
+
+const CONJUR_MAP_KEY = "conjur-map"
 
 // New returns a new authenticator configuration object
 func NewFromEnv(tokenPath *string) (*Config, error) {
@@ -31,6 +32,7 @@ func NewFromEnv(tokenPath *string) (*Config, error) {
 		"CONJUR_AUTHN_LOGIN",
 		"CONJUR_AUTHN_URL",
 		"MY_POD_NAMESPACE",
+		"K8S_SECRETS",
 	} {
 		if os.Getenv(envvar) == "" {
 			err = fmt.Errorf("Environment variable %s must be provided", envvar)
@@ -41,26 +43,12 @@ func NewFromEnv(tokenPath *string) (*Config, error) {
 	// Load configuration from the environment
 	podNamespace := os.Getenv("MY_POD_NAMESPACE")
 
-	secretsYamlPath := os.Getenv("SECRETS_YML_PATH")
-	if len(secretsYamlPath) == 0 {
-		secretsYamlPath = "secrets.yml"
-	}
-
-	kubeSecretName := os.Getenv("K8S_SECRET_NAME")
-	if len(kubeSecretName) == 0 {
-		kubeSecretName = "dap-secrets"
-	}
-
-	secretsDirPath := os.Getenv("SECRETS_DIR_PATH")
-	if len(secretsDirPath) == 0 {
-		secretsDirPath = "/run/conjur/secrets"
-	}
+	// Split the comma-separated list into an array
+	requiredK8sSecrets := strings.Split(os.Getenv("K8S_SECRETS"), ",")
 
 	return &Config{
-		PodNamespace:    podNamespace,
-		TokenFilePath:   *tokenPath,
-		SecretsYamlPath: secretsYamlPath,
-		KubeSecretName:  kubeSecretName,
-		SecretsDirPath:  secretsDirPath,
+		PodNamespace:       podNamespace,
+		TokenFilePath:      *tokenPath,
+		RequiredK8sSecrets: requiredK8sSecrets,
 	}, nil
 }
