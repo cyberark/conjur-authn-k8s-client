@@ -239,6 +239,9 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 	}
 
 	// InfoLogger.Printf("Writing token %v to shared volume ...", content)
+	
+	// MOTI TODO: Following code should be refactored to AccessTokenMemory and AccessTokenFile
+	
 	// Create the directory if it doesn't exist
 	tokenDir := filepath.Dir(auth.Config.TokenFilePath)
 	if _, err := os.Stat(tokenDir); os.IsNotExist(err) {
