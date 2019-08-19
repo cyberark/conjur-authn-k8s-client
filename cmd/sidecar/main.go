@@ -9,6 +9,8 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
+	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets"
 	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar/logging"
@@ -22,7 +24,7 @@ func main() {
 	var err error
 	var secretsHandler *secrets.Secrets
 
-	//CONJUR_SECRETS_DESTINATION read from env variables
+	//SECRETS_DESTINATION read from env variables
 	conjurSecretsDest := 0
 	
 
@@ -44,13 +46,24 @@ func main() {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
 	}
-	
+
+	//------------- SIGAL BEGIN -------------
+	configStorage, err := storageConfig.NewFromEnv()
+	if err != nil {
+		errLogger.Printf(err.Error())
+		os.Exit(1)
+	}
+	// Create new Storage
+	stor, err := storage.NewStorageHandler(*configStorage)
+
+	//------------- SIGAL END -------------
+
 	//if conjurSecretsDest == 1  &&  authn.Config.ContainerMode != "init" {
 	//      // notify on invalid configuration and exit
 	//      errLogger.Printf(" appropriate message for not supporting sidecar ....")
 	//      os.Exit(1)
 	//}
-	
+
 	if conjurSecretsDest == 1 {
    	   configSecrets, err := secretsConfig.NewFromEnv(tokenFilePath)
 	   if err != nil {
@@ -88,7 +101,7 @@ func main() {
 				errLogger.Printf("Failure parsing authentication response: %s", err.Error())
 				return err
 			}
-			
+
 			if conjurSecretsDest == 1 {
 
 				// ------------ START LOGIC ------------
