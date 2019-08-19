@@ -98,8 +98,15 @@ func (secrets *Secrets) UpdateK8sSecretsMapWithConjurSecrets(k8sSecretsMap *K8sS
 	}
 
 	pathMap := k8sSecretsMap.PathMap
-	variableIDs := GetVariableIDsToRetrieve(pathMap)
+	variableIDs, err := GetVariableIDsToRetrieve(pathMap)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing Conjur variable ids: %s", err)
+	}
+
 	retrievedSecrets, err := RetrieveConjurSecrets(accessToken, variableIDs)
+	if err != nil {
+		return nil, fmt.Errorf("Error retrieving Conjur secrets: %s", err)
+	}
 
 	// Update K8s map by replacing variable IDs with their corresponding secret values
 	for variableId, secret := range retrievedSecrets {
