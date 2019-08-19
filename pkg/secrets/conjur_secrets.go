@@ -9,13 +9,18 @@ type ConjurProvider interface {
 	RetrieveBatchSecrets([]string) (map[string][]byte, error)
 }
 
-func GetVariableIDsToRetrieve(pathMap map[string]string) []string {
-	variableIDs := make([]string, len(pathMap))
-	for key := range pathMap {
+func GetVariableIDsToRetrieve(pathMap map[string]string) ([]string, error) {
+	var variableIDs []string
+
+	if len(pathMap) == 0 {
+		return nil, fmt.Errorf("Error map should not be empty")
+	}
+
+	for key, _ := range pathMap {
 		variableIDs = append(variableIDs, key)
 	}
 
-	return variableIDs
+	return variableIDs, nil
 }
 
 func RetrieveConjurSecrets(accessToken []byte, variableIDs []string) (map[string][]byte, error) {
@@ -26,7 +31,7 @@ func RetrieveConjurSecrets(accessToken []byte, variableIDs []string) (map[string
 
 	provider, err = conjurProvider(accessToken)
 	if err != nil {
-		return nil, fmt.Errorf("error create Conjur secrets provider: %s", err)
+		return nil, fmt.Errorf("Error create Conjur secrets provider: %s", err)
 	}
 
 	retrievedSecrets, err := provider.RetrieveBatchSecrets(variableIDs)

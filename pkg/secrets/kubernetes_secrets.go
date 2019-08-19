@@ -58,7 +58,10 @@ func patchK8sSecret(namespace string, secretName string, stringDataEntriesMap ma
 
 	// TODO: extract until here
 
-	stringDataEntry := generateStringDataEntry(stringDataEntriesMap)
+	stringDataEntry, err := generateStringDataEntry(stringDataEntriesMap)
+	if err != nil {
+		return fmt.Errorf("failed to parse Kubernetes secret list: %s", err)
+	}
 
 	InfoLogger.Printf("Patching Kubernetes secret '%s' in namespace '%s'...", secretName, namespace)
 	_, err = kubeClient.CoreV1().Secrets(namespace).Patch(secretName, types.StrategicMergePatchType, stringDataEntry)
@@ -80,9 +83,14 @@ func patchK8sSecret(namespace string, secretName string, stringDataEntriesMap ma
 // will be parsed to the stringData entry "{\"stringData\":{\"username\": \"theuser\", \"password\": \"supersecret\"}}"
 //
 // we need the values to always stay as byte arrays so we don't have Conjur secrets stored as string.
-func generateStringDataEntry(stringDataEntriesMap map[string][]byte) []byte {
+func generateStringDataEntry(stringDataEntriesMap map[string][]byte) ([]byte, error) {
 	var entry []byte
 	index := 0
+
+	if len(stringDataEntriesMap) == 0 {
+		return nil, fmt.Errorf("error map should not be empty")
+	}
+
 	entries := make([][]byte, len(stringDataEntriesMap))
 	// Parse every key-value pair in the map to a "key:value" byte array
 	for key, value := range stringDataEntriesMap {
@@ -127,5 +135,5 @@ func generateStringDataEntry(stringDataEntriesMap map[string][]byte) []byte {
 	// Clear secret from memory
 	entriesCombined = nil
 
-	return stringDataEntry
+	return stringDataEntry, nil
 }
