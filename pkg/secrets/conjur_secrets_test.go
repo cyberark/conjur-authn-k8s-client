@@ -8,17 +8,15 @@ import (
 
 func TestConjurSecrets(t *testing.T) {
 	Convey("GetVariableIDsToRetrieve", t, func() {
-		Convey("Returns true if pathMap output as expected", func() {
+		Convey("Returns true if pathMap output ia as expected", func() {
 			m := make(map[string]string)
 
 			m["account/var_path1"] = "secret1:key1"
 			m["account/var_path2"] = "secret1:key2"
 			variableIDsExpected := []string{"account/var_path1", "account/var_path2"}
-			variableIDs, err := GetVariableIDsToRetrieve(m)
+			variableIDsActual, err := GetVariableIDsToRetrieve(m)
 
-			//sort.Strings(variableIDsExpected)
-			//sort.Strings(variableIDs)
-			eq := reflect.DeepEqual(variableIDsExpected, variableIDs)
+			eq := reflect.DeepEqual(variableIDsActual, variableIDsExpected)
 
 			So(err, ShouldEqual, nil)
 			So(eq, ShouldEqual, true)
@@ -28,7 +26,7 @@ func TestConjurSecrets(t *testing.T) {
 			m := make(map[string]string)
 			_, err := GetVariableIDsToRetrieve(m)
 
-			So(err.Error(), ShouldEqual, "Error map should not be empty")
+			So(err.Error(), ShouldEqual, "error map should not be empty")
 		})
 	})
 }
