@@ -15,8 +15,8 @@ func TestKubernetesSecrets(t *testing.T) {
 			stringDataEntryExpected := `{"stringData":{"user":"dummy_user","password":"dummy_password"}}`
 
 			DataEntry, err := generateStringDataEntry(m)
-			stringDataEntry := string(DataEntry)
-			eq := reflect.DeepEqual(stringDataEntry, stringDataEntryExpected)
+			stringDataEntryActual := string(DataEntry)
+			eq := reflect.DeepEqual(stringDataEntryActual, stringDataEntryExpected)
 
 			So(err, ShouldEqual, nil)
 			So(eq, ShouldEqual, true)
