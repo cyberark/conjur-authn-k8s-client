@@ -1,12 +1,10 @@
 package secrets
 
 import (
-	base64 "encoding/base64"
 	"fmt"
+	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	"io/ioutil"
 	"strings"
-
-	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 )
 
 // Secrets contains the configuration and client
@@ -42,7 +40,7 @@ func (secrets *Secrets) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
 	requiredK8sSecrets := secrets.Config.RequiredK8sSecrets
 
 	k8sSecrets := make(map[string]map[string][]byte)
-	PathMap := make(map[string]string)
+	pathMap := make(map[string]string)
 
 	for _, secretName := range requiredK8sSecrets {
 		k8sSecret, err := retrieveK8sSecret(namespace, secretName)
@@ -55,24 +53,18 @@ func (secrets *Secrets) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
 		newDataEntriesMap := make(map[string][]byte)
 		for key, value := range k8sSecret.Secret.Data {
 			if key == secretsConfig.CONJUR_MAP_KEY {
-				// The data value is Base-64 encoded. We decode it before parsing it.
-				decodedMap := make([]byte, base64.StdEncoding.DecodedLen(len(value)))
-				_, err := base64.StdEncoding.Decode(decodedMap, value)
-				if err != nil {
-					return nil, fmt.Errorf("error decoding conjur-map of secret %s: %s", secretName, err)
-				}
-
 				// Split the conjur-map to k8s secret keys. each value holds a Conjur variable ID
-				conjurMapEntries := strings.Split(string(decodedMap), "\n")
+				conjurMapEntries := strings.Split(string(value), "\n")
+
 				for _, entry := range conjurMapEntries {
 					// Parse each secret key and store it in the map
-					k8sSecretKeyVal := strings.Split(entry, ":")
+					k8sSecretKeyVal := strings.Split(entry, ": ")
 					k8sSecretKey := k8sSecretKeyVal[0]
 					conjurVariableId := k8sSecretKeyVal[1]
 					newDataEntriesMap[k8sSecretKey] = []byte(conjurVariableId)
 
 					// This map will help us later to swap the variable id with the secret value
-					PathMap[conjurVariableId] = fmt.Sprintf("%s:%s", secretName, k8sSecretKey)
+					pathMap[conjurVariableId] = fmt.Sprintf("%s:%s", secretName, k8sSecretKey)
 				}
 			}
 		}
@@ -85,6 +77,7 @@ func (secrets *Secrets) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
 
 	return &K8sSecretsMap{
 		K8sSecrets: k8sSecrets,
+		PathMap:    pathMap,
 	}, nil
 }
 
@@ -110,6 +103,11 @@ func (secrets *Secrets) UpdateK8sSecretsMapWithConjurSecrets(k8sSecretsMap *K8sS
 
 	// Update K8s map by replacing variable IDs with their corresponding secret values
 	for variableId, secret := range retrievedSecrets {
+		variableId, err = parseVariableID(variableId)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update k8s secrets map: %s", err)
+		}
+
 		locationInK8sSecretsMap := strings.Split(pathMap[variableId], ":")
 		k8sSecretName := locationInK8sSecretsMap[0]
 		k8sSecretDataEntryKey := locationInK8sSecretsMap[1]
@@ -133,4 +131,14 @@ func (secrets *Secrets) PatchK8sSecrets(k8sSecretsMap *K8sSecretsMap) error {
 	}
 
 	return nil
+}
+
+// The variable ID is in the format "<account>:variable:<variable_id>. we need only the last part.
+func parseVariableID(fullVariableId string) (string, error) {
+	variableIdParts := strings.Split(fullVariableId, ":")
+	if len(variableIdParts) != 3 {
+		return "", fmt.Errorf("failed to parse Conjur variable ID: %s", fullVariableId)
+	}
+
+	return variableIdParts[2], nil
 }
