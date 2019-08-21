@@ -11,7 +11,7 @@ func NewAccessTokenFile(config config.Config) (token *AccessTokenFile, err error
 	return
 }
 
-func (token *AccessTokenFile) Read() (Data []byte, err error) {
+func (token AccessTokenFile) Read() (Data []byte, err error) {
 	return
 }
 

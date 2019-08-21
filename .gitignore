@@ -1,4 +1,7 @@
 # VIM swapfiles
 *.sw[po]
 
+.idea/
+*.iml
+
 test

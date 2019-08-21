@@ -9,7 +9,7 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
+	storageHandler "github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
 	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets"
 	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
@@ -24,8 +24,10 @@ func main() {
 	var err error
 	var secretsHandler *secrets.Secrets
 
-	//SECRETS_DESTINATION read from env variables
-	conjurSecretsDest := 0
+	const(
+		none = "none"
+		k8s = "k8s_secrets"
+	)
 
 	// Parse any flags for client cert / token paths, and set default values if not passed
 	clientCertPath := flag.String("c", "/etc/conjur/ssl/client.pem",
@@ -39,6 +41,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	if configAuthn.ContainerMode == "init" {
+		os.Exit(0)
+	}
+
 	// Create new Authenticator
 	authn, err := authenticator.New(*configAuthn)
 	if err != nil {
@@ -46,31 +52,39 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Create new Storage
 	configStorage, err := storageConfig.NewFromEnv()
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
 	}
-	// Create new Storage
-	stor, err := storage.NewStorageHandler(*configStorage)
+	stor, err := storageHandler.NewStorageHandler(*configStorage)
+	if err != nil {
+		errLogger.Printf(err.Error())
+		os.Exit(1)
+	}
 
-	//if conjurSecretsDest == 1  &&  authn.Config.ContainerMode != "init" {
-	//      // notify on invalid configuration and exit
-	//      errLogger.Printf(" appropriate message for not supporting sidecar ....")
-	//      os.Exit(1)
-	//}
+	// TODO: account for if SECRET_DESTINATION is set to k8s but not an init container. Must check this case early.
+	conjurSecretsDest := none
+	/* if conjurSecretsDest == 1  &&  authn.Config.ContainerMode != "init" {
+	     // notify on invalid configuration and exit
+	     infoLogger.Printf("Appropriate message for not supporting sidecar with this workflow ....")
+	     os.Exit(1)
+	} */
 
-	if conjurSecretsDest == 1 {
+	// TODO: move these code segments to their respective files
+	//  Code that will handle the placement of access token
+	if conjurSecretsDest == none {
 		configSecrets, err := secretsConfig.NewFromEnv(tokenFilePath)
 		if err != nil {
-			errLogger.Printf(err.Error())
+			errLogger.Printf("Failure creating secrets config: %s", err.Error())
 			os.Exit(1)
 		}
 
 		// Create new Secrets
 		secretsHandler, err = secrets.New(*configSecrets)
 		if err != nil {
-			errLogger.Printf(err.Error())
+			errLogger.Printf("Failure creating secrets: %s", err.Error())
 			os.Exit(1)
 		}
 	}
@@ -98,32 +112,27 @@ func main() {
 				return err
 			}
 
-			if conjurSecretsDest == 1 {
-
-				// ------------ START LOGIC ------------
-				k8sSecretsMap, err := secretsHandler.RetrieveK8sSecrets()
-				if err != nil {
-					errLogger.Printf("Failed to retrieve k8s secrets: %s", err.Error())
-					return err
-				}
-
-				k8sSecretsMap, err = secretsHandler.UpdateK8sSecretsMapWithConjurSecrets(k8sSecretsMap)
-				if err != nil {
-					errLogger.Printf("Failed to update K8s Secrets map: %s", err.Error())
-					return err
-				}
-
-				err = secretsHandler.PatchK8sSecrets(k8sSecretsMap)
-				if err != nil {
-					errLogger.Printf("Failed to patch K8s Secrets: %s", err.Error())
-					return err
-				}
-				// ------------ END LOGIC ------------
+			// TODO: move these code segments to their respective files
+			//  Code that will handle the retrieval and updating of Conjur to K8s secrets
+			// ------------ START LOGIC ------------
+			k8sSecretsMap, err := secretsHandler.RetrieveK8sSecrets()
+			if err != nil {
+				errLogger.Printf("Failure retrieving k8s secrets: %s", err.Error())
+				return err
 			}
 
-			if authn.Config.ContainerMode == "init" {
-				os.Exit(0)
+			k8sSecretsMap, err = secretsHandler.UpdateK8sSecretsMapWithConjurSecrets(k8sSecretsMap)
+			if err != nil {
+				errLogger.Printf("Failure updating K8s Secrets map: %s", err.Error())
+				return err
 			}
+
+			err = secretsHandler.PatchK8sSecrets(k8sSecretsMap)
+			if err != nil {
+				errLogger.Printf("Failure patching K8s Secrets: %s", err.Error())
+				return err
+			}
+			// ------------ END LOGIC ------------
 
 			// Reset exponential backoff
 			expBackoff.Reset()
