@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -22,6 +21,7 @@ import (
 
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	sidecar "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
@@ -30,10 +30,11 @@ var bufferTime = 30 * time.Second
 // Authenticator contains the configuration and client
 // for the authentication connection to Conjur
 type Authenticator struct {
-	Config     authnConfig.Config
-	privateKey *rsa.PrivateKey
-	PublicCert *x509.Certificate
-	client     *http.Client
+	Config      authnConfig.Config
+	privateKey  *rsa.PrivateKey
+	PublicCert  *x509.Certificate
+	client      *http.Client
+	AccessToken storage.AccessTokenHandler
 }
 
 const (
@@ -44,7 +45,7 @@ const (
 )
 
 // New returns a new Authenticator
-func New(config authnConfig.Config) (auth *Authenticator, err error) {
+func New(config authnConfig.Config, accessTokenHandler storage.AccessTokenHandler) (auth *Authenticator, err error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		return nil, err
@@ -56,9 +57,10 @@ func New(config authnConfig.Config) (auth *Authenticator, err error) {
 	}
 
 	return &Authenticator{
-		Config:     config,
-		client:     client,
-		privateKey: signingKey,
+		Config:      config,
+		client:      client,
+		privateKey:  signingKey,
+		AccessToken: accessTokenHandler,
 	}, nil
 }
 
@@ -238,14 +240,7 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		content = response
 	}
 
-	// InfoLogger.Printf("Writing token %v to shared volume ...", content)
-	// Create the directory if it doesn't exist
-	tokenDir := filepath.Dir(auth.Config.TokenFilePath)
-	if _, err := os.Stat(tokenDir); os.IsNotExist(err) {
-		os.MkdirAll(tokenDir, 755)
-	}
-
-	err = ioutil.WriteFile(auth.Config.TokenFilePath, content, 0644)
+	err = auth.AccessToken.Write(content)
 	if err != nil {
 		return err
 	}

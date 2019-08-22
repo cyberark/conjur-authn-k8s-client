@@ -19,7 +19,6 @@ type Config struct {
 	PodNamespace        string
 	SSLCertificate      []byte
 	ClientCertPath      string
-	TokenFilePath       string
 	TokenRefreshTimeout time.Duration
 }
 
@@ -28,7 +27,7 @@ type Config struct {
 const DefaultTokenRefreshTimeout = 6 * time.Minute
 
 // New returns a new authenticator configuration object
-func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
+func NewFromEnv(clientCertPath *string) (*Config, error) {
 	var err error
 
 	// Check that required environment variables are set
@@ -87,7 +86,6 @@ func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
 		PodNamespace:        podNamespace,
 		SSLCertificate:      caCert,
 		ClientCertPath:      *clientCertPath,
-		TokenFilePath:       *tokenPath,
 		TokenRefreshTimeout: tokenRefreshTimeout,
 	}, nil
 }
