@@ -9,7 +9,7 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
-	storageHandler "github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
+	storage "github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
 	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets"
 	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
@@ -24,11 +24,6 @@ func main() {
 	var err error
 	var secretsHandler *secrets.Secrets
 
-	const(
-		none = "none"
-		k8s = "k8s_secrets"
-	)
-
 	// Parse any flags for client cert / token paths, and set default values if not passed
 	clientCertPath := flag.String("c", "/etc/conjur/ssl/client.pem",
 		"Path to client certificate")
@@ -39,10 +34,6 @@ func main() {
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
-	}
-
-	if configAuthn.ContainerMode == "init" {
-		os.Exit(0)
 	}
 
 	// Create new Authenticator
@@ -58,14 +49,14 @@ func main() {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
 	}
-	stor, err := storageHandler.NewStorageHandler(*configStorage)
+	storageHandler, err := storage.NewStorageHandler(*configStorage)
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
 	}
 
 	// TODO: account for if SECRET_DESTINATION is set to k8s but not an init container. Must check this case early.
-	conjurSecretsDest := none
+	conjurSecretsDest := storageConfig.K8s
 	/* if conjurSecretsDest == 1  &&  authn.Config.ContainerMode != "init" {
 	     // notify on invalid configuration and exit
 	     infoLogger.Printf("Appropriate message for not supporting sidecar with this workflow ....")
@@ -74,7 +65,7 @@ func main() {
 
 	// TODO: move these code segments to their respective files
 	//  Code that will handle the placement of access token
-	if conjurSecretsDest == none {
+	if conjurSecretsDest == storageConfig.None {
 		configSecrets, err := secretsConfig.NewFromEnv(tokenFilePath)
 		if err != nil {
 			errLogger.Printf("Failure creating secrets config: %s", err.Error())
@@ -133,6 +124,10 @@ func main() {
 				return err
 			}
 			// ------------ END LOGIC ------------
+
+			if configAuthn.ContainerMode == "init" {
+				os.Exit(0)
+			}
 
 			// Reset exponential backoff
 			expBackoff.Reset()

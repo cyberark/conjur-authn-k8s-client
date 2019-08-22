@@ -10,19 +10,20 @@ type Config struct {
 }
 
 const (
-	k8s  = "k8s_secrets"
-	none = "none"
+	K8s  = "k8s_secrets"
+	None = "none"
 )
 
 // TODO if SECRET_DESTINATION is k8s then Config struct fields are updated
 // Otherwise (if none or non-existent) the returned Config struct will have the access token path to file
-// This implementation is not consistent with how we do it in other parts of the code because this implementation
-// will be for both `k8s` and `none` flows
+// This implementation is not consistent with other implementations in the code because here we will take
+// both `k8s` and `none` flows into account
 func NewFromEnv() (*Config, error) {
-	storeType := none
+	storeType := None
+	// TODO: consider moving this configuration to configurable ENV variable
 	tokenFilePath := "run/conjur/access-token"
-	if os.Getenv("SECRETS_DESTINATION") == k8s {
-		storeType = k8s
+	if os.Getenv("SECRETS_DESTINATION") == K8s {
+		storeType = K8s
 		tokenFilePath = ""
 	}
 	return &Config{
