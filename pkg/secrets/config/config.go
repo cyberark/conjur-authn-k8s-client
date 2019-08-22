@@ -11,7 +11,6 @@ import (
 // for the authentication requests
 type Config struct {
 	PodNamespace       string
-	TokenFilePath      string
 	RequiredK8sSecrets []string
 }
 
@@ -22,7 +21,7 @@ const DefaultTokenRefreshTimeout = 6 * time.Minute
 const CONJUR_MAP_KEY = "conjur-map"
 
 // New returns a new authenticator configuration object
-func NewFromEnv(tokenPath *string) (*Config, error) {
+func NewFromEnv() (*Config, error) {
 	var err error
 
 	// Check that required environment variables are set
@@ -48,7 +47,6 @@ func NewFromEnv(tokenPath *string) (*Config, error) {
 
 	return &Config{
 		PodNamespace:       podNamespace,
-		TokenFilePath:      *tokenPath,
 		RequiredK8sSecrets: requiredK8sSecrets,
 	}, nil
 }

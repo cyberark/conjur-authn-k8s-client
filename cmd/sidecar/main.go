@@ -67,14 +67,15 @@ func main() {
 	// TODO: move these code segments to their respective files
 	//  Code that will handle the placement of access token
 	if conjurSecretsDest == storageConfig.None {
-		configSecrets, err := secretsConfig.NewFromEnv(tokenFilePath)
+		configSecrets, err := secretsConfig.NewFromEnv()
 		if err != nil {
 			errLogger.Printf("Failure creating secrets config: %s", err.Error())
 			os.Exit(1)
 		}
 
+		// TODO: move this logic to storage handler
 		// Create new Secrets
-		secretsHandler, err = secrets.New(*configSecrets)
+		secretsHandler, err = secrets.New(*configSecrets, storageHandler.AccessToken)
 		if err != nil {
 			errLogger.Printf("Failure creating secrets: %s", err.Error())
 			os.Exit(1)
