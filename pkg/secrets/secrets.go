@@ -3,7 +3,7 @@ package secrets
 import (
 	"fmt"
 	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
-	"io/ioutil"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
 	"strings"
 )
 
@@ -11,13 +11,14 @@ import (
 // for the authentication connection to Conjur
 type Secrets struct {
 	Config      secretsConfig.Config
-	AccessToken []byte
+	AccessToken storage.AccessTokenHandler
 }
 
 // New returns a new Secrets
-func New(config secretsConfig.Config) (secrets *Secrets, err error) {
+func New(config secretsConfig.Config, accessTokenHandler storage.AccessTokenHandler) (secrets *Secrets, err error) {
 	return &Secrets{
-		Config: config,
+		Config:      config,
+		AccessToken: accessTokenHandler,
 	}, nil
 }
 
@@ -84,19 +85,18 @@ func (secrets *Secrets) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
 func (secrets *Secrets) UpdateK8sSecretsMapWithConjurSecrets(k8sSecretsMap *K8sSecretsMap) (*K8sSecretsMap, error) {
 	var err error
 
-	// Read the Conjur access token created by the authenticator
-	accessToken, err := ioutil.ReadFile(secrets.Config.TokenFilePath)
-	if err != nil {
-		return nil, fmt.Errorf("Error reading access token: %s", err)
-	}
-
 	pathMap := k8sSecretsMap.PathMap
 	variableIDs, err := GetVariableIDsToRetrieve(pathMap)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing Conjur variable ids: %s", err)
 	}
 
-	retrievedSecrets, err := RetrieveConjurSecrets(accessToken, variableIDs)
+	accessTokenData, err := secrets.AccessToken.Read()
+	if err != nil {
+		return nil, err
+	}
+
+	retrievedSecrets, err := RetrieveConjurSecrets(accessTokenData, variableIDs)
 	if err != nil {
 		return nil, fmt.Errorf("Error retrieving Conjur secrets: %s", err)
 	}
