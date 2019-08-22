@@ -125,6 +125,12 @@ func main() {
 				errLogger.Printf("Failure patching K8s Secrets: %s", err.Error())
 				return err
 			}
+
+			// Deleting Conjur access token
+			err = storageHandler.AccessToken.Delete()
+			if err != nil {
+				return err
+			}
 			// ------------ END LOGIC ------------
 
 			if configAuthn.ContainerMode == "init" {
