@@ -9,11 +9,11 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
-	storage "github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
-	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets"
 	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar/logging"
+	storage "github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
+	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 )
 
 // logging
@@ -30,33 +30,34 @@ func main() {
 	tokenFilePath := flag.String("t", "/run/conjur/access-token",
 		"Path to Conjur access token")
 
-	configAuthn, err := authnConfig.NewFromEnv(clientCertPath, tokenFilePath)
-	if err != nil {
-		errLogger.Printf(err.Error())
-		os.Exit(1)
-	}
-
-	// Create new Authenticator
-	authn, err := authenticator.New(*configAuthn)
-	if err != nil {
-		errLogger.Printf(err.Error())
-		os.Exit(1)
-	}
-
 	// Create new Storage
-	configStorage, err := storageConfig.NewFromEnv()
+	configStorage, err := storageConfig.NewFromEnv(tokenFilePath)
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
 	}
+
 	storageHandler, err := storage.NewStorageHandler(*configStorage)
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
 	}
 
+	configAuthn, err := authnConfig.NewFromEnv(clientCertPath)
+	if err != nil {
+		errLogger.Printf(err.Error())
+		os.Exit(1)
+	}
+
+	// Create new Authenticator
+	authn, err := authenticator.New(*configAuthn, storageHandler.AccessToken)
+	if err != nil {
+		errLogger.Printf(err.Error())
+		os.Exit(1)
+	}
+
 	// TODO: account for if SECRET_DESTINATION is set to k8s but not an init container. Must check this case early.
-	conjurSecretsDest := storageConfig.K8s
+	conjurSecretsDest := storageConfig.K8S
 	/* if conjurSecretsDest == 1  &&  authn.Config.ContainerMode != "init" {
 	     // notify on invalid configuration and exit
 	     infoLogger.Printf("Appropriate message for not supporting sidecar with this workflow ....")

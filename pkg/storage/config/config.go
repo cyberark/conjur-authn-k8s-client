@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -10,21 +11,24 @@ type Config struct {
 }
 
 const (
-	K8s  = "k8s_secrets"
-	None = "none"
+	K8S                = "k8s_secrets"
+	None               = "none"
+	SecretsDestination = "SECRETS_DESTINATION"
 )
 
-// TODO if SECRET_DESTINATION is k8s then Config struct fields are updated
-// Otherwise (if none or non-existent) the returned Config struct will have the access token path to file
-// This implementation is not consistent with other implementations in the code because here we will take
-// both `k8s` and `none` flows into account
-func NewFromEnv() (*Config, error) {
+func NewFromEnv(tokenPath *string) (*Config, error) {
 	storeType := None
-	// TODO: consider moving this configuration to configurable ENV variable
-	tokenFilePath := "run/conjur/access-token"
-	if os.Getenv("SECRETS_DESTINATION") == K8s {
-		storeType = K8s
+	tokenFilePath := *tokenPath
+	secretsDestinationValue := os.Getenv(SecretsDestination)
+	if secretsDestinationValue == K8S {
+		storeType = K8S
 		tokenFilePath = ""
+	} else if secretsDestinationValue == "" || secretsDestinationValue == None {
+		storeType = None
+		tokenFilePath = *tokenPath
+	} else {
+		// In case SecretsDestination exits and has configured with incorrect value
+		return nil, fmt.Errorf("error incorrect value for environmnet variable %s has provided", SecretsDestination)
 	}
 	return &Config{
 		StoreType:     storeType,
