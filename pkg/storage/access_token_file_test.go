@@ -92,7 +92,7 @@ func TestAccessTokenFile(t *testing.T) {
 			err := tokenInFile.Write(dataActual)
 			So(err, ShouldEqual, nil)
 
-			_, err = tokenInFile.Read()
+			dataFromRead, err := tokenInFile.Read()
 			So(err, ShouldEqual, nil)
 
 			err = tokenInFile.Delete()
@@ -101,6 +101,13 @@ func TestAccessTokenFile(t *testing.T) {
 			// Check that file is not exits
 			_, err = os.Stat("/tmp/accessTokenFileDel1")
 			So(err, ShouldNotEqual, nil)
+
+			// Both input & output arrays should be cleared from memory
+			empty := make([]byte, len(dataActual))
+			eq := reflect.DeepEqual(dataActual, empty)
+			So(eq, ShouldEqual, true)
+			eq = reflect.DeepEqual(dataFromRead, empty)
+			So(eq, ShouldEqual, true)
 		})
 
 		Convey("Returns no error if Data input is nil", func() {
