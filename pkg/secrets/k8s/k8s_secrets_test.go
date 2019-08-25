@@ -1,4 +1,4 @@
-package secrets
+package k8s
 
 import (
 	. "github.com/smartystreets/goconvey/convey"
