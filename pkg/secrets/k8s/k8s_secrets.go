@@ -13,11 +13,8 @@ import (
 	"strings"
 )
 
-// K8sSecretsHandler contains the configuration and client
-// for the authentication connection to Conjur
 type K8sSecretsHandler struct {
-	Config      secretsConfig.Config
-	AccessToken []byte
+	Config secretsConfig.Config
 }
 
 type K8sSecret struct {
@@ -44,23 +41,7 @@ type K8sSecretsMap struct {
 	PathMap map[string]string
 }
 
-func configKubeClient() (*kubernetes.Clientset, error) {
-	// Create the Kubernetes client
-	secrets.InfoLogger.Print("Creating Kubernetes client...")
-	kubeConfig, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load in-cluster Kubernetes client config: %s", err)
-	}
-
-	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err)
-	}
-	// return a K8s client
-	return kubeClient, err
-}
-
-func (secrets *K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
+func (secrets K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
 	namespace := secrets.Config.PodNamespace
 	requiredK8sSecrets := secrets.Config.RequiredK8sSecrets
 
@@ -106,6 +87,35 @@ func (secrets *K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
 	}, nil
 }
 
+func (secrets *K8sSecretsHandler) PatchK8sSecrets(k8sSecretsMap *K8sSecretsMap) error {
+	namespace := secrets.Config.PodNamespace
+
+	for secretName, dataEntryMap := range k8sSecretsMap.K8sSecrets {
+		err := patchK8sSecret(namespace, secretName, dataEntryMap)
+		if err != nil {
+			return fmt.Errorf("failed to patch k8s secret: %s", err)
+		}
+	}
+
+	return nil
+}
+
+func configKubeClient() (*kubernetes.Clientset, error) {
+	// Create the Kubernetes client
+	secrets.InfoLogger.Print("Creating Kubernetes client...")
+	kubeConfig, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load in-cluster Kubernetes client config: %s", err)
+	}
+
+	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err)
+	}
+	// return a K8s client
+	return kubeClient, err
+}
+
 func retrieveK8sSecret(namespace string, secretName string) (*K8sSecret, error) {
 	// get K8s client object
 	kubeClient, _ := configKubeClient()
@@ -118,19 +128,6 @@ func retrieveK8sSecret(namespace string, secretName string) (*K8sSecret, error) 
 	return &K8sSecret{
 		Secret: k8sSecret,
 	}, nil
-}
-
-func (secrets *K8sSecretsHandler) PatchK8sSecrets(k8sSecretsMap *K8sSecretsMap) error {
-	namespace := secrets.Config.PodNamespace
-
-	for secretName, dataEntryMap := range k8sSecretsMap.K8sSecrets {
-		err := patchK8sSecret(namespace, secretName, dataEntryMap)
-		if err != nil {
-			return fmt.Errorf("failed to patch k8s secret: %s", err)
-		}
-	}
-
-	return nil
 }
 
 func patchK8sSecret(namespace string, secretName string, stringDataEntriesMap map[string][]byte) error {

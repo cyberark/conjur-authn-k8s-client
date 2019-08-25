@@ -16,9 +16,15 @@ type Storage_Handler struct {
 	SecretsHandler     secretsHandlers.SecretsHandler
 }
 
-func NewStorageHandler(storageConfig storageConfigProvider.Config, secretsConfig secretsConfigProvider.Config) (StorageHandler *Storage_Handler, err error) {
+func NewStorageHandler(storageConfig storageConfigProvider.Config) (StorageHandler *Storage_Handler, err error) {
 	var errLogger = log.ErrorLogger
 	var infoLogger = log.InfoLogger
+
+	secretsConfig, err := secretsConfigProvider.NewFromEnv()
+	if err != nil {
+		errLogger.Printf("Failure creating secrets config: %s", err.Error())
+		os.Exit(1)
+	}
 
 	var accessTokenHandler access_token.AccessTokenHandler
 	var secretsHandler secretsHandlers.SecretsHandler

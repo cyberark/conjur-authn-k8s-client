@@ -7,7 +7,6 @@ import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/conjur"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/k8s"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar/logging"
-	"os"
 	"strings"
 )
 
@@ -22,8 +21,8 @@ var errLogger = log.ErrorLogger
 func NewSecretHandlerK8sUseCase(secretsConfig secretsConfig.Config, AccessTokenHandler access_token.AccessTokenHandler) (SecretsHandler *SecretsHandlerK8sUseCase, err error) {
 	k8sSecretsHandler, err := k8s.New(secretsConfig)
 	if err != nil {
-		errLogger.Printf(err.Error())
-		os.Exit(1)
+		errLogger.Printf("Failed to create k8s secrets handler: %s", err.Error())
+		return nil, err
 	}
 
 	var conjurSecretsFetcher conjur.ConjurSecretsFetcher
@@ -35,14 +34,14 @@ func NewSecretHandlerK8sUseCase(secretsConfig secretsConfig.Config, AccessTokenH
 	}, nil
 }
 
-func (secretsHandlerK8sUseCase *SecretsHandlerK8sUseCase) HandleSecrets() error {
+func (secretsHandlerK8sUseCase SecretsHandlerK8sUseCase) HandleSecrets() error {
 	k8sSecretsMap, err := secretsHandlerK8sUseCase.K8sSecretsHandler.RetrieveK8sSecrets()
 	if err != nil {
 		errLogger.Printf("Failure retrieving k8s secretsHandlerK8sUseCase: %s", err.Error())
 		return err
 	}
 
-	access_token, err := secretsHandlerK8sUseCase.AccessTokenHandler.Read()
+	accessToken, err := secretsHandlerK8sUseCase.AccessTokenHandler.Read()
 	if err != nil {
 		errLogger.Printf("Failure retrieving access token: %s", err.Error())
 		return err
@@ -50,14 +49,13 @@ func (secretsHandlerK8sUseCase *SecretsHandlerK8sUseCase) HandleSecrets() error 
 
 	variableIDs, err := getVariableIDsToRetrieve(k8sSecretsMap.PathMap)
 	if err != nil {
-		return fmt.Errorf("Error parsing Conjur variable ids: %s", err)
+		return fmt.Errorf("error parsing Conjur variable ids: %s", err)
 	}
 
-	retrievedConjurSecrets, err := retrieveRequiredConjurSecrets(
-		access_token,
-		variableIDs,
-		secretsHandlerK8sUseCase.ConjurSecretsFetcher,
-	)
+	retrievedConjurSecrets, err := secretsHandlerK8sUseCase.ConjurSecretsFetcher.RetrieveConjurSecrets(accessToken, variableIDs)
+	if err != nil {
+		return fmt.Errorf("error retrieving Conjur k8sSecretsHandler: %s", err)
+	}
 
 	k8sSecretsMap, err = updateK8sSecretsMapWithConjurSecrets(k8sSecretsMap, retrievedConjurSecrets)
 	if err != nil {
@@ -72,15 +70,6 @@ func (secretsHandlerK8sUseCase *SecretsHandlerK8sUseCase) HandleSecrets() error 
 	}
 
 	return nil
-}
-
-func retrieveRequiredConjurSecrets(accessToken []byte, variableIDs []string, conjurSecretsFetcher conjur.ConjurSecretsFetcherInterface) (map[string][]byte, error) {
-	retrievedSecrets, err := conjurSecretsFetcher.RetrieveConjurSecrets(accessToken, variableIDs)
-	if err != nil {
-		return nil, fmt.Errorf("Error retrieving Conjur k8sSecretsHandler: %s", err)
-	}
-
-	return retrievedSecrets, nil
 }
 
 func getVariableIDsToRetrieve(pathMap map[string]string) ([]string, error) {

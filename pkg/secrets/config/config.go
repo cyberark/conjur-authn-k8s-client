@@ -34,7 +34,7 @@ func NewFromEnv() (*Config, error) {
 		"K8S_SECRETS",
 	} {
 		if os.Getenv(envvar) == "" {
-			err = fmt.Errorf("Environment variable %s must be provided", envvar)
+			err = fmt.Errorf("environment variable %s must be provided", envvar)
 			return nil, err
 		}
 	}

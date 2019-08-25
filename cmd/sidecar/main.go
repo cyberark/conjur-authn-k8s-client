@@ -5,7 +5,6 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	authnConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
-	secretsConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar/logging"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
 	storageConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
@@ -27,12 +26,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	secretsConfig, err := secretsConfigProvider.NewFromEnv()
-	if err != nil {
-		errLogger.Printf("Failure creating secrets config: %s", err.Error())
-		os.Exit(1)
-	}
-
 	storageConfig, err := storageConfigProvider.NewFromEnv()
 	if err != nil {
 		errLogger.Printf(err.Error())
@@ -44,7 +37,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	storageHandler, err := storage.NewStorageHandler(*storageConfig, *secretsConfig)
+	storageHandler, err := storage.NewStorageHandler(*storageConfig)
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
@@ -111,7 +104,7 @@ func main() {
 		// if the access token is already deleted the action should not fail
 		err = storageHandler.AccessTokenHandler.Delete()
 		if err != nil {
-			errLogger.Printf("failed to delete access token: %s", err.Error())
+			errLogger.Printf("Failed to delete access token: %s", err.Error())
 		}
 		os.Exit(1)
 	}

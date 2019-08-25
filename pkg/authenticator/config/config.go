@@ -42,7 +42,7 @@ func NewFromEnv() (*Config, error) {
 		"MY_POD_NAME",
 	} {
 		if os.Getenv(envvar) == "" {
-			err = fmt.Errorf("Environment variable %s must be provided", envvar)
+			err = fmt.Errorf("environment variable %s must be provided", envvar)
 			return nil, err
 		}
 	}
@@ -104,7 +104,7 @@ func readSSLCert() ([]byte, error) {
 	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
 	if SSLCert == "" && SSLCertPath == "" {
 		err := fmt.Errorf(
-			"At least one of CONJUR_SSL_CERTIFICATE and CONJUR_CERT_FILE must be provided")
+			"at least one of CONJUR_SSL_CERTIFICATE and CONJUR_CERT_FILE must be provided")
 		return nil, err
 	}
 
