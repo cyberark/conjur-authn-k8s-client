@@ -1,4 +1,4 @@
-package storage
+package access_token
 
 import (
 	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"

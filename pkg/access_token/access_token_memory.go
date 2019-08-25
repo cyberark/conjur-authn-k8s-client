@@ -2,14 +2,13 @@ package access_token
 
 import (
 	"fmt"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 )
 
 type AccessTokenMemory struct {
 	Data []byte
 }
 
-func NewAccessTokenMemory(config config.Config) (token *AccessTokenMemory, err error) {
+func NewAccessTokenMemory() (token *AccessTokenMemory, err error) {
 	return &AccessTokenMemory{
 		Data: nil,
 	}, nil

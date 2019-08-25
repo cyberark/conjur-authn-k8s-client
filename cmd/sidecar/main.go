@@ -20,20 +20,27 @@ var infoLogger = log.InfoLogger
 func main() {
 	var err error
 
+	// Initialize configurations
+	authnConfig, err := authnConfigProvider.NewFromEnv()
+	if err != nil {
+		errLogger.Printf(err.Error())
+		os.Exit(1)
+	}
+
+	secretsConfig, err := secretsConfigProvider.NewFromEnv()
+	if err != nil {
+		errLogger.Printf("Failure creating secrets config: %s", err.Error())
+		os.Exit(1)
+	}
+
 	storageConfig, err := storageConfigProvider.NewFromEnv()
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
 	}
 
-	if storageConfig.StoreType == storageConfigProvider.K8S && authn.Config.ContainerMode != "init" {
+	if storageConfig.StoreType == storageConfigProvider.K8S && authnConfig.ContainerMode != "init" {
 		infoLogger.Printf("Store type 'K8S' must run as an init container")
-		os.Exit(1)
-	}
-
-	secretsConfig, err := secretsConfigProvider.NewFromEnv(tokenFilePath)
-	if err != nil {
-		errLogger.Printf("Failure creating secrets config: %s", err.Error())
 		os.Exit(1)
 	}
 
@@ -43,14 +50,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	authnConfig, err := authnConfigProvider.NewFromEnv()
-	if err != nil {
-		errLogger.Printf(err.Error())
-		os.Exit(1)
-	}
-
-	// Create new Authenticator
-	authn, err := authenticator.New(*authnConfig, , storageHandler.AccessToken)
+	authn, err := authenticator.New(*authnConfig, storageHandler.AccessTokenHandler)
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
@@ -85,7 +85,7 @@ func main() {
 				return err
 			}
 
-			err = storageHandler.AccessToken.Delete()
+			err = storageHandler.AccessTokenHandler.Delete()
 			if err != nil {
 				return err
 			}
@@ -109,9 +109,9 @@ func main() {
 		errLogger.Printf("Backoff exhausted: %s", err.Error())
 		// Deleting the retrieved Conjur access token in case we got an error after retrieval.
 		// if the access token is already deleted the action should not fail
-		err = storageHandler.AccessToken.Delete()
+		err = storageHandler.AccessTokenHandler.Delete()
 		if err != nil {
-			errLogger.Printf("￿￿Failed to delete access token: %s", err.Error())
+			errLogger.Printf("failed to delete access token: %s", err.Error())
 		}
 		os.Exit(1)
 	}

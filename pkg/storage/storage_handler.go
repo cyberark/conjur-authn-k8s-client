@@ -1,10 +1,10 @@
 package storage
 
 import (
+	"fmt"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	secretsConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	secretsHandlers "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/handlers"
-	"fmt"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar/logging"
 	storageConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 	"os"
@@ -24,9 +24,9 @@ func NewStorageHandler(storageConfig storageConfigProvider.Config, secretsConfig
 	var secretsHandler secretsHandlers.SecretsHandler
 
 	if storageConfig.StoreType == storageConfigProvider.K8S {
-		infoLogger.Printf(fmt.Sprintf("Storage configuration is %s ", storageConfig.K8S))
+		infoLogger.Printf(fmt.Sprintf("Storage configuration is %s ", storageConfigProvider.K8S))
 
-		accessTokenHandler, err = access_token.NewAccessTokenMemory(storageConfig)
+		accessTokenHandler, err = access_token.NewAccessTokenMemory()
 		if err != nil {
 			return nil, fmt.Errorf("error creating access token object, reason: %s", err)
 		}

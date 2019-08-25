@@ -9,6 +9,7 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -21,7 +22,6 @@ import (
 
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	sidecar "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
@@ -30,11 +30,11 @@ var bufferTime = 30 * time.Second
 // Authenticator contains the configuration and client
 // for the authentication connection to Conjur
 type Authenticator struct {
-	Config      authnConfig.Config
-	privateKey  *rsa.PrivateKey
-	PublicCert  *x509.Certificate
-	client      *http.Client
-	AccessToken storage.AccessTokenHandler
+	Config             authnConfig.Config
+	privateKey         *rsa.PrivateKey
+	PublicCert         *x509.Certificate
+	client             *http.Client
+	AccessTokenHandler access_token.AccessTokenHandler
 }
 
 const (
@@ -45,7 +45,7 @@ const (
 )
 
 // New returns a new Authenticator
-func New(config authnConfig.Config, accessTokenHandler storage.AccessTokenHandler) (auth *Authenticator, err error) {
+func New(config authnConfig.Config, accessTokenHandler access_token.AccessTokenHandler) (auth *Authenticator, err error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		return nil, err
@@ -57,10 +57,10 @@ func New(config authnConfig.Config, accessTokenHandler storage.AccessTokenHandle
 	}
 
 	return &Authenticator{
-		Config:      config,
-		client:      client,
-		privateKey:  signingKey,
-		AccessToken: accessTokenHandler,
+		Config:             config,
+		client:             client,
+		privateKey:         signingKey,
+		AccessTokenHandler: accessTokenHandler,
 	}, nil
 }
 
@@ -240,7 +240,7 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		content = response
 	}
 
-	err = auth.AccessToken.Write(content)
+	err = auth.AccessTokenHandler.Write(content)
 	if err != nil {
 		return err
 	}
