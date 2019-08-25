@@ -11,21 +11,25 @@ type Config struct {
 }
 
 const (
-	K8S                = "k8s_secrets"
-	None               = "none"
-	SecretsDestination = "SECRETS_DESTINATION"
+	K8S                  = "k8s_secrets"
+	None                 = "none"
+	SecretsDestination   = "SECRETS_DESTINATION"
+	TokenFilePathDefault = "/run/conjur/access-token"
 )
 
-func NewFromEnv(tokenPath *string) (*Config, error) {
+func NewFromEnv() (*Config, error) {
 	storeType := None
-	tokenFilePath := *tokenPath
+	tokenFilePath := TokenFilePathDefault
 	secretsDestinationValue := os.Getenv(SecretsDestination)
 	if secretsDestinationValue == K8S {
 		storeType = K8S
 		tokenFilePath = ""
 	} else if secretsDestinationValue == "" || secretsDestinationValue == None {
 		storeType = None
-		tokenFilePath = *tokenPath
+		// If CONJUR_TOKEN_FILE_PATH not configured take default value
+		if envVal := os.Getenv("CONJUR_TOKEN_FILE_PATH"); envVal != "" {
+			tokenFilePath = envVal
+		}
 	} else {
 		// In case SecretsDestination exits and has configured with incorrect value
 		return nil, fmt.Errorf("error incorrect value for environmnet variable %s has provided", SecretsDestination)

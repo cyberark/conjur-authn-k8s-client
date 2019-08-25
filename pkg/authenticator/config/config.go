@@ -24,10 +24,13 @@ type Config struct {
 
 // DefaultTokenRefreshTimeout is the default time the system waits to
 // reauthenticate on error
-const DefaultTokenRefreshTimeout = 6 * time.Minute
+const (
+	DefaultTokenRefreshTimeout = 6 * time.Minute
+	ClientCertPathDefault      = "/etc/conjur/ssl/client.pem"
+)
 
 // New returns a new authenticator configuration object
-func NewFromEnv(clientCertPath *string) (*Config, error) {
+func NewFromEnv() (*Config, error) {
 	var err error
 
 	// Check that required environment variables are set
@@ -76,6 +79,12 @@ func NewFromEnv(clientCertPath *string) (*Config, error) {
 		tokenRefreshTimeout = parsedTokenRefreshTimeout
 	}
 
+	clientCertPath := ClientCertPathDefault
+	// If CONJUR_CLIENT_CERT_PATH not configured take default value
+	if envVal := os.Getenv("CONJUR_CLIENT_CERT_PATH"); envVal != "" {
+		clientCertPath = envVal
+	}
+
 	return &Config{
 		ContainerMode:       containerMode,
 		ConjurVersion:       conjurVersion,
@@ -85,7 +94,7 @@ func NewFromEnv(clientCertPath *string) (*Config, error) {
 		PodName:             podName,
 		PodNamespace:        podNamespace,
 		SSLCertificate:      caCert,
-		ClientCertPath:      *clientCertPath,
+		ClientCertPath:      clientCertPath,
 		TokenRefreshTimeout: tokenRefreshTimeout,
 	}, nil
 }
