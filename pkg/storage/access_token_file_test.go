@@ -1,16 +1,20 @@
 package storage
 
 import (
-	stoargeConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
+	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 	. "github.com/smartystreets/goconvey/convey"
 	"os"
 	"reflect"
 	"testing"
 )
 
+type ProxyHandlerTokenFile struct {
+	AccessToken AccessTokenHandler
+}
+
 func TestAccessTokenFile(t *testing.T) {
-	var config stoargeConfig.Config
-	config.StoreType = stoargeConfig.K8S
+	var config storageConfig.Config
+	config.StoreType = storageConfig.K8S
 	config.TokenFilePath = "/tmp/accessTokenFile1"
 	var tokenInFile, _ = NewAccessTokenFile(config)
 
@@ -121,6 +125,25 @@ func TestAccessTokenFile(t *testing.T) {
 			// Check that file is not exits
 			err = tokenInFile.Delete()
 			So(err.Error(), ShouldEqual, "error deleting access token")
+		})
+
+		Convey("Returns no error if delete data from proxy struct is as expected", func() {
+			// Write Data to source interface
+			dataActual := []byte{'t', 'e', 's', 't'}
+			tokenInFile.Write(dataActual)
+
+			// Set proxy struct with source interface
+			var proxyStruct ProxyHandlerTokenFile
+			proxyStruct.AccessToken = tokenInFile
+
+			// Delete access token from proxy
+			err := proxyStruct.AccessToken.Delete()
+			So(err, ShouldEqual, nil)
+
+			// Data in source interface should be deleted
+			dataExpected, err := tokenInFile.Read()
+			So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
+			So(dataExpected, ShouldEqual, nil)
 		})
 	})
 }

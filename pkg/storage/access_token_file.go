@@ -40,14 +40,14 @@ func (token *AccessTokenFile) Write(Data []byte) (err error) {
 	if _, err := os.Stat(tokenDir); os.IsNotExist(err) {
 		err = os.MkdirAll(tokenDir, 755)
 		if err != nil {
-			// Do not specifying the directory in the error message from security reasons
+			// Do not specify the directory in the error message for security reasons
 			return fmt.Errorf("error writing access token, reason: failed to create directory")
 		}
 	}
 
 	err = ioutil.WriteFile(token.TokenFilePath, token.Data, 0644)
 	if err != nil {
-		// Do not specifying the file path in the error message from security reasons
+		// Do not specify the file path in the error message for security reasons
 		return fmt.Errorf("error writing access token, reason: failed to write file")
 	}
 
@@ -57,7 +57,7 @@ func (token *AccessTokenFile) Write(Data []byte) (err error) {
 func (token *AccessTokenFile) Delete() (err error) {
 	err = os.Remove(token.TokenFilePath)
 	if err != nil {
-		// Do not specifying the file path in the error message from security reasons
+		// Do not specify the file path in the error message for security reasons
 		return fmt.Errorf("error deleting access token")
 	}
 

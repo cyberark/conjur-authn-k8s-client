@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"time"
@@ -12,7 +11,7 @@ import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets"
 	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar/logging"
-	storage "github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
 	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 )
 
@@ -24,14 +23,8 @@ func main() {
 	var err error
 	var secretsHandler *secrets.Secrets
 
-	// Parse any flags for client cert / token paths, and set default values if not passed
-	clientCertPath := flag.String("c", "/etc/conjur/ssl/client.pem",
-		"Path to client certificate")
-	tokenFilePath := flag.String("t", "/run/conjur/access-token",
-		"Path to Conjur access token")
-
 	// Create new Storage
-	configStorage, err := storageConfig.NewFromEnv(tokenFilePath)
+	configStorage, err := storageConfig.NewFromEnv()
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
@@ -43,7 +36,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	configAuthn, err := authnConfig.NewFromEnv(clientCertPath)
+	configAuthn, err := authnConfig.NewFromEnv()
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
@@ -150,6 +143,12 @@ func main() {
 
 	if err != nil {
 		errLogger.Printf("Backoff exhausted: %s", err.Error())
+		// Deleting the retrieved Conjur access token in case we got an error after retrieval.
+		// if the access token is already deleted the action should not fail
+		err = storageHandler.AccessToken.Delete()
+		if err != nil {
+			errLogger.Printf("￿￿Failed to delete access token: %s", err.Error())
+		}
 		os.Exit(1)
 	}
 }
