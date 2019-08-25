@@ -56,11 +56,18 @@ func TestAccessTokenMemory(t *testing.T) {
 			err := tokenInMemory.Write(dataActual)
 			So(err, ShouldEqual, nil)
 
-			_, err = tokenInMemory.Read()
+			dataFromRead, err := tokenInMemory.Read()
 			So(err, ShouldEqual, nil)
 
 			err = tokenInMemory.Delete()
 			So(err, ShouldEqual, nil)
+
+			// Both input & output arrays should be cleared from memory
+			empty := make([]byte, len(dataActual))
+			eq := reflect.DeepEqual(dataActual, empty)
+			So(eq, ShouldEqual, true)
+			eq = reflect.DeepEqual(dataFromRead, empty)
+			So(eq, ShouldEqual, true)
 		})
 
 		Convey("Returns no error if Data input is nil", func() {
