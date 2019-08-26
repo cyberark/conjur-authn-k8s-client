@@ -1,4 +1,4 @@
-package secrets
+package conjur
 
 import (
 	"fmt"
@@ -9,21 +9,15 @@ type ConjurProvider interface {
 	RetrieveBatchSecrets([]string) (map[string][]byte, error)
 }
 
-func GetVariableIDsToRetrieve(pathMap map[string]string) ([]string, error) {
-	var variableIDs []string
-
-	if len(pathMap) == 0 {
-		return nil, fmt.Errorf("error map should not be empty")
-	}
-
-	for key, _ := range pathMap {
-		variableIDs = append(variableIDs, key)
-	}
-
-	return variableIDs, nil
+type ConjurSecretsFetcherInterface interface {
+	// functions will need to be implemented by another struct
+	RetrieveConjurSecrets(accessToken []byte, variableIDs []string) (map[string][]byte, error)
 }
 
-func RetrieveConjurSecrets(accessToken []byte, variableIDs []string) (map[string][]byte, error) {
+// We create this empty struct so we have an object with the functions below
+type ConjurSecretsFetcher struct{}
+
+func (conjurSecretsFetcher ConjurSecretsFetcher) RetrieveConjurSecrets(accessToken []byte, variableIDs []string) (map[string][]byte, error) {
 	var (
 		provider ConjurProvider
 		err      error

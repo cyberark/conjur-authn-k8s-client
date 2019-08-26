@@ -1,4 +1,4 @@
-package storage
+package access_token
 
 import (
 	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
@@ -98,7 +98,7 @@ func TestAccessTokenFile(t *testing.T) {
 			err = tokenInFile.Delete()
 			So(err, ShouldEqual, nil)
 
-			// Check that file is not exits
+			// Check that file does not exits
 			_, err = os.Stat("/tmp/accessTokenFileDel1")
 			So(err, ShouldNotEqual, nil)
 

@@ -27,7 +27,7 @@ func NewFromEnv() (*Config, error) {
 	} else if secretsDestinationValue == "" || secretsDestinationValue == None {
 		storeType = None
 		// If CONJUR_TOKEN_FILE_PATH not configured take default value
-		if envVal := os.Getenv("CONJUR_TOKEN_FILE_PATH"); envVal != "" {
+		if envVal := os.Getenv("CONJUR_AUTHN_TOKEN_FILE"); envVal != "" {
 			tokenFilePath = envVal
 		}
 	} else {

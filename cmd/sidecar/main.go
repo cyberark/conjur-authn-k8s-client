@@ -2,17 +2,14 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/cenkalti/backoff"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
-	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets"
-	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
+	authnConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar/logging"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
-	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
+	storageConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
+	"os"
+	"time"
 )
 
 // logging
@@ -21,58 +18,35 @@ var infoLogger = log.InfoLogger
 
 func main() {
 	var err error
-	var secretsHandler *secrets.Secrets
 
-	// Create new Storage
-	configStorage, err := storageConfig.NewFromEnv()
+	// Initialize configurations
+	authnConfig, err := authnConfigProvider.NewFromEnv()
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
 	}
 
-	storageHandler, err := storage.NewStorageHandler(*configStorage)
+	storageConfig, err := storageConfigProvider.NewFromEnv()
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
 	}
 
-	configAuthn, err := authnConfig.NewFromEnv()
+	if storageConfig.StoreType == storageConfigProvider.K8S && authnConfig.ContainerMode != "init" {
+		infoLogger.Printf("Store type 'K8S' must run as an init container")
+		os.Exit(1)
+	}
+
+	storageHandler, err := storage.NewStorageHandler(*storageConfig)
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
 	}
 
-	// Create new Authenticator
-	authn, err := authenticator.New(*configAuthn, storageHandler.AccessToken)
+	authn, err := authenticator.New(*authnConfig, storageHandler.AccessTokenHandler)
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
-	}
-
-	// TODO: account for if SECRET_DESTINATION is set to k8s but not an init container. Must check this case early.
-	conjurSecretsDest := storageConfig.K8S
-	/* if conjurSecretsDest == 1  &&  authn.Config.ContainerMode != "init" {
-	     // notify on invalid configuration and exit
-	     infoLogger.Printf("Appropriate message for not supporting sidecar with this workflow ....")
-	     os.Exit(1)
-	} */
-
-	// TODO: move these code segments to their respective files
-	//  Code that will handle the placement of access token
-	if conjurSecretsDest == storageConfig.None {
-		configSecrets, err := secretsConfig.NewFromEnv()
-		if err != nil {
-			errLogger.Printf("Failure creating secrets config: %s", err.Error())
-			os.Exit(1)
-		}
-
-		// TODO: move this logic to storage handler
-		// Create new Secrets
-		secretsHandler, err = secrets.New(*configSecrets, storageHandler.AccessToken)
-		if err != nil {
-			errLogger.Printf("Failure creating secrets: %s", err.Error())
-			os.Exit(1)
-		}
 	}
 
 	// Configure exponential backoff
@@ -98,35 +72,18 @@ func main() {
 				return err
 			}
 
-			// TODO: move these code segments to their respective files
-			//  Code that will handle the retrieval and updating of Conjur to K8s secrets
-			// ------------ START LOGIC ------------
-			k8sSecretsMap, err := secretsHandler.RetrieveK8sSecrets()
+			err = storageHandler.SecretsHandler.HandleSecrets()
 			if err != nil {
-				errLogger.Printf("Failure retrieving k8s secrets: %s", err.Error())
+				errLogger.Printf("Failed to handle secrets: %s", err.Error())
 				return err
 			}
 
-			k8sSecretsMap, err = secretsHandler.UpdateK8sSecretsMapWithConjurSecrets(k8sSecretsMap)
-			if err != nil {
-				errLogger.Printf("Failure updating K8s Secrets map: %s", err.Error())
-				return err
-			}
-
-			err = secretsHandler.PatchK8sSecrets(k8sSecretsMap)
-			if err != nil {
-				errLogger.Printf("Failure patching K8s Secrets: %s", err.Error())
-				return err
-			}
-
-			// Deleting Conjur access token
-			err = storageHandler.AccessToken.Delete()
+			err = storageHandler.AccessTokenHandler.Delete()
 			if err != nil {
 				return err
 			}
-			// ------------ END LOGIC ------------
 
-			if configAuthn.ContainerMode == "init" {
+			if authnConfig.ContainerMode == "init" {
 				os.Exit(0)
 			}
 
@@ -145,9 +102,9 @@ func main() {
 		errLogger.Printf("Backoff exhausted: %s", err.Error())
 		// Deleting the retrieved Conjur access token in case we got an error after retrieval.
 		// if the access token is already deleted the action should not fail
-		err = storageHandler.AccessToken.Delete()
+		err = storageHandler.AccessTokenHandler.Delete()
 		if err != nil {
-			errLogger.Printf("￿￿Failed to delete access token: %s", err.Error())
+			errLogger.Printf("Failed to delete access token: %s", err.Error())
 		}
 		os.Exit(1)
 	}
