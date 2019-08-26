@@ -28,8 +28,7 @@ func NewStorageHandler(storageConfig storageConfigProvider.Config) (StorageHandl
 
 		secretsConfig, err := secretsConfigProvider.NewFromEnv()
 		if err != nil {
-			errLogger.Printf("Failure creating secrets config: %s", err.Error())
-			os.Exit(1)
+			return nil, fmt.Errorf("error creating secrets config, reason: %s", err)
 		}
 
 		accessTokenHandler, err = access_token.NewAccessTokenMemory()
@@ -39,7 +38,7 @@ func NewStorageHandler(storageConfig storageConfigProvider.Config) (StorageHandl
 
 		secretsHandler, err = secretsHandlers.NewSecretHandlerK8sUseCase(*secretsConfig, accessTokenHandler)
 		if err != nil {
-			return nil, fmt.Errorf("error secret handler object, reason: %s", err)
+			return nil, fmt.Errorf("error creating secret handler object, reason: %s", err)
 		}
 	} else if storageConfig.StoreType == storageConfigProvider.None {
 		accessTokenHandler, err = access_token.NewAccessTokenFile(storageConfig)
