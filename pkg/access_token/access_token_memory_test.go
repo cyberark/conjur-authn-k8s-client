@@ -1,7 +1,7 @@
 package access_token
 
 import (
-	stoargeConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
+	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 	. "github.com/smartystreets/goconvey/convey"
 	"reflect"
 	"testing"
@@ -12,8 +12,8 @@ type ProxyHandlerTokenMemory struct {
 }
 
 func TestAccessTokenMemory(t *testing.T) {
-	var config stoargeConfig.Config
-	config.StoreType = stoargeConfig.None
+	var config storageConfig.Config
+	config.StoreType = storageConfig.None
 	var tokenInMemory, _ = NewAccessTokenMemory()
 
 	Convey("Read", t, func() {
