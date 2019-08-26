@@ -17,7 +17,7 @@ func TestSecretsHandlerK8sUseCase(t *testing.T) {
 			variableIDsExpected := []string{"account/var_path1", "account/var_path2"}
 			variableIDsActual, err := getVariableIDsToRetrieve(m)
 
-			// Sort actual and expected, because output order can be change
+			// Sort actual and expected, because output order can change
 			sort.Strings(variableIDsActual)
 			sort.Strings(variableIDsExpected)
 			eq := reflect.DeepEqual(variableIDsActual, variableIDsExpected)

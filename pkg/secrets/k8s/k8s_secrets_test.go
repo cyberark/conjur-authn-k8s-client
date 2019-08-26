@@ -21,7 +21,7 @@ func TestKubernetesSecrets(t *testing.T) {
 			DataEntry, err := generateStringDataEntry(m)
 			stringDataEntryActual := string(DataEntry)
 
-			// Sort actual and expected, because output order can be change
+			// Sort actual and expected, because output order can change
 			re := regexp.MustCompile("\\:{(.*?)\\}")
 			// Regex example: {"stringData":{"user":"dummy_user","password":"dummy_password"}} => {"user":"dummy_user","password":"dummy_password"}
 			match := re.FindStringSubmatch(stringDataEntryActual)
