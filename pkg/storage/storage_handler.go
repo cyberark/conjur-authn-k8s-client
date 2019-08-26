@@ -16,20 +16,18 @@ type Storage_Handler struct {
 }
 
 func NewStorageHandler(storageConfig storageConfigProvider.Config) (StorageHandler *Storage_Handler, err error) {
-	var errLogger = log.ErrorLogger
 	var infoLogger = log.InfoLogger
-
-	secretsConfig, err := secretsConfigProvider.NewFromEnv()
-	if err != nil {
-		errLogger.Printf("Failure creating secrets config: %s", err.Error())
-		return nil, err
-	}
 
 	var accessTokenHandler access_token.AccessTokenHandler
 	var secretsHandler secretsHandlers.SecretsHandler
 
 	if storageConfig.StoreType == storageConfigProvider.K8S {
 		infoLogger.Printf(fmt.Sprintf("Storage configuration is %s ", storageConfigProvider.K8S))
+
+		secretsConfig, err := secretsConfigProvider.NewFromEnv()
+		if err != nil {
+			return nil, fmt.Errorf("error creating secrets config, reason: %s", err)
+		}
 
 		accessTokenHandler, err = access_token.NewAccessTokenMemory()
 		if err != nil {
@@ -50,8 +48,7 @@ func NewStorageHandler(storageConfig storageConfigProvider.Config) (StorageHandl
 		secretsHandler = &secretHandlerNoneUseCase
 	} else {
 		// although this is checked when creating `storageConfig.StoreType` we check this here for code clarity and future dev guard
-		errLogger.Printf("Store type %s is invalid", storageConfig.StoreType)
-		return nil, err
+		return nil, fmt.Errorf("store type %s is invalid", storageConfig.StoreType)
 	}
 
 	return &Storage_Handler{

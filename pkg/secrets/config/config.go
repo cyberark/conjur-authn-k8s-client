@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 )
 
 // Config defines the configuration parameters
@@ -14,10 +13,6 @@ type Config struct {
 	RequiredK8sSecrets []string
 }
 
-// DefaultTokenRefreshTimeout is the default time the system waits to
-// reauthenticate on error
-const DefaultTokenRefreshTimeout = 6 * time.Minute
-
 const CONJUR_MAP_KEY = "conjur-map"
 
 // New returns a new authenticator configuration object
@@ -26,10 +21,6 @@ func NewFromEnv() (*Config, error) {
 
 	// Check that required environment variables are set
 	for _, envvar := range []string{
-		"CONJUR_APPLIANCE_URL",
-		"CONJUR_ACCOUNT",
-		"CONJUR_AUTHN_LOGIN",
-		"CONJUR_AUTHN_URL",
 		"MY_POD_NAMESPACE",
 		"K8S_SECRETS",
 	} {
