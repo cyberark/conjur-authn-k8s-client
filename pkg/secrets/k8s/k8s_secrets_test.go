@@ -15,6 +15,7 @@ func TestKubernetesSecrets(t *testing.T) {
 			m := make(map[string][]byte)
 			m["user"] = []byte("dummy_user")
 			m["password"] = []byte("dummy_password")
+			m["address"] = []byte("dummy_address")
 			stringDataEntryExpected := `{"stringData":{"user":"dummy_user","password":"dummy_password","address":"dummy_address"}}`
 
 			DataEntry, err := generateStringDataEntry(m)
