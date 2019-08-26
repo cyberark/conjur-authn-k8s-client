@@ -20,17 +20,17 @@ func NewStorageHandler(storageConfig storageConfigProvider.Config) (StorageHandl
 	var errLogger = log.ErrorLogger
 	var infoLogger = log.InfoLogger
 
-	secretsConfig, err := secretsConfigProvider.NewFromEnv()
-	if err != nil {
-		errLogger.Printf("Failure creating secrets config: %s", err.Error())
-		os.Exit(1)
-	}
-
 	var accessTokenHandler access_token.AccessTokenHandler
 	var secretsHandler secretsHandlers.SecretsHandler
 
 	if storageConfig.StoreType == storageConfigProvider.K8S {
 		infoLogger.Printf(fmt.Sprintf("Storage configuration is %s ", storageConfigProvider.K8S))
+
+		secretsConfig, err := secretsConfigProvider.NewFromEnv()
+		if err != nil {
+			errLogger.Printf("Failure creating secrets config: %s", err.Error())
+			os.Exit(1)
+		}
 
 		accessTokenHandler, err = access_token.NewAccessTokenMemory()
 		if err != nil {
