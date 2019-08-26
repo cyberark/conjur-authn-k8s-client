@@ -36,7 +36,7 @@ func NewStorageHandler(storageConfig storageConfigProvider.Config) (StorageHandl
 
 		secretsHandler, err = secretsHandlers.NewSecretHandlerK8sUseCase(*secretsConfig, accessTokenHandler)
 		if err != nil {
-			return nil, fmt.Errorf("error secret handler object, reason: %s", err)
+			return nil, fmt.Errorf("error creating secret handler object, reason: %s", err)
 		}
 	} else if storageConfig.StoreType == storageConfigProvider.None {
 		accessTokenHandler, err = access_token.NewAccessTokenFile(storageConfig)
