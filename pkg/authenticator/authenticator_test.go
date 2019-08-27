@@ -27,26 +27,35 @@ func parseCert(filename string) (*x509.Certificate, error) {
 
 func TestAuthenticator(t *testing.T) {
 	Convey("IsCertExpired", t, func() {
-		Convey("Returns false if cert is not expired", func() {
+
+		Convey("Given a non-expired certificate to authenticate with Conjur", func() {
 			goodCert, err := parseCert("testdata/good_cert.crt")
-			So(err, ShouldBeNil)
 
-			authn := Authenticator{
-				PublicCert: goodCert,
-			}
+			Convey("Finishes without raising an error and returns certificate", func() {
+				So(err, ShouldBeNil)
+			})
 
-			So(authn.IsCertExpired(), ShouldEqual, false)
+			Convey("Returns the false that the certificate is not expired", func() {
+				authn := Authenticator{
+					PublicCert: goodCert,
+				}
+				So(authn.IsCertExpired(), ShouldEqual, false)
+			})
 		})
 
-		Convey("Returns true if cert is expired", func() {
+		Convey("Given an expired certificate to authenticate with Conjur", func() {
 			expiredCert, err := parseCert("testdata/expired_cert.crt")
-			So(err, ShouldBeNil)
 
-			authn := Authenticator{
-				PublicCert: expiredCert,
-			}
+			Convey("Finishes without raising an error and returns certificate", func() {
+				So(err, ShouldBeNil)
+			})
 
-			So(authn.IsCertExpired(), ShouldEqual, true)
+			Convey("Returns true that the certificate is expired", func() {
+				authn := Authenticator{
+					PublicCert: expiredCert,
+				}
+				So(authn.IsCertExpired(), ShouldEqual, true)
+			})
 		})
 	})
 }
