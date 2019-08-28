@@ -9,6 +9,7 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -28,10 +29,11 @@ var bufferTime = 30 * time.Second
 // Authenticator contains the configuration and client
 // for the authentication connection to Conjur
 type Authenticator struct {
-	Config     authnConfig.Config
-	privateKey *rsa.PrivateKey
-	PublicCert *x509.Certificate
-	client     *http.Client
+	Config             authnConfig.Config
+	privateKey         *rsa.PrivateKey
+	PublicCert         *x509.Certificate
+	client             *http.Client
+	AccessTokenHandler access_token.AccessTokenHandler
 }
 
 const (
@@ -42,7 +44,7 @@ const (
 )
 
 // New returns a new Authenticator
-func New(config authnConfig.Config) (auth *Authenticator, err error) {
+func New(config authnConfig.Config, accessTokenHandler access_token.AccessTokenHandler) (auth *Authenticator, err error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		return nil, err
@@ -54,9 +56,10 @@ func New(config authnConfig.Config) (auth *Authenticator, err error) {
 	}
 
 	return &Authenticator{
-		Config:     config,
-		client:     client,
-		privateKey: signingKey,
+		Config:             config,
+		client:             client,
+		privateKey:         signingKey,
+		AccessTokenHandler: accessTokenHandler,
 	}, nil
 }
 
@@ -236,8 +239,7 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		content = response
 	}
 
-	// InfoLogger.Printf("Writing token %v to shared volume ...", content)
-	err = ioutil.WriteFile(auth.Config.TokenFilePath, content, 0644)
+	err = auth.AccessTokenHandler.Write(content)
 	if err != nil {
 		return err
 	}
