@@ -43,8 +43,16 @@ const (
 	nameTypeIP    = 7
 )
 
-// New returns a new Authenticator
-func New(config authnConfig.Config, accessTokenHandler access_token.AccessTokenHandler) (auth *Authenticator, err error) {
+func New(config authnConfig.Config) (auth *Authenticator, err error) {
+	accessTokenHandler, err := access_token.NewAccessTokenFile(config.TokenFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewWithAccessTokenHandler(config, accessTokenHandler)
+}
+
+func NewWithAccessTokenHandler(config authnConfig.Config, accessTokenHandler access_token.AccessTokenHandler) (auth *Authenticator, err error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		return nil, err

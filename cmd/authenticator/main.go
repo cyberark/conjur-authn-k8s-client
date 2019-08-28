@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"os"
 	"time"
 
@@ -24,14 +23,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	accessTokenHandler, err := access_token.NewAccessTokenFile(config.TokenFilePath)
-	if err != nil {
-		errLogger.Printf(err.Error())
-		os.Exit(1)
-	}
-
 	// Create new Authenticator
-	authn, err := authenticator.New(*config, accessTokenHandler)
+	authn, err := authenticator.New(*config)
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)
