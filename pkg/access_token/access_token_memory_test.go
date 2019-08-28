@@ -56,6 +56,16 @@ func TestAccessTokenMemory(t *testing.T) {
 				err := tokenInMemory.Write(dataActual)
 				So(err, ShouldEqual, nil)
 			})
+
+			Convey("When running Read method", func() {
+				dataExpected, _ := tokenInMemory.Read()
+
+				// Confirm data was written
+				Convey("Returns the data the was written", func() {
+					eq := reflect.DeepEqual(dataActual, dataExpected)
+					So(eq, ShouldEqual, true)
+				})
+			})
 		})
 
 		Convey("Given an access token without data", func() {
@@ -115,24 +125,33 @@ func TestAccessTokenMemory(t *testing.T) {
 		})
 
 		Convey("Given two instances of the accessTokenHandler interface", func() {
+			// Write Data to source interface
+			dataActual := []byte{'t', 'e', 's', 't'}
+			tokenInMemory.Write(dataActual)
 
-			Convey("Finishes without raising errors and data has been deleted", func() {
-				// Write Data to source interface
-				dataActual := []byte{'t', 'e', 's', 't'}
-				tokenInMemory.Write(dataActual)
-
-				// Set proxy struct with source interface
+			Convey("When setting token file location in proxy struct", func() {
 				var proxyStruct ProxyHandlerTokenMemory
 				proxyStruct.AccessToken = tokenInMemory
 
-				// Delete access token from proxy
-				err := proxyStruct.AccessToken.Delete()
-				So(err, ShouldEqual, nil)
+				Convey("When running the Delete method", func() {
+					err := proxyStruct.AccessToken.Delete()
 
-				// Data in source interface should be deleted
-				dataExpected, err := tokenInMemory.Read()
-				So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
-				So(dataExpected, ShouldEqual, nil)
+					Convey("Deletes the accessToken file of proxyStruct", func() {
+						So(err, ShouldEqual, nil)
+					})
+
+					Convey("When running the Read method", func() {
+						dataExpected, err := tokenInMemory.Read()
+
+						Convey("Returns no data because data in source interface was cleared", func() {
+							So(dataExpected, ShouldEqual, nil)
+						})
+
+						Convey("Raises the proper error", func() {
+							So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
+						})
+					})
+				})
 			})
 		})
 	})

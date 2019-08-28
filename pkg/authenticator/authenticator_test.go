@@ -35,7 +35,7 @@ func TestAuthenticator(t *testing.T) {
 				So(err, ShouldBeNil)
 			})
 
-			Convey("Returns the false that the certificate is not expired", func() {
+			Convey("Returns false", func() {
 				authn := Authenticator{
 					PublicCert: goodCert,
 				}
@@ -50,7 +50,7 @@ func TestAuthenticator(t *testing.T) {
 				So(err, ShouldBeNil)
 			})
 
-			Convey("Returns true that the certificate is expired", func() {
+			Convey("Returns true", func() {
 				authn := Authenticator{
 					PublicCert: expiredCert,
 				}
