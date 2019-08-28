@@ -68,14 +68,23 @@ func TestAccessTokenFile(t *testing.T) {
 					So(err, ShouldEqual, nil)
 				})
 
-				Convey("Writes the access token to a file in the path defined", func (){
+				Convey("Checks that the file exists in the path defined", func (){
 					// Check if file exists
 					_, err = os.Stat("/tmp/accessTokenFileWrite1")
 					So(err, ShouldEqual, nil)
 				})
+
+				Convey("When running Read method", func() {
+					dataExpected, _ := tokenInFile.Read()
+
+					// Confirm data was written
+					Convey("Returns the data the was written to the file", func() {
+						eq := reflect.DeepEqual(dataActual, dataExpected)
+						So(eq, ShouldEqual, true)
+					})
+				})
 			})
 		})
-
 
 		Convey("Given an access token without data", func() {
 

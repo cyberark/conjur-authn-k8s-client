@@ -59,7 +59,7 @@ func TestSecretsHandlerK8sUseCase(t *testing.T) {
 			k8sSecretsStruct := k8s.K8sSecretsMap{k8sSecretsMap, pathMap}
 			err := updateK8sSecretsMapWithConjurSecrets(&k8sSecretsStruct, conjurSecrets)
 
-			Convey("Finishes without raising an error and the secret variable IDs are replaced in k8sSecretsMap with their corresponding secret value", func() {
+			Convey("Finishes without raising an error", func() {
 				So(err, ShouldEqual, nil)
 			})
 
