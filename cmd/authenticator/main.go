@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"time"
@@ -18,13 +17,7 @@ var infoLogger = authenticator.InfoLogger
 func main() {
 	var err error
 
-	// Parse any flags for client cert / token paths, and set default values if not passed
-	clientCertPath := flag.String("c", "/etc/conjur/ssl/client.pem",
-		"Path to client certificate")
-	tokenFilePath := flag.String("t", "/run/conjur/access-token",
-		"Path to Conjur access token")
-
-	config, err := authnConfig.NewFromEnv(clientCertPath, tokenFilePath)
+	config, err := authnConfig.NewFromEnv()
 	if err != nil {
 		errLogger.Printf(err.Error())
 		os.Exit(1)

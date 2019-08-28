@@ -25,10 +25,14 @@ type Config struct {
 
 // DefaultTokenRefreshTimeout is the default time the system waits to
 // reauthenticate on error
-const DefaultTokenRefreshTimeout = 6 * time.Minute
+const (
+	DefaultTokenRefreshTimeout = 6 * time.Minute
+	TokenFilePathDefault       = "/run/conjur/access-token"
+	ClientCertPathDefault      = "/etc/conjur/ssl/client.pem"
+)
 
 // New returns a new authenticator configuration object
-func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
+func NewFromEnv() (*Config, error) {
 	var err error
 
 	// Check that required environment variables are set
@@ -40,7 +44,7 @@ func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
 		"MY_POD_NAME",
 	} {
 		if os.Getenv(envvar) == "" {
-			err = fmt.Errorf("Environment variable %s must be provided", envvar)
+			err = fmt.Errorf("environment variable %s must be provided", envvar)
 			return nil, err
 		}
 	}
@@ -77,6 +81,18 @@ func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
 		tokenRefreshTimeout = parsedTokenRefreshTimeout
 	}
 
+	tokenFilePath := TokenFilePathDefault
+	// If CONJUR_TOKEN_FILE_PATH not configured take default value
+	if envVal := os.Getenv("CONJUR_AUTHN_TOKEN_FILE"); envVal != "" {
+		tokenFilePath = envVal
+	}
+
+	clientCertPath := ClientCertPathDefault
+	// If CONJUR_CLIENT_CERT_PATH not configured take default value
+	if envVal := os.Getenv("CONJUR_CLIENT_CERT_PATH"); envVal != "" {
+		clientCertPath = envVal
+	}
+
 	return &Config{
 		ContainerMode:       containerMode,
 		ConjurVersion:       conjurVersion,
@@ -86,9 +102,9 @@ func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
 		PodName:             podName,
 		PodNamespace:        podNamespace,
 		SSLCertificate:      caCert,
-		ClientCertPath:      *clientCertPath,
-		TokenFilePath:       *tokenPath,
+		ClientCertPath:      clientCertPath,
 		TokenRefreshTimeout: tokenRefreshTimeout,
+		TokenFilePath:       tokenFilePath,
 	}, nil
 }
 
@@ -97,7 +113,7 @@ func readSSLCert() ([]byte, error) {
 	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
 	if SSLCert == "" && SSLCertPath == "" {
 		err := fmt.Errorf(
-			"At least one of CONJUR_SSL_CERTIFICATE and CONJUR_CERT_FILE must be provided")
+			"at least one of CONJUR_SSL_CERTIFICATE and CONJUR_CERT_FILE must be provided")
 		return nil, err
 	}
 
