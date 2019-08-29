@@ -38,7 +38,7 @@ type K8sSecretsMap struct {
 
 	// Maps a conjur variable id to its place in the k8sSecretsMap. This object helps us to replace
 	// the variable IDs with their corresponding secret value in the map
-	PathMap map[string]string
+	PathMap map[string][]string
 }
 
 func (secrets K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
@@ -46,7 +46,7 @@ func (secrets K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
 	requiredK8sSecrets := secrets.Config.RequiredK8sSecrets
 
 	k8sSecrets := make(map[string]map[string][]byte)
-	pathMap := make(map[string]string)
+	pathMap := make(map[string][]string)
 
 	for _, secretName := range requiredK8sSecrets {
 		k8sSecret, err := retrieveK8sSecret(namespace, secretName)
@@ -70,7 +70,7 @@ func (secrets K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
 					newDataEntriesMap[k8sSecretKey] = []byte(conjurVariableId)
 
 					// This map will help us later to swap the variable id with the secret value
-					pathMap[conjurVariableId] = fmt.Sprintf("%s:%s", secretName, k8sSecretKey)
+					pathMap[conjurVariableId] = append(pathMap[conjurVariableId], fmt.Sprintf("%s:%s", secretName, k8sSecretKey))
 				}
 			}
 		}
