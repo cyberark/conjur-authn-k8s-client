@@ -41,7 +41,7 @@ func TestSecretsHandlerK8sUseCase(t *testing.T) {
 		})
 	})
 
-	Convey("updateK8sSecretsMapWithConjurSecrets", t, func () {
+	Convey("updateK8sSecretsMapWithConjurSecrets", t, func() {
 		Convey("Given one K8s secret with one Conjur secret", func() {
 			secret := []byte{'s', 'u', 'p', 'e', 'r'}
 			conjurSecrets := make(map[string][]byte)
@@ -63,7 +63,7 @@ func TestSecretsHandlerK8sUseCase(t *testing.T) {
 				So(err, ShouldEqual, nil)
 			})
 
-			Convey("Replaces the secret variable IDs in k8sSecretsMap with their corresponding secret value", func() {
+			Convey("Replaces secret variable IDs in k8sSecretsMap with their corresponding secret value", func() {
 				eq := reflect.DeepEqual(k8sSecretsStruct.K8sSecrets["mysecret"]["username"], secret)
 				So(eq, ShouldEqual, true)
 			})

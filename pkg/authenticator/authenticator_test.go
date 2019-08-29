@@ -31,11 +31,11 @@ func TestAuthenticator(t *testing.T) {
 		Convey("Given a non-expired certificate to authenticate with Conjur", func() {
 			goodCert, err := parseCert("testdata/good_cert.crt")
 
-			Convey("Finishes without raising an error and returns certificate", func() {
+			Convey("Finishes without raising an error", func() {
 				So(err, ShouldBeNil)
 			})
 
-			Convey("Returns false", func() {
+			Convey("Returns false on IsCertExpired", func() {
 				authn := Authenticator{
 					PublicCert: goodCert,
 				}
@@ -46,11 +46,11 @@ func TestAuthenticator(t *testing.T) {
 		Convey("Given an expired certificate to authenticate with Conjur", func() {
 			expiredCert, err := parseCert("testdata/expired_cert.crt")
 
-			Convey("Finishes without raising an error and returns certificate", func() {
+			Convey("Finishes without raising an error", func() {
 				So(err, ShouldBeNil)
 			})
 
-			Convey("Returns true", func() {
+			Convey("Returns true on IsCertExpired", func() {
 				authn := Authenticator{
 					PublicCert: expiredCert,
 				}

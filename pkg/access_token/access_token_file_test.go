@@ -42,7 +42,7 @@ func TestAccessTokenFile(t *testing.T) {
 			})
 		})
 
-		Convey("Given an access token's data is empty", func () {
+		Convey("Given an access token's data is empty", func() {
 			tokenInFile.Data = nil
 
 			Convey("When running the Read method", func() {
@@ -57,28 +57,45 @@ func TestAccessTokenFile(t *testing.T) {
 
 	Convey("Write", t, func() {
 
-		Convey("Given an access token with data", func() {
+		Convey("Given an access token with data and a defined file location", func() {
 			dataActual := []byte{'t', 'e', 's', 't'}
+			tokenInFile.TokenFilePath = "/tmp/accessTokenFileWrite1"
 
 			Convey("When running the Write method", func() {
-				tokenInFile.TokenFilePath = "/tmp/accessTokenFileWrite1"
 				err := tokenInFile.Write(dataActual)
 
 				Convey("Finishes without raising an error", func() {
 					So(err, ShouldEqual, nil)
 				})
 
-				Convey("Checks that the file exists in the path defined", func (){
-					// Check if file exists
+				Convey("Checks that the file exists in the path defined", func() {
 					_, err = os.Stat("/tmp/accessTokenFileWrite1")
 					So(err, ShouldEqual, nil)
 				})
 
-				Convey("When running Read method", func() {
+				Convey("And the data was read", func() {
 					dataExpected, _ := tokenInFile.Read()
 
 					// Confirm data was written
 					Convey("Returns the data the was written to the file", func() {
+						eq := reflect.DeepEqual(dataActual, dataExpected)
+						So(eq, ShouldEqual, true)
+					})
+				})
+
+				Convey("When running the Write method a second time", func() {
+					dataActual = []byte{'t', 'e', 's', 't', '2'}
+					err := tokenInFile.Write(dataActual)
+
+					Convey("Creates the file without raising an error", func() {
+						// Check if file exists
+						_, err = os.Stat("/tmp/accessTokenFileWrite1")
+						So(err, ShouldEqual, nil)
+					})
+
+					Convey("Writes the data to the file", func() {
+						// TODO: read the content with `os` methods (not with `tokenInFile`)
+						dataExpected, _ := tokenInFile.Read()
 						eq := reflect.DeepEqual(dataActual, dataExpected)
 						So(eq, ShouldEqual, true)
 					})
@@ -96,42 +113,6 @@ func TestAccessTokenFile(t *testing.T) {
 				})
 			})
 		})
-
-		Convey("Given access token with data and a file location defined", func() {
-			dataActual := []byte{'t', 'e', 's', 't'}
-			tokenInFile.TokenFilePath = "/tmp/accessTokenFileWrite2"
-
-			Convey("When running the Write method", func() {
-				err := tokenInFile.Write(dataActual)
-
-				Convey("Writes the access token without raising an error", func() {
-					So(err, ShouldEqual, nil)
-				})
-
-				Convey("Creates with file without raising an error", func() {
-					// Check if file exists
-					_, err = os.Stat("/tmp/accessTokenFileWrite2")
-					So(err, ShouldEqual, nil)
-				})
-			})
-
-			Convey("When running the Write method a second time", func() {
-				dataActual = []byte{'t', 'e', 's', 't', '2'}
-				err := tokenInFile.Write(dataActual)
-
-				Convey("Creates with file without raising an error", func() {
-					// Check if file exists
-					_, err = os.Stat("/tmp/accessTokenFileWrite2")
-					So(err, ShouldEqual, nil)
-				})
-
-				Convey("Writes the data the file as expected", func() {
-					dataExpected, _ := tokenInFile.Read()
-					eq := reflect.DeepEqual(dataActual, dataExpected)
-					So(eq, ShouldEqual, true)
-				})
-			})
-		})
 	})
 
 	Convey("Delete", t, func() {
@@ -139,15 +120,13 @@ func TestAccessTokenFile(t *testing.T) {
 		Convey("Given access token with data", func() {
 			dataActual := []byte{'t', 'e', 's', 't'}
 
-			Convey("When running the Write method", func() {
+			Convey("And the data was written successfully", func() {
 				tokenInFile.TokenFilePath = "/tmp/accessTokenFileDel1"
 				err := tokenInFile.Write(dataActual)
+				So(err, ShouldEqual, nil)
 
-				Convey("Finishes without raising an error", func() {
-					So(err, ShouldEqual, nil)
-				})
-
-				Convey("When running the Read method", func() {
+				// Read is added here because we want to check later that the contents were deleted from memory successfully
+				Convey("and the data was read successfully", func() {
 					dataFromRead, err := tokenInFile.Read()
 
 					Convey("Finishes without raising an error", func() {
@@ -198,7 +177,7 @@ func TestAccessTokenFile(t *testing.T) {
 				Convey("When running the Delete method again on the same file", func() {
 					err = tokenInFile.Delete()
 
-					Convey("Finishes with an error deleting the access token", func() {
+					Convey("Finishes with proper error", func() {
 						So(err.Error(), ShouldEqual, "error deleting access token")
 					})
 				})
@@ -210,7 +189,7 @@ func TestAccessTokenFile(t *testing.T) {
 			dataActual := []byte{'t', 'e', 's', 't'}
 			tokenInFile.Write(dataActual)
 
-			Convey ("When setting token file location in proxy struct", func(){
+			Convey("When setting token file location in proxy struct", func() {
 				// Set proxy struct with source interface
 				var proxyStruct ProxyHandlerTokenFile
 				proxyStruct.AccessToken = tokenInFile

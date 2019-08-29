@@ -16,7 +16,6 @@ func TestAccessTokenMemory(t *testing.T) {
 	config.StoreType = storageConfig.None
 	var tokenInMemory, _ = NewAccessTokenMemory()
 
-
 	Convey("Read", t, func() {
 
 		Convey("Given an access token with data saved in memory", func() {
@@ -82,15 +81,13 @@ func TestAccessTokenMemory(t *testing.T) {
 		Convey("Given an access token with data saved in memory", func() {
 			dataActual := []byte{'t', 'e', 's', 't'}
 
-			Convey("When running the Write method", func() {
+			Convey("And the data was written successfully", func() {
 				err := tokenInMemory.Write(dataActual)
+				So(err, ShouldEqual, nil)
 
-				Convey("Finishes without raising an error", func() {
-					So(err, ShouldEqual, nil)
-				})
-
+				// Read is added here because we want to check later that the contents were deleted from memory successfully
 				Convey("When running the Read method", func() {
-					dataFromRead , err := tokenInMemory.Read()
+					dataFromRead, err := tokenInMemory.Read()
 
 					Convey("Finishes without raising an error", func() {
 						So(err, ShouldEqual, nil)
@@ -113,6 +110,7 @@ func TestAccessTokenMemory(t *testing.T) {
 					})
 				})
 			})
+
 		})
 
 		Convey("Given an access token with no data", func() {
