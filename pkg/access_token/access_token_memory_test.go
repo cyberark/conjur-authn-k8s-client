@@ -17,83 +17,140 @@ func TestAccessTokenMemory(t *testing.T) {
 	var tokenInMemory, _ = NewAccessTokenMemory()
 
 	Convey("Read", t, func() {
-		Convey("Returns true if Data output as expected", func() {
+
+		Convey("Given an access token with data saved in memory", func() {
 			dataActual := []byte{'t', 'e', 's', 't'}
 			tokenInMemory.Write(dataActual)
-			dataExpected, err := tokenInMemory.Read()
-			eq := reflect.DeepEqual(dataActual, dataExpected)
 
-			So(err, ShouldEqual, nil)
-			So(eq, ShouldEqual, true)
+			Convey("When running Read method", func() {
+				dataExpected, err := tokenInMemory.Read()
+
+				Convey("Finishes without raising an error", func() {
+					So(err, ShouldEqual, nil)
+				})
+
+				Convey("Returns the data the was written", func() {
+					eq := reflect.DeepEqual(dataActual, dataExpected)
+					So(eq, ShouldEqual, true)
+				})
+			})
 		})
 
-		Convey("Returns error if Data is nil", func() {
+		Convey("Given an access token's data is empty", func() {
 			tokenInMemory.Data = nil
-			_, err := tokenInMemory.Read()
 
-			So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
+			Convey("Raises an error when reading the access token that the data is empty", func() {
+				_, err := tokenInMemory.Read()
+				So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
+			})
 		})
 	})
 
 	Convey("Write", t, func() {
-		Convey("Returns no error if Data input is not nil", func() {
-			dataActual := []byte{'t', 'e', 's', 't'}
-			err := tokenInMemory.Write(dataActual)
 
-			So(err, ShouldEqual, nil)
+		Convey("Given an access token with data", func() {
+			dataActual := []byte{'t', 'e', 's', 't'}
+
+			Convey("Writes the access token to memory without raising an error", func() {
+				err := tokenInMemory.Write(dataActual)
+				So(err, ShouldEqual, nil)
+			})
+
+			Convey("When running Read method", func() {
+				dataExpected, _ := tokenInMemory.Read()
+
+				// Confirm data was written
+				Convey("Returns the data the was written", func() {
+					eq := reflect.DeepEqual(dataActual, dataExpected)
+					So(eq, ShouldEqual, true)
+				})
+			})
 		})
 
-		Convey("Returns error if Data input is nil", func() {
+		Convey("Given an access token without data", func() {
 			err := tokenInMemory.Write(nil)
 
-			So(err.Error(), ShouldEqual, "error writing access token, reason: data is empty")
+			Convey("Raises an error that the data is empty", func() {
+				So(err.Error(), ShouldEqual, "error writing access token, reason: data is empty")
+			})
 		})
 	})
 
 	Convey("Delete", t, func() {
-		Convey("Returns no error after read write and delete", func() {
+
+		Convey("Given an access token with data saved in memory", func() {
 			dataActual := []byte{'t', 'e', 's', 't'}
-			err := tokenInMemory.Write(dataActual)
-			So(err, ShouldEqual, nil)
 
-			dataFromRead, err := tokenInMemory.Read()
-			So(err, ShouldEqual, nil)
+			Convey("And the data was written successfully", func() {
+				err := tokenInMemory.Write(dataActual)
+				So(err, ShouldEqual, nil)
 
-			err = tokenInMemory.Delete()
-			So(err, ShouldEqual, nil)
+				// Read is added here because we want to check later that the contents were deleted from memory successfully
+				Convey("When running the Read method", func() {
+					dataFromRead, err := tokenInMemory.Read()
 
-			// Both input & output arrays should be cleared from memory
-			empty := make([]byte, len(dataActual))
-			eq := reflect.DeepEqual(dataActual, empty)
-			So(eq, ShouldEqual, true)
-			eq = reflect.DeepEqual(dataFromRead, empty)
-			So(eq, ShouldEqual, true)
+					Convey("Finishes without raising an error", func() {
+						So(err, ShouldEqual, nil)
+					})
+
+					Convey("When running the Delete method", func() {
+						err := tokenInMemory.Delete()
+
+						Convey("Finishes without raising an error", func() {
+							So(err, ShouldEqual, nil)
+						})
+
+						Convey("Properly clears all data from memory", func() {
+							empty := make([]byte, len(dataActual))
+							eq := reflect.DeepEqual(dataActual, empty)
+							So(eq, ShouldEqual, true)
+							eq = reflect.DeepEqual(dataFromRead, empty)
+							So(eq, ShouldEqual, true)
+						})
+					})
+				})
+			})
+
 		})
 
-		Convey("Returns no error if Data input is nil", func() {
+		Convey("Given an access token with no data", func() {
 			tokenInMemory.Data = nil
-			err := tokenInMemory.Delete()
 
-			So(err, ShouldEqual, nil)
+			Convey("Finishes without raising an error", func() {
+				err := tokenInMemory.Delete()
+				So(err, ShouldEqual, nil)
+			})
 		})
 
-		Convey("Returns no error if delete from proxy struct is as expected", func() {
+		Convey("Given two instances of the accessTokenHandler interface", func() {
 			// Write Data to source interface
 			dataActual := []byte{'t', 'e', 's', 't'}
 			tokenInMemory.Write(dataActual)
 
-			// Set proxy struct with source interface
-			var proxyStruct ProxyHandlerTokenMemory
-			proxyStruct.AccessToken = tokenInMemory
+			Convey("When setting token file location in proxy struct", func() {
+				var proxyStruct ProxyHandlerTokenMemory
+				proxyStruct.AccessToken = tokenInMemory
 
-			// Delete access token from proxy
-			err := proxyStruct.AccessToken.Delete()
-			So(err, ShouldEqual, nil)
+				Convey("When running the Delete method", func() {
+					err := proxyStruct.AccessToken.Delete()
 
-			// Data in source interface should be deleted
-			dataExpected, err := tokenInMemory.Read()
-			So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
-			So(dataExpected, ShouldEqual, nil)
+					Convey("Deletes the accessToken file of proxyStruct", func() {
+						So(err, ShouldEqual, nil)
+					})
+
+					Convey("When running the Read method", func() {
+						dataExpected, err := tokenInMemory.Read()
+
+						Convey("Returns no data because data in source interface was cleared", func() {
+							So(dataExpected, ShouldEqual, nil)
+						})
+
+						Convey("Raises the proper error", func() {
+							So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
+						})
+					})
+				})
+			})
 		})
 	})
 }

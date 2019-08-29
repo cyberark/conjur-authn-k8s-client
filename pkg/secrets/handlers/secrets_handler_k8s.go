@@ -57,7 +57,7 @@ func (secretsHandlerK8sUseCase SecretsHandlerK8sUseCase) HandleSecrets() error {
 		return fmt.Errorf("error retrieving Conjur k8sSecretsHandler: %s", err)
 	}
 
-	k8sSecretsMap, err = updateK8sSecretsMapWithConjurSecrets(k8sSecretsMap, retrievedConjurSecrets)
+	err = updateK8sSecretsMapWithConjurSecrets(k8sSecretsMap, retrievedConjurSecrets)
 	if err != nil {
 		errLogger.Printf("Failure updating K8s K8sSecretsHandler map: %s", err.Error())
 		return err
@@ -86,14 +86,14 @@ func getVariableIDsToRetrieve(pathMap map[string]string) ([]string, error) {
 	return variableIDs, nil
 }
 
-func updateK8sSecretsMapWithConjurSecrets(k8sSecretsMap *k8s.K8sSecretsMap, conjurSecrets map[string][]byte) (*k8s.K8sSecretsMap, error) {
+func updateK8sSecretsMapWithConjurSecrets(k8sSecretsMap *k8s.K8sSecretsMap, conjurSecrets map[string][]byte) error {
 	var err error
 
 	// Update K8s map by replacing variable IDs with their corresponding secret values
 	for variableId, secret := range conjurSecrets {
 		variableId, err = parseVariableID(variableId)
 		if err != nil {
-			return nil, fmt.Errorf("failed to update k8s k8sSecretsHandler map: %s", err)
+			return fmt.Errorf("failed to update k8s k8sSecretsHandler map: %s", err)
 		}
 
 		locationInK8sSecretsMap := strings.Split(k8sSecretsMap.PathMap[variableId], ":")
@@ -102,10 +102,12 @@ func updateK8sSecretsMapWithConjurSecrets(k8sSecretsMap *k8s.K8sSecretsMap, conj
 		k8sSecretsMap.K8sSecrets[k8sSecretName][k8sSecretDataEntryKey] = secret
 
 		// Clear secret from memory
+		empty := make([]byte, len(secret))
+		copy(secret, empty)
 		secret = nil
 	}
 
-	return k8sSecretsMap, nil
+	return nil
 }
 
 // The variable ID is in the format "<account>:variable:<variable_id>. we need only the last part.
