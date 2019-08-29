@@ -2,6 +2,7 @@ package k8s
 
 import (
 	. "github.com/smartystreets/goconvey/convey"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	"reflect"
 	"regexp"
 	"sort"
@@ -41,7 +42,7 @@ func TestKubernetesSecrets(t *testing.T) {
 			m := make(map[string][]byte)
 			_, err := generateStringDataEntry(m)
 
-			So(err.Error(), ShouldEqual, "error map should not be empty")
+			So(err.Error(), ShouldEqual, log.CAKC039E)
 		})
 	})
 }

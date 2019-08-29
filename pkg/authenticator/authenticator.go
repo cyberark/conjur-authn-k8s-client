@@ -22,6 +22,7 @@ import (
 
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	sidecar "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
@@ -108,7 +109,7 @@ func (auth *Authenticator) GenerateCSR() ([]byte, error) {
 // successfully retrieved
 func (auth *Authenticator) Login() error {
 
-	InfoLogger.Printf(fmt.Sprintf("Logging in as %s.", auth.Config.Username))
+	log.InfoLogger.Printf(fmt.Sprintf(log.CAKC006I, auth.Config.Username))
 
 	csrRawBytes, err := auth.GenerateCSR()
 
@@ -134,16 +135,17 @@ func (auth *Authenticator) Login() error {
 	certPEMBlock, err := ioutil.ReadFile(auth.Config.ClientCertPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			err = fmt.Errorf("client certificate not found at %s", auth.Config.ClientCertPath)
+			return log.PrintAndReturnError(fmt.Sprintf(log.CAKC013E, auth.Config.ClientCertPath), err, false)
 		}
 
-		return err
+		return log.PrintAndReturnError(log.CAKC014E, err, true)
 	}
 
 	certDERBlock, certPEMBlock := pem.Decode(certPEMBlock)
 	cert, err := x509.ParseCertificate(certDERBlock.Bytes)
 	if err != nil {
-		return err
+		log.ErrorLogger.Printf(log.CAKC015E, err.Error())
+		return log.PrintAndReturnError(log.CAKC015E, err, true)
 	}
 
 	auth.PublicCert = cert
@@ -164,9 +166,9 @@ func (auth *Authenticator) IsCertExpired() bool {
 	certExpiresOn := auth.PublicCert.NotAfter.UTC()
 	currentDate := time.Now().UTC()
 
-	InfoLogger.Printf("Cert expires: %v", certExpiresOn)
-	InfoLogger.Printf("Current date: %v", currentDate)
-	InfoLogger.Printf("Buffer time:  %v", bufferTime)
+	log.InfoLogger.Printf(log.CAKC007I, certExpiresOn)
+	log.InfoLogger.Printf(log.CAKC008I, currentDate)
+	log.InfoLogger.Printf(log.CAKC009I, bufferTime)
 
 	return currentDate.Add(bufferTime).After(certExpiresOn)
 }
@@ -175,24 +177,23 @@ func (auth *Authenticator) IsCertExpired() bool {
 // the response data. Also manages state of certificates.
 func (auth *Authenticator) Authenticate() ([]byte, error) {
 	if !auth.IsLoggedIn() {
-		InfoLogger.Printf("Not logged in. Trying to log in...")
+		log.InfoLogger.Printf(log.CAKC005I)
 
 		if err := auth.Login(); err != nil {
-			ErrorLogger.Printf("Login failed: %v", err.Error())
-			return nil, err
+			return nil, log.PrintAndReturnError(log.CAKC016E, err, false)
 		}
 
-		InfoLogger.Printf("Logged in")
+		log.InfoLogger.Printf(log.CAKC010I)
 	}
 
 	if auth.IsCertExpired() {
-		InfoLogger.Printf("Certificate expired. Re-logging in...")
+		log.InfoLogger.Printf(log.CAKC004I)
 
 		if err := auth.Login(); err != nil {
 			return nil, err
 		}
 
-		InfoLogger.Printf("Logged in. Continuing authentication.")
+		log.InfoLogger.Printf(log.CAKC003I)
 	}
 
 	privDer := x509.MarshalPKCS1PrivateKey(auth.privateKey)
@@ -245,16 +246,14 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		return err
 	}
 
-	InfoLogger.Printf("Successfully authenticated!")
-
+	log.InfoLogger.Printf(log.CAKC002I)
 	return nil
 }
 
 // generateSANURI returns the formatted uri(SPIFFEE format for now) for the certificate.
 func generateSANURI(namespace, podname string) (string, error) {
 	if namespace == "" || podname == "" {
-		return "", fmt.Errorf(
-			"namespace or podname can't be empty namespace=%v podname=%v", namespace, podname)
+		return "", log.PrintAndReturnError(fmt.Sprintf(log.CAKC012E, namespace, podname), nil, false)
 	}
 	return fmt.Sprintf("spiffe://cluster.local/namespace/%s/podname/%s", namespace, podname), nil
 }

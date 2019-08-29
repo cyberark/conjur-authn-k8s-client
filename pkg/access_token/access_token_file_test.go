@@ -2,6 +2,7 @@ package access_token
 
 import (
 	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	. "github.com/smartystreets/goconvey/convey"
 	"os"
 	"reflect"
@@ -35,7 +36,7 @@ func TestAccessTokenFile(t *testing.T) {
 			tokenInFile.Data = nil
 			_, err := tokenInFile.Read()
 
-			So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
+			So(err.Error(), ShouldEqual, log.CAKC010E)
 		})
 	})
 
@@ -54,7 +55,7 @@ func TestAccessTokenFile(t *testing.T) {
 		Convey("Returns error if Data input is nil", func() {
 			err := tokenInFile.Write(nil)
 
-			So(err.Error(), ShouldEqual, "error writing access token, reason: data is empty")
+			So(err.Error(), ShouldEqual, log.CAKC009E)
 		})
 
 		Convey("Returns no error if file already exists", func() {
@@ -131,7 +132,7 @@ func TestAccessTokenFile(t *testing.T) {
 
 			// Check that file is not exits
 			err = tokenInFile.Delete()
-			So(err.Error(), ShouldEqual, "error deleting access token")
+			So(err.Error(), ShouldEqual, log.CAKC006E)
 		})
 
 		Convey("Returns no error if delete data from proxy struct is as expected", func() {
@@ -149,7 +150,7 @@ func TestAccessTokenFile(t *testing.T) {
 
 			// Data in source interface should be deleted
 			dataExpected, err := tokenInFile.Read()
-			So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
+			So(err.Error(), ShouldEqual, log.CAKC010E)
 			So(dataExpected, ShouldEqual, nil)
 		})
 	})

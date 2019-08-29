@@ -2,6 +2,7 @@ package handlers
 
 import (
 	. "github.com/smartystreets/goconvey/convey"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	"reflect"
 	"sort"
 	"testing"
@@ -30,7 +31,7 @@ func TestSecretsHandlerK8sUseCase(t *testing.T) {
 			m := make(map[string]string)
 			_, err := getVariableIDsToRetrieve(m)
 
-			So(err.Error(), ShouldEqual, "error map should not be empty")
+			So(err.Error(), ShouldEqual, log.CAKC029E)
 		})
 	})
 }

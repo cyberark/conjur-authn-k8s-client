@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 )
 
 // LoginRequest sends a login request
@@ -18,7 +19,7 @@ func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte) (*http
 		authenticateURL = fmt.Sprintf("%s/inject_client_cert", authnURL)
 	}
 
-	InfoLogger.Printf("Login request to: %s", authenticateURL)
+	log.InfoLogger.Printf(log.CAKC011I, authenticateURL)
 
 	req, err := http.NewRequest("POST", authenticateURL, bytes.NewBuffer(csrBytes))
 	if err != nil {
@@ -41,7 +42,7 @@ func AuthenticateRequest(authnURL string, conjurVersion string, account string, 
 		authenticateURL = fmt.Sprintf("%s/%s/%s/authenticate", authnURL, account, url.QueryEscape(username))
 	}
 
-	InfoLogger.Printf("Authn request to: %s", authenticateURL)
+	log.InfoLogger.Printf(log.CAKC012I, authenticateURL)
 
 	if req, err = http.NewRequest("POST", authenticateURL, nil); err != nil {
 		return nil, err

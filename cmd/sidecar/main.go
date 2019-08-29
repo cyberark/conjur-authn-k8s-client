@@ -5,7 +5,7 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	authnConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
-	log "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar/logging"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
 	storageConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 	"os"
@@ -13,7 +13,7 @@ import (
 )
 
 // logging
-var errLogger = log.ErrorLogger
+var errorLogger = log.ErrorLogger
 var infoLogger = log.InfoLogger
 
 func main() {
@@ -22,30 +22,30 @@ func main() {
 	// Initialize configurations
 	authnConfig, err := authnConfigProvider.NewFromEnv()
 	if err != nil {
-		errLogger.Printf(err.Error())
+		errorLogger.Printf(log.CAKC045E)
 		os.Exit(1)
 	}
 
 	storageConfig, err := storageConfigProvider.NewFromEnv()
 	if err != nil {
-		errLogger.Printf(err.Error())
+		errorLogger.Printf(log.CAKC046E)
 		os.Exit(1)
 	}
 
 	if storageConfig.StoreType == storageConfigProvider.K8S && authnConfig.ContainerMode != "init" {
-		infoLogger.Printf("Store type 'K8S' must run as an init container")
+		errorLogger.Printf(log.CAKC047E)
 		os.Exit(1)
 	}
 
 	storageHandler, err := storage.NewStorageHandler(*storageConfig)
 	if err != nil {
-		errLogger.Printf(err.Error())
+		errorLogger.Printf(log.CAKC048E)
 		os.Exit(1)
 	}
 
 	authn, err := authenticator.New(*authnConfig, storageHandler.AccessTokenHandler)
 	if err != nil {
-		errLogger.Printf(err.Error())
+		errorLogger.Printf(log.CAKC049E)
 		os.Exit(1)
 	}
 
@@ -59,23 +59,20 @@ func main() {
 
 	err = backoff.Retry(func() error {
 		for {
-			infoLogger.Printf(fmt.Sprintf("Authenticating as %s ...", authn.Config.Username))
+			infoLogger.Printf(fmt.Sprintf(log.CAKC019I, authn.Config.Username))
 			authnResp, err := authn.Authenticate()
 			if err != nil {
-				errLogger.Printf("Failure authenticating: %s", err.Error())
-				return err
+				return log.PrintAndReturnError(log.CAKC050E, err, false)
 			}
 
 			err = authn.ParseAuthenticationResponse(authnResp)
 			if err != nil {
-				errLogger.Printf("Failure parsing authentication response: %s", err.Error())
-				return err
+				return log.PrintAndReturnError(log.CAKC051E, err, false)
 			}
 
 			err = storageHandler.SecretsHandler.HandleSecrets()
 			if err != nil {
-				errLogger.Printf("Failed to handle secrets: %s", err.Error())
-				return err
+				return log.PrintAndReturnError(log.CAKC052E, err, false)
 			}
 
 			err = storageHandler.AccessTokenHandler.Delete()
@@ -90,8 +87,7 @@ func main() {
 			// Reset exponential backoff
 			expBackoff.Reset()
 
-			infoLogger.Printf("Waiting for %s to re-authenticate and fetch secrets.",
-				authn.Config.TokenRefreshTimeout)
+			infoLogger.Printf(log.CAKC013I, authn.Config.TokenRefreshTimeout)
 
 			fmt.Println()
 			time.Sleep(authn.Config.TokenRefreshTimeout)
@@ -99,12 +95,12 @@ func main() {
 	}, expBackoff)
 
 	if err != nil {
-		errLogger.Printf("Backoff exhausted: %s", err.Error())
+		errorLogger.Printf(log.CAKC053E)
 		// Deleting the retrieved Conjur access token in case we got an error after retrieval.
 		// if the access token is already deleted the action should not fail
 		err = storageHandler.AccessTokenHandler.Delete()
 		if err != nil {
-			errLogger.Printf("Failed to delete access token: %s", err.Error())
+			errorLogger.Printf(log.CAKC054E)
 		}
 		os.Exit(1)
 	}
