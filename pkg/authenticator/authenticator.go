@@ -144,7 +144,6 @@ func (auth *Authenticator) Login() error {
 	certDERBlock, certPEMBlock := pem.Decode(certPEMBlock)
 	cert, err := x509.ParseCertificate(certDERBlock.Bytes)
 	if err != nil {
-		log.ErrorLogger.Printf(log.CAKC015E, err.Error())
 		return log.PrintAndReturnError(log.CAKC015E, err.Error())
 	}
 
