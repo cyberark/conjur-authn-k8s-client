@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"strings"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
@@ -25,7 +24,7 @@ func NewFromEnv() (*Config, error) {
 		"K8S_SECRETS",
 	} {
 		if os.Getenv(envvar) == "" {
-			return nil, log.PrintAndReturnError(fmt.Sprintf(log.CAKC017E, envvar), nil, false)
+			return nil, log.PrintAndReturnError(log.CAKC017E, envvar)
 		}
 	}
 

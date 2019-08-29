@@ -62,22 +62,22 @@ func main() {
 			infoLogger.Printf(fmt.Sprintf(log.CAKC019I, authn.Config.Username))
 			authnResp, err := authn.Authenticate()
 			if err != nil {
-				return log.PrintAndReturnError(log.CAKC050E, err, false)
+				return log.PrintAndReturnError(log.CAKC050E)
 			}
 
 			err = authn.ParseAuthenticationResponse(authnResp)
 			if err != nil {
-				return log.PrintAndReturnError(log.CAKC051E, err, false)
+				return log.PrintAndReturnError(log.CAKC051E)
 			}
 
 			err = storageHandler.SecretsHandler.HandleSecrets()
 			if err != nil {
-				return log.PrintAndReturnError(log.CAKC052E, err, false)
+				return log.PrintAndReturnError(log.CAKC052E)
 			}
 
 			err = storageHandler.AccessTokenHandler.Delete()
 			if err != nil {
-				return err
+				return log.PrintAndReturnError(log.CAKC065E, err.Error())
 			}
 
 			if authnConfig.ContainerMode == "init" {

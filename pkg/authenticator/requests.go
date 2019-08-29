@@ -23,7 +23,7 @@ func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte) (*http
 
 	req, err := http.NewRequest("POST", authenticateURL, bytes.NewBuffer(csrBytes))
 	if err != nil {
-		return nil, err
+		return nil, log.PrintAndReturnError(log.CAKC058E, err.Error())
 	}
 	req.Header.Set("Content-Type", "text/plain")
 
@@ -45,7 +45,7 @@ func AuthenticateRequest(authnURL string, conjurVersion string, account string, 
 	log.InfoLogger.Printf(log.CAKC012I, authenticateURL)
 
 	if req, err = http.NewRequest("POST", authenticateURL, nil); err != nil {
-		return nil, err
+		return nil, log.PrintAndReturnError(log.CAKC057E, err.Error())
 	}
 
 	req.Header.Set("Content-Type", "text/plain")
@@ -58,7 +58,7 @@ func readBody(resp *http.Response) ([]byte, error) {
 
 	responseBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, log.PrintAndReturnError(log.CAKC056E, err.Error())
 	}
 
 	return responseBytes, err

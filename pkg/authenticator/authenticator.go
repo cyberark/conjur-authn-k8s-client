@@ -49,7 +49,7 @@ const (
 func New(config authnConfig.Config, accessTokenHandler access_token.AccessTokenHandler) (auth *Authenticator, err error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
-		return nil, err
+		return nil, log.PrintAndReturnError(log.CAKC064E, err.Error())
 	}
 
 	client, err := sidecar.NewHTTPSClient(config.SSLCertificate, nil, nil)
@@ -123,29 +123,29 @@ func (auth *Authenticator) Login() error {
 
 	resp, err := auth.client.Do(req)
 	if err != nil {
-		return err
+		return log.PrintAndReturnError(log.CAKC062E, err.Error())
 	}
 
 	err = EmptyResponse(resp)
 	if err != nil {
-		return err
+		return log.PrintAndReturnError(log.CAKC063E, err.Error())
 	}
 
 	// load client cert
 	certPEMBlock, err := ioutil.ReadFile(auth.Config.ClientCertPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return log.PrintAndReturnError(fmt.Sprintf(log.CAKC013E, auth.Config.ClientCertPath), err, false)
+			return log.PrintAndReturnError(log.CAKC013E, auth.Config.ClientCertPath)
 		}
 
-		return log.PrintAndReturnError(log.CAKC014E, err, true)
+		return log.PrintAndReturnError(log.CAKC014E, err.Error())
 	}
 
 	certDERBlock, certPEMBlock := pem.Decode(certPEMBlock)
 	cert, err := x509.ParseCertificate(certDERBlock.Bytes)
 	if err != nil {
 		log.ErrorLogger.Printf(log.CAKC015E, err.Error())
-		return log.PrintAndReturnError(log.CAKC015E, err, true)
+		return log.PrintAndReturnError(log.CAKC015E, err.Error())
 	}
 
 	auth.PublicCert = cert
@@ -180,7 +180,7 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 		log.InfoLogger.Printf(log.CAKC005I)
 
 		if err := auth.Login(); err != nil {
-			return nil, log.PrintAndReturnError(log.CAKC016E, err, false)
+			return nil, log.PrintAndReturnError(log.CAKC016E)
 		}
 
 		log.InfoLogger.Printf(log.CAKC010I)
@@ -218,7 +218,7 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, log.PrintAndReturnError(log.CAKC061E, err.Error())
 	}
 
 	return DataResponse(resp)
@@ -253,7 +253,7 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 // generateSANURI returns the formatted uri(SPIFFEE format for now) for the certificate.
 func generateSANURI(namespace, podname string) (string, error) {
 	if namespace == "" || podname == "" {
-		return "", log.PrintAndReturnError(fmt.Sprintf(log.CAKC012E, namespace, podname), nil, false)
+		return "", log.PrintAndReturnError(log.CAKC012E, namespace, podname)
 	}
 	return fmt.Sprintf("spiffe://cluster.local/namespace/%s/podname/%s", namespace, podname), nil
 }
@@ -286,12 +286,12 @@ func decodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey cry
 	tokenDerBlock, _ := pem.Decode(PEMBlock)
 	p7, err := pkcs7.Parse(tokenDerBlock.Bytes)
 	if err != nil {
-		return nil, err
+		return nil, log.PrintAndReturnError(log.CAKC060E, err.Error())
 	}
 
 	decodedPEM, err = p7.Decrypt(publicCert, privateKey)
 	if err != nil {
-		return nil, err
+		return nil, log.PrintAndReturnError(log.CAKC059E, err.Error())
 	}
 
 	return decodedPEM, nil

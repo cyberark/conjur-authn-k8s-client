@@ -16,7 +16,7 @@ func NewAccessTokenMemory() (token *AccessTokenMemory, err error) {
 
 func (token AccessTokenMemory) Read() (Data []byte, err error) {
 	if token.Data == nil {
-		return nil, log.PrintAndReturnError(log.CAKC010E, nil, false)
+		return nil, log.PrintAndReturnError(log.CAKC010E)
 	}
 
 	return token.Data, nil
@@ -24,7 +24,7 @@ func (token AccessTokenMemory) Read() (Data []byte, err error) {
 
 func (token *AccessTokenMemory) Write(Data []byte) (err error) {
 	if Data == nil {
-		return log.PrintAndReturnError(log.CAKC009E, nil, false)
+		return log.PrintAndReturnError(log.CAKC009E)
 	}
 
 	token.Data = Data

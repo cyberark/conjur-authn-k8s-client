@@ -23,7 +23,7 @@ func NewAccessTokenFile(config config.Config) (token *AccessTokenFile, err error
 
 func (token AccessTokenFile) Read() (Data []byte, err error) {
 	if token.Data == nil {
-		return nil, log.PrintAndReturnError(log.CAKC010E, nil, false)
+		return nil, log.PrintAndReturnError(log.CAKC010E)
 	}
 
 	return token.Data, nil
@@ -31,7 +31,7 @@ func (token AccessTokenFile) Read() (Data []byte, err error) {
 
 func (token *AccessTokenFile) Write(Data []byte) (err error) {
 	if Data == nil {
-		return log.PrintAndReturnError(log.CAKC009E, err, false)
+		return log.PrintAndReturnError(log.CAKC009E)
 	}
 
 	token.Data = Data
@@ -42,14 +42,14 @@ func (token *AccessTokenFile) Write(Data []byte) (err error) {
 		err = os.MkdirAll(tokenDir, 755)
 		if err != nil {
 			// Do not specify the directory in the error message for security reasons
-			return log.PrintAndReturnError(log.CAKC008E, err, true)
+			return log.PrintAndReturnError(log.CAKC008E, err.Error())
 		}
 	}
 
 	err = ioutil.WriteFile(token.TokenFilePath, token.Data, 0644)
 	if err != nil {
 		// Do not specify the file path in the error message for security reasons
-		return log.PrintAndReturnError(log.CAKC007E, err, true)
+		return log.PrintAndReturnError(log.CAKC007E, err.Error())
 	}
 
 	return nil
@@ -59,7 +59,7 @@ func (token *AccessTokenFile) Delete() (err error) {
 	err = os.Remove(token.TokenFilePath)
 	if err != nil {
 		// Do not specify the file path in the error message for security reasons
-		return log.PrintAndReturnError(log.CAKC006E, err, false)
+		return log.PrintAndReturnError(log.CAKC006E)
 	}
 
 	// Clear Data

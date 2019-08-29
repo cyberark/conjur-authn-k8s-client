@@ -27,12 +27,12 @@ func (conjurSecretsFetcher ConjurSecretsFetcher) RetrieveConjurSecrets(accessTok
 
 	provider, err = conjurProvider(accessToken)
 	if err != nil {
-		return nil, log.PrintAndReturnError(log.CAKC020E, err, false)
+		return nil, log.PrintAndReturnError(log.CAKC020E)
 	}
 
 	retrievedSecrets, err := provider.RetrieveBatchSecrets(variableIDs)
 	if err != nil {
-		return nil, log.PrintAndReturnError(log.CAKC021E, err, true)
+		return nil, log.PrintAndReturnError(log.CAKC021E, err.Error())
 	}
 
 	return retrievedSecrets, nil

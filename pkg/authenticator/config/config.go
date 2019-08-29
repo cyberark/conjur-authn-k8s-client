@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -43,14 +42,14 @@ func NewFromEnv() (*Config, error) {
 		"MY_POD_NAME",
 	} {
 		if os.Getenv(envvar) == "" {
-			return nil, log.PrintAndReturnError(fmt.Sprintf(log.CAKC043E, envvar), err, false)
+			return nil, log.PrintAndReturnError(log.CAKC043E, envvar)
 		}
 	}
 
 	// Load CA cert
 	caCert, err := readSSLCert()
 	if err != nil {
-		return nil, err
+		return nil, log.PrintAndReturnError(log.CAKC055E, err.Error())
 	}
 
 	// Load configuration from the environment
@@ -73,7 +72,7 @@ func NewFromEnv() (*Config, error) {
 	if len(tokenRefreshTimeoutString) > 0 {
 		parsedTokenRefreshTimeout, err := time.ParseDuration(tokenRefreshTimeoutString)
 		if err != nil {
-			return nil, log.PrintAndReturnError(log.CAKC044E, err, true)
+			return nil, log.PrintAndReturnError(log.CAKC044E, err.Error())
 		}
 
 		tokenRefreshTimeout = parsedTokenRefreshTimeout
@@ -103,7 +102,7 @@ func readSSLCert() ([]byte, error) {
 	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
 	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
 	if SSLCert == "" && SSLCertPath == "" {
-		return nil, log.PrintAndReturnError(log.CAKC011E, nil, false)
+		return nil, log.PrintAndReturnError(log.CAKC011E)
 	}
 
 	if SSLCert != "" {

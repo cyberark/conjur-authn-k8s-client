@@ -27,29 +27,29 @@ func NewStorageHandler(storageConfig storageConfigProvider.Config) (StorageHandl
 
 		secretsConfig, err := secretsConfigProvider.NewFromEnv()
 		if err != nil {
-			return nil, log.PrintAndReturnError(log.CAKC003E, err, false)
+			return nil, log.PrintAndReturnError(log.CAKC003E)
 		}
 
 		accessTokenHandler, err = access_token.NewAccessTokenMemory()
 		if err != nil {
-			return nil, log.PrintAndReturnError(log.CAKC004E, err, false)
+			return nil, log.PrintAndReturnError(log.CAKC004E)
 		}
 
 		secretsHandler, err = secretsHandlers.NewSecretHandlerK8sUseCase(*secretsConfig, accessTokenHandler)
 		if err != nil {
-			return nil, log.PrintAndReturnError(log.CAKC001E, err, false)
+			return nil, log.PrintAndReturnError(log.CAKC001E)
 		}
 	} else if storageConfig.StoreType == storageConfigProvider.None {
 		accessTokenHandler, err = access_token.NewAccessTokenFile(storageConfig)
 		if err != nil {
-			return nil, log.PrintAndReturnError(log.CAKC002E, err, false)
+			return nil, log.PrintAndReturnError(log.CAKC002E)
 		}
 
 		var secretHandlerNoneUseCase secretsHandlers.SecretHandlerNoneUseCase
 		secretsHandler = &secretHandlerNoneUseCase
 	} else {
 		// although this is checked when creating `storageConfig.StoreType` we check this here for code clarity and future dev guard
-		return nil, log.PrintAndReturnError(fmt.Sprintf(log.CAKC005E, storageConfig.StoreType), nil, false)
+		return nil, log.PrintAndReturnError(log.CAKC005E, storageConfig.StoreType)
 	}
 
 	return &Storage_Handler{

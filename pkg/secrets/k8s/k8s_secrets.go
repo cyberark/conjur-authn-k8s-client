@@ -51,7 +51,7 @@ func (secretsHandler K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, er
 	for _, secretName := range requiredK8sSecrets {
 		k8sSecret, err := retrieveK8sSecret(namespace, secretName)
 		if err != nil {
-			return nil, log.PrintAndReturnError(log.CAKC032E, err, false)
+			return nil, log.PrintAndReturnError(log.CAKC032E)
 		}
 
 		// Parse its "conjur-map" data entry and store its values in the new-data-entries map
@@ -93,7 +93,7 @@ func (secretsHandler *K8sSecretsHandler) PatchK8sSecrets(k8sSecretsMap *K8sSecre
 	for secretName, dataEntryMap := range k8sSecretsMap.K8sSecrets {
 		err := patchK8sSecret(namespace, secretName, dataEntryMap)
 		if err != nil {
-			return log.PrintAndReturnError(log.CAKC033E, err, false)
+			return log.PrintAndReturnError(log.CAKC033E)
 		}
 	}
 
@@ -105,12 +105,12 @@ func configKubeClient() (*kubernetes.Clientset, error) {
 	log.InfoLogger.Printf(log.CAKC014I)
 	kubeConfig, err := rest.InClusterConfig()
 	if err != nil {
-		return nil, log.PrintAndReturnError(log.CAKC034E, err, true)
+		return nil, log.PrintAndReturnError(log.CAKC034E, err.Error())
 	}
 
 	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
-		return nil, log.PrintAndReturnError(log.CAKC035E, err, true)
+		return nil, log.PrintAndReturnError(log.CAKC035E, err.Error())
 	}
 	// return a K8s client
 	return kubeClient, err
@@ -122,7 +122,7 @@ func retrieveK8sSecret(namespace string, secretName string) (*K8sSecret, error) 
 	log.InfoLogger.Printf(log.CAKC016I, secretName, namespace)
 	k8sSecret, err := kubeClient.CoreV1().Secrets(namespace).Get(secretName, metav1.GetOptions{})
 	if err != nil {
-		return nil, log.PrintAndReturnError(log.CAKC036E, err, true)
+		return nil, log.PrintAndReturnError(log.CAKC036E, err.Error())
 	}
 
 	return &K8sSecret{
@@ -136,7 +136,7 @@ func patchK8sSecret(namespace string, secretName string, stringDataEntriesMap ma
 
 	stringDataEntry, err := generateStringDataEntry(stringDataEntriesMap)
 	if err != nil {
-		return log.PrintAndReturnError(log.CAKC037E, err, false)
+		return log.PrintAndReturnError(log.CAKC037E)
 	}
 
 	log.InfoLogger.Printf(log.CAKC017I, secretName, namespace)
@@ -144,7 +144,7 @@ func patchK8sSecret(namespace string, secretName string, stringDataEntriesMap ma
 	// Clear secret from memory
 	stringDataEntry = nil
 	if err != nil {
-		return log.PrintAndReturnError(log.CAKC038E, err, true)
+		return log.PrintAndReturnError(log.CAKC038E, err.Error())
 	}
 
 	return nil
@@ -164,7 +164,7 @@ func generateStringDataEntry(stringDataEntriesMap map[string][]byte) ([]byte, er
 	index := 0
 
 	if len(stringDataEntriesMap) == 0 {
-		return nil, log.PrintAndReturnError(log.CAKC039E, nil, false)
+		return nil, log.PrintAndReturnError(log.CAKC039E)
 	}
 
 	entries := make([][]byte, len(stringDataEntriesMap))
