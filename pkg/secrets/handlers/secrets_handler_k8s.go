@@ -72,7 +72,7 @@ func (secretsHandlerK8sUseCase SecretsHandlerK8sUseCase) HandleSecrets() error {
 	return nil
 }
 
-func getVariableIDsToRetrieve(pathMap map[string]string) ([]string, error) {
+func getVariableIDsToRetrieve(pathMap map[string][]string) ([]string, error) {
 	var variableIDs []string
 
 	if len(pathMap) == 0 {
@@ -96,10 +96,12 @@ func updateK8sSecretsMapWithConjurSecrets(k8sSecretsMap *k8s.K8sSecretsMap, conj
 			return fmt.Errorf("failed to update k8s k8sSecretsHandler map: %s", err)
 		}
 
-		locationInK8sSecretsMap := strings.Split(k8sSecretsMap.PathMap[variableId], ":")
-		k8sSecretName := locationInK8sSecretsMap[0]
-		k8sSecretDataEntryKey := locationInK8sSecretsMap[1]
-		k8sSecretsMap.K8sSecrets[k8sSecretName][k8sSecretDataEntryKey] = secret
+		for _, locationInK8sSecretsMap := range k8sSecretsMap.PathMap[variableId] {
+			locationInK8sSecretsMap := strings.Split(locationInK8sSecretsMap, ":")
+			k8sSecretName := locationInK8sSecretsMap[0]
+			k8sSecretDataEntryKey := locationInK8sSecretsMap[1]
+			k8sSecretsMap.K8sSecrets[k8sSecretName][k8sSecretDataEntryKey] = secret
+		}
 
 		// Clear secret from memory
 		empty := make([]byte, len(secret))
