@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -49,6 +50,13 @@ func NewFromEnv() (*Config, error) {
 		}
 	}
 
+	// Read flags
+	tokenFilePath := flag.String("t", TokenFilePathDefault,
+		"Path to Conjur access token")
+	clientCertPath := flag.String("c", ClientCertPathDefault,
+		"Path to client certificate")
+	flag.Parse()
+
 	// Load CA cert
 	caCert, err := readSSLCert()
 	if err != nil {
@@ -81,27 +89,25 @@ func NewFromEnv() (*Config, error) {
 		tokenRefreshTimeout = parsedTokenRefreshTimeout
 	}
 
-	tokenFilePath := TokenFilePathDefault
-	// If CONJUR_TOKEN_FILE_PATH not configured take default value
+	// If CONJUR_TOKEN_FILE_PATH is defined in the env we take its value
 	if envVal := os.Getenv("CONJUR_AUTHN_TOKEN_FILE"); envVal != "" {
-		tokenFilePath = envVal
+		tokenFilePath = &envVal
 	}
 
-	clientCertPath := ClientCertPathDefault
-	// If CONJUR_CLIENT_CERT_PATH not configured take default value
+	// If CONJUR_CLIENT_CERT_PATH is defined in the env we take its value
 	if envVal := os.Getenv("CONJUR_CLIENT_CERT_PATH"); envVal != "" {
-		clientCertPath = envVal
+		clientCertPath = &envVal
 	}
 
 	return &Config{
 		Account:             account,
-		ClientCertPath:      clientCertPath,
+		ClientCertPath:      *clientCertPath,
 		ContainerMode:       containerMode,
 		ConjurVersion:       conjurVersion,
 		PodName:             podName,
 		PodNamespace:        podNamespace,
 		SSLCertificate:      caCert,
-		TokenFilePath:       tokenFilePath,
+		TokenFilePath:       *tokenFilePath,
 		TokenRefreshTimeout: tokenRefreshTimeout,
 		URL:                 authnURL,
 		Username:            authnLogin,
