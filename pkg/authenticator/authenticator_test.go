@@ -4,7 +4,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"io/ioutil"
-
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"

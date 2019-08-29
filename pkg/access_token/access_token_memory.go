@@ -14,7 +14,7 @@ func NewAccessTokenMemory() (token *AccessTokenMemory, err error) {
 	}, nil
 }
 
-func (token AccessTokenMemory) Read() (Data []byte, err error) {
+func (token AccessTokenMemory) Read() ([]byte, error) {
 	if token.Data == nil {
 		return nil, fmt.Errorf("error reading access token, reason: data is empty")
 	}

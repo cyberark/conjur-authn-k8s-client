@@ -9,7 +9,6 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -20,6 +19,7 @@ import (
 
 	"github.com/fullsailor/pkcs7"
 
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 )
 
@@ -29,11 +29,11 @@ var bufferTime = 30 * time.Second
 // Authenticator contains the configuration and client
 // for the authentication connection to Conjur
 type Authenticator struct {
-	Config             authnConfig.Config
-	privateKey         *rsa.PrivateKey
-	PublicCert         *x509.Certificate
 	client             *http.Client
+	privateKey         *rsa.PrivateKey
 	AccessTokenHandler access_token.AccessTokenHandler
+	Config             authnConfig.Config
+	PublicCert         *x509.Certificate
 }
 
 const (
@@ -43,7 +43,7 @@ const (
 	nameTypeIP    = 7
 )
 
-func New(config authnConfig.Config) (auth *Authenticator, err error) {
+func New(config authnConfig.Config) (*Authenticator, error) {
 	accessTokenHandler, err := access_token.NewAccessTokenFile(config.TokenFilePath)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func New(config authnConfig.Config) (auth *Authenticator, err error) {
 	return NewWithAccessTokenHandler(config, accessTokenHandler)
 }
 
-func NewWithAccessTokenHandler(config authnConfig.Config, accessTokenHandler access_token.AccessTokenHandler) (auth *Authenticator, err error) {
+func NewWithAccessTokenHandler(config authnConfig.Config, accessTokenHandler access_token.AccessTokenHandler) (*Authenticator, error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		return nil, err
@@ -64,10 +64,10 @@ func NewWithAccessTokenHandler(config authnConfig.Config, accessTokenHandler acc
 	}
 
 	return &Authenticator{
-		Config:             config,
 		client:             client,
 		privateKey:         signingKey,
 		AccessTokenHandler: accessTokenHandler,
+		Config:             config,
 	}, nil
 }
 
@@ -266,7 +266,7 @@ func generateSANURI(namespace, podname string) (string, error) {
 	return fmt.Sprintf("spiffe://cluster.local/namespace/%s/podname/%s", namespace, podname), nil
 }
 
-func marshalSANs(dnsNames, emailAddresses []string, ipAddresses []net.IP, uris []*url.URL) (derBytes []byte, err error) {
+func marshalSANs(dnsNames, emailAddresses []string, ipAddresses []net.IP, uris []*url.URL) ([]byte, error) {
 	var rawValues []asn1.RawValue
 	for _, name := range dnsNames {
 		rawValues = append(rawValues, asn1.RawValue{Tag: nameTypeDNS, Class: asn1.ClassContextSpecific, Bytes: []byte(name)})

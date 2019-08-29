@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
+
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 )

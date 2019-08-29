@@ -8,18 +8,18 @@ import (
 )
 
 type AccessTokenFile struct {
-	TokenFilePath string
 	Data          []byte
+	TokenFilePath string
 }
 
-func NewAccessTokenFile(tokenFilePath string) (token *AccessTokenFile, err error) {
+func NewAccessTokenFile(tokenFilePath string) (*AccessTokenFile, error) {
 	return &AccessTokenFile{
-		TokenFilePath: tokenFilePath,
 		Data:          nil,
+		TokenFilePath: tokenFilePath,
 	}, nil
 }
 
-func (token AccessTokenFile) Read() (Data []byte, err error) {
+func (token AccessTokenFile) Read() ([]byte, error) {
 	if token.Data == nil {
 		return nil, fmt.Errorf("error reading access token, reason: data is empty")
 	}

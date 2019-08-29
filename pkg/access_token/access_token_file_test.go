@@ -1,10 +1,11 @@
 package access_token
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
 	"os"
 	"reflect"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 type ProxyHandlerTokenFile struct {

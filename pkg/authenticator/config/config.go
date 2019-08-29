@@ -10,25 +10,25 @@ import (
 // Config defines the configuration parameters
 // for the authentication requests
 type Config struct {
+	Account             string
+	ClientCertPath      string
 	ContainerMode       string
 	ConjurVersion       string
-	Account             string
-	URL                 string
-	Username            string
 	PodName             string
 	PodNamespace        string
 	SSLCertificate      []byte
-	ClientCertPath      string
 	TokenFilePath       string
 	TokenRefreshTimeout time.Duration
+	URL                 string
+	Username            string
 }
 
 // DefaultTokenRefreshTimeout is the default time the system waits to
 // reauthenticate on error
 const (
+	ClientCertPathDefault      = "/etc/conjur/ssl/client.pem"
 	DefaultTokenRefreshTimeout = 6 * time.Minute
 	TokenFilePathDefault       = "/run/conjur/access-token"
-	ClientCertPathDefault      = "/etc/conjur/ssl/client.pem"
 )
 
 // New returns a new authenticator configuration object
@@ -94,17 +94,17 @@ func NewFromEnv() (*Config, error) {
 	}
 
 	return &Config{
+		Account:             account,
+		ClientCertPath:      clientCertPath,
 		ContainerMode:       containerMode,
 		ConjurVersion:       conjurVersion,
-		Account:             account,
-		URL:                 authnURL,
-		Username:            authnLogin,
 		PodName:             podName,
 		PodNamespace:        podNamespace,
 		SSLCertificate:      caCert,
-		ClientCertPath:      clientCertPath,
-		TokenRefreshTimeout: tokenRefreshTimeout,
 		TokenFilePath:       tokenFilePath,
+		TokenRefreshTimeout: tokenRefreshTimeout,
+		URL:                 authnURL,
+		Username:            authnLogin,
 	}, nil
 }
 

@@ -1,10 +1,10 @@
 package authenticator
 
 import (
-	"net/http"
+	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"crypto/tls"
+	"net/http"
 	"time"
 )
 
@@ -17,7 +17,7 @@ func newHTTPSClient(CACert []byte, certPEMBlock, keyPEMBlock []byte) (*http.Clie
 
 	// Setup HTTPS client
 	tlsConfig := &tls.Config{
-		RootCAs:      caCertPool,
+		RootCAs: caCertPool,
 	}
 
 	if certPEMBlock != nil && keyPEMBlock != nil {
