@@ -132,7 +132,7 @@ func TestAccessTokenFile(t *testing.T) {
 
 			// Check that file is not exits
 			err = tokenInFile.Delete()
-			So(err.Error(), ShouldEqual, "CAKC006E Error deleting access token, reason: remove /tmp/accessTokenFileDel3: no such file or directory")
+			So(err.Error(), ShouldContainSubstring, log.CAKC006E)
 		})
 
 		Convey("Returns no error if delete data from proxy struct is as expected", func() {
