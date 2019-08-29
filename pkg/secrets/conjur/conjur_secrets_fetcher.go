@@ -1,7 +1,7 @@
 package conjur
 
 import (
-	"fmt"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 )
 
 type ConjurProvider interface {
@@ -23,14 +23,16 @@ func (conjurSecretsFetcher ConjurSecretsFetcher) RetrieveConjurSecrets(accessTok
 		err      error
 	)
 
+	log.InfoLogger.Println(log.CAKC018I, variableIDs)
+
 	provider, err = conjurProvider(accessToken)
 	if err != nil {
-		return nil, fmt.Errorf("error create Conjur secrets provider: %s", err)
+		return nil, log.PrintAndReturnError(log.CAKC020E)
 	}
 
 	retrievedSecrets, err := provider.RetrieveBatchSecrets(variableIDs)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving Conjur secrets: %s", err)
+		return nil, log.PrintAndReturnError(log.CAKC021E, err.Error())
 	}
 
 	return retrievedSecrets, nil
