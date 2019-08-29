@@ -59,7 +59,7 @@ func (token *AccessTokenFile) Delete() (err error) {
 	err = os.Remove(token.TokenFilePath)
 	if err != nil {
 		// Do not specify the file path in the error message for security reasons
-		return log.PrintAndReturnError(log.CAKC006E, err, true)
+		return log.PrintAndReturnError(log.CAKC006E, err, false)
 	}
 
 	// Clear Data
