@@ -1,8 +1,8 @@
 package config
 
 import (
-	"fmt"
 	"os"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 )
 
 type Config struct {
@@ -32,7 +32,7 @@ func NewFromEnv() (*Config, error) {
 		}
 	} else {
 		// In case SecretsDestination exits and has configured with incorrect value
-		return nil, fmt.Errorf("error incorrect value for environmnet variable %s has provided", SecretsDestination)
+		return nil, log.PrintAndReturnError(log.CAKC042E, SecretsDestination)
 	}
 	return &Config{
 		StoreType:     storeType,

@@ -2,6 +2,7 @@ package access_token
 
 import (
 	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	. "github.com/smartystreets/goconvey/convey"
 	"reflect"
 	"testing"
@@ -41,7 +42,7 @@ func TestAccessTokenMemory(t *testing.T) {
 
 			Convey("Raises an error when reading the access token that the data is empty", func() {
 				_, err := tokenInMemory.Read()
-				So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
+				So(err.Error(), ShouldEqual, log.CAKC010E)
 			})
 		})
 	})
@@ -71,7 +72,7 @@ func TestAccessTokenMemory(t *testing.T) {
 			err := tokenInMemory.Write(nil)
 
 			Convey("Raises an error that the data is empty", func() {
-				So(err.Error(), ShouldEqual, "error writing access token, reason: data is empty")
+				So(err.Error(), ShouldEqual, log.CAKC009E)
 			})
 		})
 	})
@@ -146,7 +147,7 @@ func TestAccessTokenMemory(t *testing.T) {
 						})
 
 						Convey("Raises the proper error", func() {
-							So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
+							So(err.Error(), ShouldEqual, log.CAKC010E)
 						})
 					})
 				})

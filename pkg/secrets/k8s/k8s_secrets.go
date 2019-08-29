@@ -2,8 +2,8 @@ package k8s
 
 import (
 	"fmt"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets"
 	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,9 +41,9 @@ type K8sSecretsMap struct {
 	PathMap map[string][]string
 }
 
-func (secrets K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
-	namespace := secrets.Config.PodNamespace
-	requiredK8sSecrets := secrets.Config.RequiredK8sSecrets
+func (secretsHandler K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
+	namespace := secretsHandler.Config.PodNamespace
+	requiredK8sSecrets := secretsHandler.Config.RequiredK8sSecrets
 
 	k8sSecrets := make(map[string]map[string][]byte)
 	pathMap := make(map[string][]string)
@@ -51,7 +51,7 @@ func (secrets K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
 	for _, secretName := range requiredK8sSecrets {
 		k8sSecret, err := retrieveK8sSecret(namespace, secretName)
 		if err != nil {
-			return nil, fmt.Errorf("error reading k8s secrets: %s", err)
+			return nil, log.PrintAndReturnError(log.CAKC032E)
 		}
 
 		// Parse its "conjur-map" data entry and store its values in the new-data-entries map
@@ -87,13 +87,13 @@ func (secrets K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
 	}, nil
 }
 
-func (secrets *K8sSecretsHandler) PatchK8sSecrets(k8sSecretsMap *K8sSecretsMap) error {
-	namespace := secrets.Config.PodNamespace
+func (secretsHandler *K8sSecretsHandler) PatchK8sSecrets(k8sSecretsMap *K8sSecretsMap) error {
+	namespace := secretsHandler.Config.PodNamespace
 
 	for secretName, dataEntryMap := range k8sSecretsMap.K8sSecrets {
 		err := patchK8sSecret(namespace, secretName, dataEntryMap)
 		if err != nil {
-			return fmt.Errorf("failed to patch k8s secret: %s", err)
+			return log.PrintAndReturnError(log.CAKC033E)
 		}
 	}
 
@@ -102,15 +102,15 @@ func (secrets *K8sSecretsHandler) PatchK8sSecrets(k8sSecretsMap *K8sSecretsMap) 
 
 func configKubeClient() (*kubernetes.Clientset, error) {
 	// Create the Kubernetes client
-	secrets.InfoLogger.Print("Creating Kubernetes client...")
+	log.InfoLogger.Printf(log.CAKC014I)
 	kubeConfig, err := rest.InClusterConfig()
 	if err != nil {
-		return nil, fmt.Errorf("failed to load in-cluster Kubernetes client config: %s", err)
+		return nil, log.PrintAndReturnError(log.CAKC034E, err.Error())
 	}
 
 	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create Kubernetes client: %s", err)
+		return nil, log.PrintAndReturnError(log.CAKC035E, err.Error())
 	}
 	// return a K8s client
 	return kubeClient, err
@@ -119,10 +119,10 @@ func configKubeClient() (*kubernetes.Clientset, error) {
 func retrieveK8sSecret(namespace string, secretName string) (*K8sSecret, error) {
 	// get K8s client object
 	kubeClient, _ := configKubeClient()
-	secrets.InfoLogger.Printf("Retrieving Kubernetes secret '%s' from namespace '%s'...", secretName, namespace)
+	log.InfoLogger.Printf(log.CAKC016I, secretName, namespace)
 	k8sSecret, err := kubeClient.CoreV1().Secrets(namespace).Get(secretName, metav1.GetOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve Kubernetes secret: %s", err)
+		return nil, log.PrintAndReturnError(log.CAKC036E, err.Error())
 	}
 
 	return &K8sSecret{
@@ -136,15 +136,15 @@ func patchK8sSecret(namespace string, secretName string, stringDataEntriesMap ma
 
 	stringDataEntry, err := generateStringDataEntry(stringDataEntriesMap)
 	if err != nil {
-		return fmt.Errorf("failed to parse Kubernetes secret list: %s", err)
+		return log.PrintAndReturnError(log.CAKC037E)
 	}
 
-	secrets.InfoLogger.Printf("Patching Kubernetes secret '%s' in namespace '%s'...", secretName, namespace)
+	log.InfoLogger.Printf(log.CAKC017I, secretName, namespace)
 	_, err = kubeClient.CoreV1().Secrets(namespace).Patch(secretName, types.StrategicMergePatchType, stringDataEntry)
 	// Clear secret from memory
 	stringDataEntry = nil
 	if err != nil {
-		return fmt.Errorf("failed to patch Kubernetes secret: %s", err)
+		return log.PrintAndReturnError(log.CAKC038E, err.Error())
 	}
 
 	return nil
@@ -164,7 +164,7 @@ func generateStringDataEntry(stringDataEntriesMap map[string][]byte) ([]byte, er
 	index := 0
 
 	if len(stringDataEntriesMap) == 0 {
-		return nil, fmt.Errorf("error map should not be empty")
+		return nil, log.PrintAndReturnError(log.CAKC039E)
 	}
 
 	entries := make([][]byte, len(stringDataEntriesMap))

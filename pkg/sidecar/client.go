@@ -3,16 +3,16 @@ package client
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"net/http"
 	"time"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 )
 
 func NewHTTPSClient(CACert []byte, certPEMBlock, keyPEMBlock []byte) (*http.Client, error) {
 	caCertPool := x509.NewCertPool()
 	ok := caCertPool.AppendCertsFromPEM(CACert)
 	if !ok {
-		return nil, fmt.Errorf("failure to append Conjur CA cert")
+		return nil, log.PrintAndReturnError(log.CAKC040E)
 	}
 
 	// Setup HTTPS client
@@ -23,7 +23,7 @@ func NewHTTPSClient(CACert []byte, certPEMBlock, keyPEMBlock []byte) (*http.Clie
 	if certPEMBlock != nil && keyPEMBlock != nil {
 		cert, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
 		if err != nil {
-			return nil, err
+			return nil, log.PrintAndReturnError(log.CAKC041E, err.Error())
 		}
 
 		tlsConfig.GetClientCertificate = func(info *tls.CertificateRequestInfo) (*tls.Certificate, error) {

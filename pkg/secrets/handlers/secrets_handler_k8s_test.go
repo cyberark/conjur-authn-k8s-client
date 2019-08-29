@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/k8s"
 	. "github.com/smartystreets/goconvey/convey"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	"reflect"
 	"sort"
 	"testing"
@@ -37,7 +38,7 @@ func TestSecretsHandlerK8sUseCase(t *testing.T) {
 
 			Convey("Raises an error that the map input is empty", func() {
 				_, err := getVariableIDsToRetrieve(pathMap)
-				So(err.Error(), ShouldEqual, "error map should not be empty")
+				So(err.Error(), ShouldEqual, log.CAKC029E)
 			})
 		})
 	})

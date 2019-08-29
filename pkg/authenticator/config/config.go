@@ -1,10 +1,10 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 )
 
 // Config defines the configuration parameters
@@ -42,15 +42,14 @@ func NewFromEnv() (*Config, error) {
 		"MY_POD_NAME",
 	} {
 		if os.Getenv(envvar) == "" {
-			err = fmt.Errorf("environment variable %s must be provided", envvar)
-			return nil, err
+			return nil, log.PrintAndReturnError(log.CAKC043E, envvar)
 		}
 	}
 
 	// Load CA cert
 	caCert, err := readSSLCert()
 	if err != nil {
-		return nil, err
+		return nil, log.PrintAndReturnError(log.CAKC055E, err.Error())
 	}
 
 	// Load configuration from the environment
@@ -73,7 +72,7 @@ func NewFromEnv() (*Config, error) {
 	if len(tokenRefreshTimeoutString) > 0 {
 		parsedTokenRefreshTimeout, err := time.ParseDuration(tokenRefreshTimeoutString)
 		if err != nil {
-			return nil, err
+			return nil, log.PrintAndReturnError(log.CAKC044E, err.Error())
 		}
 
 		tokenRefreshTimeout = parsedTokenRefreshTimeout
@@ -103,9 +102,7 @@ func readSSLCert() ([]byte, error) {
 	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
 	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
 	if SSLCert == "" && SSLCertPath == "" {
-		err := fmt.Errorf(
-			"at least one of CONJUR_SSL_CERTIFICATE and CONJUR_CERT_FILE must be provided")
-		return nil, err
+		return nil, log.PrintAndReturnError(log.CAKC011E)
 	}
 
 	if SSLCert != "" {

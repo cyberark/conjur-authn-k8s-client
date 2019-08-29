@@ -2,6 +2,7 @@ package access_token
 
 import (
 	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	. "github.com/smartystreets/goconvey/convey"
 	"os"
 	"reflect"
@@ -49,7 +50,7 @@ func TestAccessTokenFile(t *testing.T) {
 				_, err := tokenInFile.Read()
 
 				Convey("Raises an error that the data is empty", func() {
-					So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
+					So(err.Error(), ShouldEqual, log.CAKC010E)
 				})
 			})
 		})
@@ -109,7 +110,7 @@ func TestAccessTokenFile(t *testing.T) {
 				err := tokenInFile.Write(nil)
 
 				Convey("Raises an error that the access token data is empty", func() {
-					So(err.Error(), ShouldEqual, "error writing access token, reason: data is empty")
+					So(err.Error(), ShouldEqual, log.CAKC009E)
 				})
 			})
 		})
@@ -178,7 +179,7 @@ func TestAccessTokenFile(t *testing.T) {
 					err = tokenInFile.Delete()
 
 					Convey("Finishes with proper error", func() {
-						So(err.Error(), ShouldEqual, "error deleting access token")
+						So(err.Error(), ShouldContainSubstring, log.CAKC006E)
 					})
 				})
 			})
@@ -210,7 +211,7 @@ func TestAccessTokenFile(t *testing.T) {
 						})
 
 						Convey("Raises the proper error", func() {
-							So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
+							So(err.Error(), ShouldEqual, log.CAKC010E)
 						})
 					})
 				})

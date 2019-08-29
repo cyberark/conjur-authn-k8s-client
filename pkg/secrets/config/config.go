@@ -1,9 +1,9 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"strings"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 )
 
 // Config defines the configuration parameters
@@ -17,7 +17,6 @@ const CONJUR_MAP_KEY = "conjur-map"
 
 // New returns a new authenticator configuration object
 func NewFromEnv() (*Config, error) {
-	var err error
 
 	// Check that required environment variables are set
 	for _, envvar := range []string{
@@ -25,8 +24,7 @@ func NewFromEnv() (*Config, error) {
 		"K8S_SECRETS",
 	} {
 		if os.Getenv(envvar) == "" {
-			err = fmt.Errorf("environment variable %s must be provided", envvar)
-			return nil, err
+			return nil, log.PrintAndReturnError(log.CAKC017E, envvar)
 		}
 	}
 
