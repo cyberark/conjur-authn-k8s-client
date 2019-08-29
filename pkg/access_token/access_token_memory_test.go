@@ -56,7 +56,7 @@ func TestAccessTokenMemory(t *testing.T) {
 				So(err, ShouldEqual, nil)
 			})
 
-			Convey("When running Read method", func() {
+			Convey("And the data was read successfully", func() {
 				dataExpected, _ := tokenInMemory.Read()
 
 				// Confirm data was written
@@ -86,7 +86,7 @@ func TestAccessTokenMemory(t *testing.T) {
 				So(err, ShouldEqual, nil)
 
 				// Read is added here because we want to check later that the contents were deleted from memory successfully
-				Convey("When running the Read method", func() {
+				Convey("And the data was read successfully", func() {
 					dataFromRead, err := tokenInMemory.Read()
 
 					Convey("Finishes without raising an error", func() {
@@ -138,7 +138,7 @@ func TestAccessTokenMemory(t *testing.T) {
 						So(err, ShouldEqual, nil)
 					})
 
-					Convey("When running the Read method", func() {
+					Convey("And the data was read successfully", func() {
 						dataExpected, err := tokenInMemory.Read()
 
 						Convey("Returns no data because data in source interface was cleared", func() {
