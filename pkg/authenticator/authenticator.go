@@ -9,6 +9,7 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/file"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -44,7 +45,7 @@ const (
 )
 
 func New(config authnConfig.Config) (*Authenticator, error) {
-	accessTokenHandler, err := access_token.NewAccessTokenFile(config.TokenFilePath)
+	accessTokenHandler, err := file.NewAccessToken(config.TokenFilePath)
 	if err != nil {
 		return nil, err
 	}

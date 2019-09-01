@@ -1,20 +1,20 @@
-package access_token
+package memory
 
 import (
 	"fmt"
 )
 
-type AccessTokenMemory struct {
+type AccessToken struct {
 	Data []byte
 }
 
-func NewAccessTokenMemory() (token *AccessTokenMemory, err error) {
-	return &AccessTokenMemory{
+func NewAccessToken() (token *AccessToken, err error) {
+	return &AccessToken{
 		Data: nil,
 	}, nil
 }
 
-func (token AccessTokenMemory) Read() ([]byte, error) {
+func (token AccessToken) Read() ([]byte, error) {
 	if token.Data == nil {
 		return nil, fmt.Errorf("error reading access token, reason: data is empty")
 	}
@@ -22,7 +22,7 @@ func (token AccessTokenMemory) Read() ([]byte, error) {
 	return token.Data, nil
 }
 
-func (token *AccessTokenMemory) Write(Data []byte) (err error) {
+func (token *AccessToken) Write(Data []byte) (err error) {
 	if Data == nil {
 		return fmt.Errorf("error writing access token, reason: data is empty")
 	}
@@ -31,7 +31,7 @@ func (token *AccessTokenMemory) Write(Data []byte) (err error) {
 	return nil
 }
 
-func (token *AccessTokenMemory) Delete() (err error) {
+func (token *AccessToken) Delete() (err error) {
 	// Clear Data
 	empty := make([]byte, len(token.Data))
 	copy(token.Data, empty)

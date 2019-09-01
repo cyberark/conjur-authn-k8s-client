@@ -1,4 +1,4 @@
-package access_token
+package file
 
 import (
 	"fmt"
@@ -7,19 +7,19 @@ import (
 	"path/filepath"
 )
 
-type AccessTokenFile struct {
-	Data          []byte
-	TokenFilePath string
+type AccessToken struct {
+	Data     []byte
+	FilePath string
 }
 
-func NewAccessTokenFile(tokenFilePath string) (*AccessTokenFile, error) {
-	return &AccessTokenFile{
-		Data:          nil,
-		TokenFilePath: tokenFilePath,
+func NewAccessToken(filePath string) (*AccessToken, error) {
+	return &AccessToken{
+		Data:     nil,
+		FilePath: filePath,
 	}, nil
 }
 
-func (token AccessTokenFile) Read() ([]byte, error) {
+func (token AccessToken) Read() ([]byte, error) {
 	if token.Data == nil {
 		return nil, fmt.Errorf("error reading access token, reason: data is empty")
 	}
@@ -27,7 +27,7 @@ func (token AccessTokenFile) Read() ([]byte, error) {
 	return token.Data, nil
 }
 
-func (token *AccessTokenFile) Write(Data []byte) (err error) {
+func (token *AccessToken) Write(Data []byte) (err error) {
 	if Data == nil {
 		return fmt.Errorf("error writing access token, reason: data is empty")
 	}
@@ -35,7 +35,7 @@ func (token *AccessTokenFile) Write(Data []byte) (err error) {
 	token.Data = Data
 	// Write the data to file
 	// Create the directory if it doesn't exist
-	tokenDir := filepath.Dir(token.TokenFilePath)
+	tokenDir := filepath.Dir(token.FilePath)
 	if _, err := os.Stat(tokenDir); os.IsNotExist(err) {
 		err = os.MkdirAll(tokenDir, 755)
 		if err != nil {
@@ -44,7 +44,7 @@ func (token *AccessTokenFile) Write(Data []byte) (err error) {
 		}
 	}
 
-	err = ioutil.WriteFile(token.TokenFilePath, token.Data, 0644)
+	err = ioutil.WriteFile(token.FilePath, token.Data, 0644)
 	if err != nil {
 		// Do not specify the file path in the error message for security reasons
 		return fmt.Errorf("error writing access token, reason: failed to write file")
@@ -53,8 +53,8 @@ func (token *AccessTokenFile) Write(Data []byte) (err error) {
 	return nil
 }
 
-func (token *AccessTokenFile) Delete() (err error) {
-	err = os.Remove(token.TokenFilePath)
+func (token *AccessToken) Delete() (err error) {
+	err = os.Remove(token.FilePath)
 	if err != nil {
 		// Do not specify the file path in the error message for security reasons
 		return fmt.Errorf("error deleting access token")

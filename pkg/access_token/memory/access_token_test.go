@@ -1,6 +1,7 @@
-package access_token
+package memory
 
 import (
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"reflect"
 	"testing"
 
@@ -8,24 +9,24 @@ import (
 )
 
 type ProxyHandlerTokenMemory struct {
-	AccessToken AccessToken
+	AccessToken access_token.AccessToken
 }
 
 func TestAccessTokenMemory(t *testing.T) {
-	var tokenInMemory, _ = NewAccessTokenMemory()
+	var accessToken, _ = NewAccessToken()
 
 	Convey("Read", t, func() {
 
 		Convey("Given an access token with data", func() {
 			dataActual := []byte{'t', 'e', 's', 't'}
-			err := tokenInMemory.Write(dataActual)
+			err := accessToken.Write(dataActual)
 
 			Convey("Finishes without raising an error", func() {
 				So(err, ShouldEqual, nil)
 			})
 
 			Convey("When running Read method", func() {
-				dataExpected, err := tokenInMemory.Read()
+				dataExpected, err := accessToken.Read()
 
 				Convey("Finishes without raising an error", func() {
 					So(err, ShouldEqual, nil)
@@ -39,10 +40,10 @@ func TestAccessTokenMemory(t *testing.T) {
 		})
 
 		Convey("Given an access token's data is empty", func() {
-			tokenInMemory.Data = nil
+			accessToken.Data = nil
 
 			Convey("When running the Read method", func() {
-				_, err := tokenInMemory.Read()
+				_, err := accessToken.Read()
 
 				Convey("Raises an error that the data is empty", func() {
 					So(err.Error(), ShouldEqual, "error reading access token, reason: data is empty")
@@ -57,12 +58,12 @@ func TestAccessTokenMemory(t *testing.T) {
 			dataActual := []byte{'t', 'e', 's', 't'}
 
 			Convey("Writes the access token to memory without raising an error", func() {
-				err := tokenInMemory.Write(dataActual)
+				err := accessToken.Write(dataActual)
 				So(err, ShouldEqual, nil)
 			})
 
 			Convey("When running Read method", func() {
-				dataExpected, _ := tokenInMemory.Read()
+				dataExpected, _ := accessToken.Read()
 
 				// Confirm data was written
 				Convey("Returns the data the was written", func() {
@@ -73,7 +74,7 @@ func TestAccessTokenMemory(t *testing.T) {
 		})
 
 		Convey("Given an access token without data", func() {
-			err := tokenInMemory.Write(nil)
+			err := accessToken.Write(nil)
 
 			Convey("Raises an error that the data is empty", func() {
 				So(err.Error(), ShouldEqual, "error writing access token, reason: data is empty")
@@ -87,19 +88,19 @@ func TestAccessTokenMemory(t *testing.T) {
 			dataActual := []byte{'t', 'e', 's', 't'}
 
 			Convey("And the data was written successfully", func() {
-				err := tokenInMemory.Write(dataActual)
+				err := accessToken.Write(dataActual)
 				So(err, ShouldEqual, nil)
 
 				// Read is added here because we want to check later that the contents were deleted from memory successfully
 				Convey("And the data was read successfully", func() {
-					dataFromRead, err := tokenInMemory.Read()
+					dataFromRead, err := accessToken.Read()
 
 					Convey("Finishes without raising an error", func() {
 						So(err, ShouldEqual, nil)
 					})
 
 					Convey("When running the Delete method", func() {
-						err := tokenInMemory.Delete()
+						err := accessToken.Delete()
 
 						Convey("Finishes without raising an error", func() {
 							So(err, ShouldEqual, nil)
@@ -118,10 +119,10 @@ func TestAccessTokenMemory(t *testing.T) {
 		})
 
 		Convey("Given an access token with no data", func() {
-			tokenInMemory.Data = nil
+			accessToken.Data = nil
 
 			Convey("Finishes without raising an error", func() {
-				err := tokenInMemory.Delete()
+				err := accessToken.Delete()
 				So(err, ShouldEqual, nil)
 			})
 		})
@@ -129,11 +130,11 @@ func TestAccessTokenMemory(t *testing.T) {
 		Convey("Given two instances of the accessTokenHandler interface", func() {
 			// Write Data to source interface
 			dataActual := []byte{'t', 'e', 's', 't'}
-			tokenInMemory.Write(dataActual)
+			accessToken.Write(dataActual)
 
 			Convey("When setting token file location in proxy struct", func() {
 				var proxyStruct ProxyHandlerTokenMemory
-				proxyStruct.AccessToken = tokenInMemory
+				proxyStruct.AccessToken = accessToken
 
 				Convey("When running the Delete method", func() {
 					err := proxyStruct.AccessToken.Delete()
@@ -143,7 +144,7 @@ func TestAccessTokenMemory(t *testing.T) {
 					})
 
 					Convey("When running the Read method", func() {
-						dataExpected, err := tokenInMemory.Read()
+						dataExpected, err := accessToken.Read()
 
 						Convey("Returns no data because data in source interface was cleared", func() {
 							So(dataExpected, ShouldEqual, nil)
