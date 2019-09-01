@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/conjur"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/k8s"
-	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	"strings"
 )
 
@@ -94,11 +94,6 @@ func updateK8sSecretsMapWithConjurSecrets(k8sSecretsMap *k8s.K8sSecretsMap, conj
 			k8sSecretDataEntryKey := locationInK8sSecretsMap[1]
 			k8sSecretsMap.K8sSecrets[k8sSecretName][k8sSecretDataEntryKey] = secret
 		}
-
-		// Clear secret from memory
-		empty := make([]byte, len(secret))
-		copy(secret, empty)
-		secret = nil
 	}
 
 	return nil

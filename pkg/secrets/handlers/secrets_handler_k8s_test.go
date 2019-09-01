@@ -1,9 +1,9 @@
 package handlers
 
 import (
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/k8s"
 	. "github.com/smartystreets/goconvey/convey"
-	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	"reflect"
 	"sort"
 	"testing"
@@ -66,14 +66,7 @@ func TestSecretsHandlerK8sUseCase(t *testing.T) {
 			})
 
 			Convey("Replaces secret variable IDs in k8sSecretsMap with their corresponding secret value", func() {
-				eq := reflect.DeepEqual(k8sSecretsStruct.K8sSecrets["mysecret"]["username"], secret)
-				So(eq, ShouldEqual, true)
-			})
-
-			Convey("Clears the Conjur secret byte array from memory after use", func() {
-				empty := make([]byte, len(secret))
-				eq := reflect.DeepEqual(k8sSecretsStruct.K8sSecrets["mysecret"]["username"], secret)
-				eq = reflect.DeepEqual(conjurSecrets["account:variable:allowed/username"], empty)
+				eq := reflect.DeepEqual(k8sSecretsStruct.K8sSecrets["mysecret"]["username"], []byte{'s', 'u', 'p', 'e', 'r'})
 				So(eq, ShouldEqual, true)
 			})
 		})
