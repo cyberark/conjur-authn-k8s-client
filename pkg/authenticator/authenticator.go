@@ -31,7 +31,7 @@ var bufferTime = 30 * time.Second
 type Authenticator struct {
 	client             *http.Client
 	privateKey         *rsa.PrivateKey
-	AccessTokenHandler access_token.AccessTokenHandler
+	AccessTokenHandler access_token.AccessToken
 	Config             authnConfig.Config
 	PublicCert         *x509.Certificate
 }
@@ -52,7 +52,7 @@ func New(config authnConfig.Config) (*Authenticator, error) {
 	return NewWithAccessTokenHandler(config, accessTokenHandler)
 }
 
-func NewWithAccessTokenHandler(config authnConfig.Config, accessTokenHandler access_token.AccessTokenHandler) (*Authenticator, error) {
+func NewWithAccessTokenHandler(config authnConfig.Config, accessTokenHandler access_token.AccessToken) (*Authenticator, error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		return nil, err

@@ -9,7 +9,7 @@ import (
 )
 
 type ProxyHandlerTokenFile struct {
-	AccessToken AccessTokenHandler
+	AccessToken AccessToken
 }
 
 func TestAccessTokenFile(t *testing.T) {

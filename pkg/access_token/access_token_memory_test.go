@@ -8,7 +8,7 @@ import (
 )
 
 type ProxyHandlerTokenMemory struct {
-	AccessToken AccessTokenHandler
+	AccessToken AccessToken
 }
 
 func TestAccessTokenMemory(t *testing.T) {

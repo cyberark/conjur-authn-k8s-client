@@ -8,7 +8,7 @@ package access_token
 	object with this handler which will not write the data to a file. later on, we will use the Read() method to get the
 	token for retrieving secrets from conjur.
 */
-type AccessTokenHandler interface {
+type AccessToken interface {
 	Read() ([]byte, error)
 	Write(Data []byte) error
 	Delete() error
