@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-var InfoLogger = log.New(os.Stdout, "INFO: ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
+var InfoLogger = log.New(os.Stdout, "INFO:  ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
 var ErrorLogger = log.New(os.Stderr, "ERROR: ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
 
 func PrintAndReturnError(errorMessage string, args ...interface{}) error {
@@ -29,7 +29,7 @@ const CAKC011E string = "CAKC011E At least one of CONJUR_SSL_CERTIFICATE and CON
 const CAKC012E string = "CAKC012E Namespace or podname can't be empty namespace=%v podname=%v"
 const CAKC013E string = "CAKC013E Client certificate not found at %s"
 const CAKC014E string = "CAKC014E Failed reading client certificate file: %s"
-const CAKC015E string = "CAKC015E Failed parsing certificate. Reason: %s"
+const CAKC015E string = "CAKC015E Failed parsing certificate file '%s'. Reason: %s"
 const CAKC016E string = "CAKC016E Login failed"
 const CAKC017E string = "CAKC017E Environment variable %s must be provided"
 const CAKC018E string = "CAKC018E Failed to load Conjur config. Reason: %s"
@@ -80,6 +80,9 @@ const CAKC062E string = "CAKC062E Failed to send https login request or response
 const CAKC063E string = "CAKC063E Received invalid response to certificate signing request. Reason: %s"
 const CAKC064E string = "CAKC064E Failed to generate RSA keypair. Reason: %s"
 const CAKC065E string = "CAKC065E AccessTokenHandler failed to delete access token. Reason: %s"
+const CAKC066E string = "CAKC066E Failed to find any k8s secret with '%s' data entry"
+const CAKC067E string = "CAKC067E k8s secret '%s' is with empty value for '%s' data entry"
+const CAKC068E string = "CAKC068E k8s secret '%s' is with invalid format value for '%s' data entry"
 
 // INFO MESSAGES
 const CAKC001I string = "CAKC001I Storage configuration is %s"
@@ -98,6 +101,6 @@ const CAKC013I string = "CAKC013I Waiting for %s to re-authenticate and fetch se
 const CAKC014I string = "CAKC014I Creating Kubernetes client..."
 const CAKC015I string = "CAKC015I Creating Conjur client..."
 const CAKC016I string = "CAKC016I Retrieving Kubernetes secret '%s' from namespace '%s'..."
-const CAKC017I string = "CAKC017I Patching Kubernetes secret '%s' in namespace '%s'..."
+const CAKC017I string = "CAKC017I Patching Kubernetes secret '%s' in namespace '%s'"
 const CAKC018I string = "CAKC018I Retrieving following secrets from Conjur: "
 const CAKC019I string = "CAKC019I Authenticating as user '%s'"
