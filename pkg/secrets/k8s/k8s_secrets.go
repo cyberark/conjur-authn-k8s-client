@@ -2,14 +2,15 @@ package k8s
 
 import (
 	"fmt"
-	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
+	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"regexp"
 	"strings"
 )
 
@@ -42,6 +43,7 @@ type K8sSecretsMap struct {
 }
 
 func (secretsHandler K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, error) {
+	foundConjurMapKey := false
 	namespace := secretsHandler.Config.PodNamespace
 	requiredK8sSecrets := secretsHandler.Config.RequiredK8sSecrets
 
@@ -49,6 +51,7 @@ func (secretsHandler K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, er
 	pathMap := make(map[string][]string)
 
 	for _, secretName := range requiredK8sSecrets {
+
 		k8sSecret, err := retrieveK8sSecret(namespace, secretName)
 		if err != nil {
 			return nil, log.PrintAndReturnError(log.CAKC032E)
@@ -59,10 +62,18 @@ func (secretsHandler K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, er
 		newDataEntriesMap := make(map[string][]byte)
 		for key, value := range k8sSecret.Secret.Data {
 			if key == secretsConfig.CONJUR_MAP_KEY {
+				if len(value) == 0 {
+					return nil, log.PrintAndReturnError(log.CAKC067E, secretName, secretsConfig.CONJUR_MAP_KEY)
+				}
+				foundConjurMapKey = true
 				// Split the conjur-map to k8s secret keys. each value holds a Conjur variable ID
 				conjurMapEntries := strings.Split(string(value), "\n")
-
 				for _, entry := range conjurMapEntries {
+					matchedPattern, _ := regexp.MatchString(".+: .+", entry)
+					if matchedPattern == false {
+						return nil, log.PrintAndReturnError(log.CAKC068E, secretName, secretsConfig.CONJUR_MAP_KEY)
+					}
+
 					// Parse each secret key and store it in the map
 					k8sSecretKeyVal := strings.Split(entry, ": ")
 					k8sSecretKey := k8sSecretKeyVal[0]
@@ -79,6 +90,10 @@ func (secretsHandler K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, er
 		if len(newDataEntriesMap) > 0 {
 			k8sSecrets[secretName] = newDataEntriesMap
 		}
+	}
+
+	if !foundConjurMapKey {
+		return nil, log.PrintAndReturnError(log.CAKC066E, secretsConfig.CONJUR_MAP_KEY)
 	}
 
 	return &K8sSecretsMap{

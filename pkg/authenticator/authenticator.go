@@ -21,8 +21,8 @@ import (
 	"github.com/fullsailor/pkcs7"
 
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
-	sidecar "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
+	sidecar "github.com/cyberark/conjur-authn-k8s-client/pkg/sidecar"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
@@ -63,6 +63,7 @@ func New(config authnConfig.Config, accessTokenHandler access_token.AccessTokenH
 		privateKey:         signingKey,
 		AccessTokenHandler: accessTokenHandler,
 	}, nil
+
 }
 
 // GenerateCSR prepares the CSR
@@ -144,7 +145,7 @@ func (auth *Authenticator) Login() error {
 	certDERBlock, certPEMBlock := pem.Decode(certPEMBlock)
 	cert, err := x509.ParseCertificate(certDERBlock.Bytes)
 	if err != nil {
-		return log.PrintAndReturnError(log.CAKC015E, err.Error())
+		return log.PrintAndReturnError(log.CAKC015E, auth.Config.ClientCertPath, err.Error())
 	}
 
 	auth.PublicCert = cert
