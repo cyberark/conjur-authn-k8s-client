@@ -10,8 +10,8 @@ import (
 )
 
 type AccessTokenFile struct {
-	TokenFilePath string
 	Data          []byte
+	TokenFilePath string
 }
 
 func NewAccessTokenFile(config config.Config) (token *AccessTokenFile, err error) {

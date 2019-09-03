@@ -5,8 +5,8 @@ import (
 )
 
 type ConjurProvider interface {
-	RetrieveSecret(string) ([]byte, error)
 	RetrieveBatchSecrets([]string) (map[string][]byte, error)
+	RetrieveSecret(string) ([]byte, error)
 }
 
 type ConjurSecretsFetcherInterface interface {

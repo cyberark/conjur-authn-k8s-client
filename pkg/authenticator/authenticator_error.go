@@ -11,14 +11,14 @@ import (
 // Error includes the error info for Authenticator-related errors
 type Error struct {
 	Code    int
-	Message string
 	Details *ErrorDetails `json:"error"`
+	Message string
 }
 
 // ErrorDetails includes JSON data on authenticator.Errors
 type ErrorDetails struct {
-	Message string `json:"message"`
 	Code    string `json:"code"`
+	Message string `json:"message"`
 }
 
 // NewError creates a new instance of authenticator.Error

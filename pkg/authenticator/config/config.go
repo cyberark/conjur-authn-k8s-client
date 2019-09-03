@@ -11,16 +11,16 @@ import (
 // Config defines the configuration parameters
 // for the authentication requests
 type Config struct {
+	Account             string
+	ClientCertPath      string
 	ContainerMode       string
 	ConjurVersion       string
-	Account             string
-	URL                 string
-	Username            string
 	PodName             string
 	PodNamespace        string
 	SSLCertificate      []byte
-	ClientCertPath      string
 	TokenRefreshTimeout time.Duration
+	URL                 string
+	Username            string
 }
 
 // DefaultTokenRefreshTimeout is the default time the system waits to

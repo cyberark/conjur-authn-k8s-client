@@ -31,11 +31,11 @@ var bufferTime = 30 * time.Second
 // Authenticator contains the configuration and client
 // for the authentication connection to Conjur
 type Authenticator struct {
-	Config             authnConfig.Config
-	privateKey         *rsa.PrivateKey
-	PublicCert         *x509.Certificate
 	client             *http.Client
+	privateKey         *rsa.PrivateKey
 	AccessTokenHandler access_token.AccessTokenHandler
+	Config             authnConfig.Config
+	PublicCert         *x509.Certificate
 }
 
 const (

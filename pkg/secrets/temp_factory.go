@@ -9,8 +9,8 @@ import (
 const DEVSHM = "/dev/shm"
 
 type TempFactory struct {
-	path  string
 	files []string
+	path  string
 }
 
 // Create a new temporary file factory.
