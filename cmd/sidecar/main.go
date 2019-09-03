@@ -24,31 +24,26 @@ func main() {
 	// Initialize configurations
 	authnConfig, err := authnConfigProvider.NewFromEnv()
 	if err != nil {
-		errorLogger.Printf(log.CAKC045E)
-		os.Exit(1)
+		printErrorAndExit(log.CAKC045E)
 	}
 
 	storageConfig, err := storageConfigProvider.NewFromEnv()
 	if err != nil {
-		errorLogger.Printf(log.CAKC046E)
-		os.Exit(1)
+		printErrorAndExit(log.CAKC046E)
 	}
 
 	if storageConfig.StoreType == storageConfigProvider.K8S && authnConfig.ContainerMode != "init" {
-		errorLogger.Printf(log.CAKC047E)
-		os.Exit(1)
+		printErrorAndExit(log.CAKC047E)
 	}
 
 	storageHandler, err := storage.NewStorageHandler(*storageConfig)
 	if err != nil {
-		errorLogger.Printf(log.CAKC048E)
-		os.Exit(1)
+		printErrorAndExit(log.CAKC048E)
 	}
 
 	authn, err := authenticator.New(*authnConfig, storageHandler.AccessTokenHandler)
 	if err != nil {
-		errorLogger.Printf(log.CAKC049E)
-		os.Exit(1)
+		printErrorAndExit(log.CAKC049E)
 	}
 
 	// Configure exponential backoff
@@ -97,13 +92,18 @@ func main() {
 	}, expBackoff)
 
 	if err != nil {
-		errorLogger.Printf(log.CAKC053E)
 		// Deleting the retrieved Conjur access token in case we got an error after retrieval.
 		// if the access token is already deleted the action should not fail
 		err = storageHandler.AccessTokenHandler.Delete()
 		if err != nil {
 			errorLogger.Printf(log.CAKC054E)
 		}
-		os.Exit(1)
+
+		printErrorAndExit(log.CAKC053E)
 	}
+}
+
+func printErrorAndExit(errorMessage string) {
+	errorLogger.Printf(errorMessage)
+	os.Exit(1)
 }
