@@ -11,9 +11,9 @@ import (
 )
 
 type SecretsHandlerK8sUseCase struct {
-	AccessTokenHandler   access_token.AccessTokenHandler
-	ConjurSecretsFetcher conjur.ConjurSecretsFetcherInterface
-	K8sSecretsHandler    k8s.K8sSecretsHandler
+	AccessTokenHandler     access_token.AccessTokenHandler
+	ConjurSecretsRetriever conjur.ConjurSecretsRetriever
+	K8sSecretsHandler      k8s.K8sSecretsHandler
 }
 
 func NewSecretHandlerK8sUseCase(secretsConfig secretsConfig.Config, AccessTokenHandler access_token.AccessTokenHandler) (SecretsHandler *SecretsHandlerK8sUseCase, err error) {
@@ -22,12 +22,20 @@ func NewSecretHandlerK8sUseCase(secretsConfig secretsConfig.Config, AccessTokenH
 		return nil, log.PrintAndReturnError(log.CAKC022E)
 	}
 
-	var conjurSecretsFetcher conjur.ConjurSecretsFetcher
+	accessToken, err := AccessTokenHandler.Read()
+	if err != nil {
+		return nil, log.PrintAndReturnError(log.CAKC024E)
+	}
+
+	conjurSecretsRetriever, err := conjur.NewConjurSecretsRetriever(accessToken)
+	if err != nil {
+		return nil, log.PrintAndReturnError(log.CAKC069E)
+	}
 
 	return &SecretsHandlerK8sUseCase{
-		AccessTokenHandler:   AccessTokenHandler,
-		ConjurSecretsFetcher: conjurSecretsFetcher,
-		K8sSecretsHandler:    *k8sSecretsHandler,
+		AccessTokenHandler:     AccessTokenHandler,
+		ConjurSecretsRetriever: *conjurSecretsRetriever,
+		K8sSecretsHandler:      *k8sSecretsHandler,
 	}, nil
 }
 
@@ -37,17 +45,12 @@ func (secretsHandlerK8sUseCase SecretsHandlerK8sUseCase) HandleSecrets() error {
 		return log.PrintAndReturnError(log.CAKC023E)
 	}
 
-	accessToken, err := secretsHandlerK8sUseCase.AccessTokenHandler.Read()
-	if err != nil {
-		return log.PrintAndReturnError(log.CAKC024E)
-	}
-
 	variableIDs, err := getVariableIDsToRetrieve(k8sSecretsMap.PathMap)
 	if err != nil {
 		return log.PrintAndReturnError(log.CAKC025E)
 	}
 
-	retrievedConjurSecrets, err := secretsHandlerK8sUseCase.ConjurSecretsFetcher.RetrieveConjurSecrets(accessToken, variableIDs)
+	retrievedConjurSecrets, err := secretsHandlerK8sUseCase.ConjurSecretsRetriever.RetrieveConjurSecrets(variableIDs)
 	if err != nil {
 		return log.PrintAndReturnError(log.CAKC026E)
 	}
