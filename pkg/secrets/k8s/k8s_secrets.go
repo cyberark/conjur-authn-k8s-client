@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"bytes"
 	"fmt"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
@@ -185,11 +186,12 @@ func generateStringDataEntry(stringDataEntriesMap map[string][]byte) ([]byte, er
 	entries := make([][]byte, len(stringDataEntriesMap))
 	// Parse every key-value pair in the map to a "key:value" byte array
 	for key, value := range stringDataEntriesMap {
+		stringDataEntriesMap[key] = bytes.Replace(value, []byte("\\"), []byte("\\\\"), -1)
 		entry = utils.ByteSlicePrintf(
 			`"%v":"%v"`,
 			"%v",
 			[]byte(key),
-			value,
+			stringDataEntriesMap[key],
 		)
 		entries[index] = entry
 		index++
@@ -211,7 +213,6 @@ func generateStringDataEntry(stringDataEntriesMap map[string][]byte) ([]byte, er
 				entries[i+1],
 			)
 		}
-
 		// Clear secret from memory
 		entries[i] = nil
 	}
@@ -225,6 +226,5 @@ func generateStringDataEntry(stringDataEntriesMap map[string][]byte) ([]byte, er
 
 	// Clear secret from memory
 	entriesCombined = nil
-
 	return stringDataEntry, nil
 }
