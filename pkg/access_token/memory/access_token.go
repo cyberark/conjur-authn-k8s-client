@@ -1,7 +1,7 @@
 package memory
 
 import (
-	"fmt"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/logger"
 )
 
 type AccessToken struct {
@@ -16,7 +16,7 @@ func NewAccessToken() (token *AccessToken, err error) {
 
 func (token AccessToken) Read() ([]byte, error) {
 	if token.Data == nil {
-		return nil, fmt.Errorf("error reading access token, reason: data is empty")
+		return nil, logger.PrintAndReturnError(logger.CAKC006E)
 	}
 
 	return token.Data, nil
@@ -24,7 +24,7 @@ func (token AccessToken) Read() ([]byte, error) {
 
 func (token *AccessToken) Write(Data []byte) (err error) {
 	if Data == nil {
-		return fmt.Errorf("error writing access token, reason: data is empty")
+		return logger.PrintAndReturnError(logger.CAKC005E)
 	}
 
 	token.Data = Data

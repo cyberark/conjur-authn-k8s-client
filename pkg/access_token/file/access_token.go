@@ -1,10 +1,11 @@
 package file
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/logger"
 )
 
 type AccessToken struct {
@@ -21,7 +22,7 @@ func NewAccessToken(filePath string) (*AccessToken, error) {
 
 func (token AccessToken) Read() ([]byte, error) {
 	if token.Data == nil {
-		return nil, fmt.Errorf("error reading access token, reason: data is empty")
+		return nil, logger.PrintAndReturnError(logger.CAKC006E)
 	}
 
 	return token.Data, nil
@@ -29,7 +30,7 @@ func (token AccessToken) Read() ([]byte, error) {
 
 func (token *AccessToken) Write(Data []byte) (err error) {
 	if Data == nil {
-		return fmt.Errorf("error writing access token, reason: data is empty")
+		return logger.PrintAndReturnError(logger.CAKC005E)
 	}
 
 	token.Data = Data
@@ -40,14 +41,14 @@ func (token *AccessToken) Write(Data []byte) (err error) {
 		err = os.MkdirAll(tokenDir, 755)
 		if err != nil {
 			// Do not specify the directory in the error message for security reasons
-			return fmt.Errorf("error writing access token, reason: failed to create directory")
+			return logger.PrintAndReturnError(logger.CAKC004E)
 		}
 	}
 
 	err = ioutil.WriteFile(token.FilePath, token.Data, 0644)
 	if err != nil {
 		// Do not specify the file path in the error message for security reasons
-		return fmt.Errorf("error writing access token, reason: failed to write file")
+		return logger.PrintAndReturnError(logger.CAKC003E)
 	}
 
 	return nil
@@ -57,7 +58,7 @@ func (token *AccessToken) Delete() (err error) {
 	err = os.Remove(token.FilePath)
 	if err != nil {
 		// Do not specify the file path in the error message for security reasons
-		return fmt.Errorf("error deleting access token")
+		return logger.PrintAndReturnError(logger.CAKC002E)
 	}
 
 	// Clear Data

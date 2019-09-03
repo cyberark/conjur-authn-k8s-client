@@ -9,26 +9,25 @@ import (
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/logger"
 )
 
 // logging
-var errLogger = authenticator.ErrorLogger
-var infoLogger = authenticator.InfoLogger
+var errLogger = logger.ErrorLogger
+var infoLogger = logger.InfoLogger
 
 func main() {
 	var err error
 
 	config, err := authnConfig.NewFromEnv()
 	if err != nil {
-		errLogger.Printf(err.Error())
-		os.Exit(1)
+		printErrorAndExit(logger.CAKC017E)
 	}
 
 	// Create new Authenticator
 	authn, err := authenticator.New(*config)
 	if err != nil {
-		errLogger.Printf(err.Error())
-		os.Exit(1)
+		printErrorAndExit(logger.CAKC018E)
 	}
 
 	// Configure exponential backoff
@@ -41,17 +40,15 @@ func main() {
 
 	err = backoff.Retry(func() error {
 		for {
-			infoLogger.Printf(fmt.Sprintf("Authenticating as %s ...", authn.Config.Username))
+			infoLogger.Printf(logger.CAKC005I, authn.Config.Username)
 			resp, err := authn.Authenticate()
 			if err != nil {
-				errLogger.Printf("Failure authenticating: %s", err.Error())
-				return err
+				return logger.PrintAndReturnError(logger.CAKC019E)
 			}
 
 			err = authn.ParseAuthenticationResponse(resp)
 			if err != nil {
-				errLogger.Printf("Failure parsing response: %s", err.Error())
-				return err
+				return logger.PrintAndReturnError(logger.CAKC020E)
 			}
 
 			if authn.Config.ContainerMode == "init" {
@@ -61,8 +58,7 @@ func main() {
 			// Reset exponential backoff
 			expBackoff.Reset()
 
-			infoLogger.Printf("Waiting for %s to re-authenticate.",
-				authn.Config.TokenRefreshTimeout)
+			infoLogger.Printf(logger.CAKC013I, authn.Config.TokenRefreshTimeout)
 
 			fmt.Println()
 			time.Sleep(authn.Config.TokenRefreshTimeout)
@@ -70,7 +66,11 @@ func main() {
 	}, expBackoff)
 
 	if err != nil {
-		errLogger.Printf("Backoff exhausted: %s", err.Error())
-		os.Exit(1)
+		printErrorAndExit(logger.CAKC021E)
 	}
+}
+
+func printErrorAndExit(errorMessage string) {
+	errLogger.Printf(errorMessage)
+	os.Exit(1)
 }
