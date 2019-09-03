@@ -9,7 +9,6 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/file"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -21,6 +20,7 @@ import (
 	"github.com/fullsailor/pkcs7"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/file"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 )
 
