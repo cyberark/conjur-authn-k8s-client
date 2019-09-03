@@ -5,3 +5,6 @@
 *.iml
 
 test
+
+# exe created by build
+conjur-sidecar
