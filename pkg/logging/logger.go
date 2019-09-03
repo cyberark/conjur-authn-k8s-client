@@ -80,9 +80,9 @@ const CAKC062E string = "CAKC062E Failed to send https login request or response
 const CAKC063E string = "CAKC063E Received invalid response to certificate signing request. Reason: %s"
 const CAKC064E string = "CAKC064E Failed to generate RSA keypair. Reason: %s"
 const CAKC065E string = "CAKC065E AccessTokenHandler failed to delete access token. Reason: %s"
-const CAKC066E string = "CAKC066E Failed to find any k8s secrets defined with a 'conjur-map’ data entry"
-const CAKC067E string = "CAKC067E k8s secret '%s' has no value defined for the 'conjur-map' data entry"
-const CAKC068E string = "CAKC068E k8s secret '%s' has an invalid value for 'conjur-map' data entry"
+const CAKC066E string = "CAKC066E Failed to find any k8s secrets defined with a '%s’ data entry"
+const CAKC067E string = "CAKC067E k8s secret '%s' has no value defined for the '%s' data entry"
+const CAKC068E string = "CAKC068E k8s secret '%s' has an invalid value for '%s' data entry"
 
 // INFO MESSAGES
 const CAKC001I string = "CAKC001I Storage configuration is %s"
