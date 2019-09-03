@@ -1,11 +1,13 @@
 package access_token
 
 import (
-	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
-	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
-	. "github.com/smartystreets/goconvey/convey"
 	"reflect"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
+
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
+	storageConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 )
 
 type ProxyHandlerTokenMemory struct {

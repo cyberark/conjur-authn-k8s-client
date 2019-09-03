@@ -1,12 +1,14 @@
 package handlers
 
 import (
-	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/k8s"
-	. "github.com/smartystreets/goconvey/convey"
 	"reflect"
 	"sort"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
+
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/k8s"
 )
 
 func TestSecretsHandlerK8sUseCase(t *testing.T) {

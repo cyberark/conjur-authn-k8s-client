@@ -1,12 +1,12 @@
 package access_token
 
 import (
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 )
 
 type AccessTokenFile struct {

@@ -2,14 +2,16 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/cenkalti/backoff"
+
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	authnConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage"
 	storageConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
-	"os"
-	"time"
 )
 
 // logging

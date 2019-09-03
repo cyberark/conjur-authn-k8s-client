@@ -1,13 +1,15 @@
 package k8s
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
-	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	"reflect"
-	"testing"
 	"regexp"
 	"sort"
 	"strings"
+	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
+
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 )
 
 func TestKubernetesSecrets(t *testing.T) {

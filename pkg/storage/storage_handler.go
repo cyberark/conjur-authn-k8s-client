@@ -2,12 +2,12 @@ package storage
 
 import (
 	"fmt"
+
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	secretsConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	secretsHandlers "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/handlers"
 	storageConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
-	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
-
 )
 
 // TODO: understand why we need underscore here, otherwise "Storage_Handler is not a type"

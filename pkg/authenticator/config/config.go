@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
+
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 )
 

@@ -2,6 +2,7 @@ package conjur
 
 import (
 	"github.com/cyberark/conjur-api-go/conjurapi"
+
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 )
 

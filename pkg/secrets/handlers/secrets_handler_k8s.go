@@ -1,12 +1,13 @@
 package handlers
 
 import (
+	"strings"
+
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/conjur"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/k8s"
-	"strings"
 )
 
 type SecretsHandlerK8sUseCase struct {

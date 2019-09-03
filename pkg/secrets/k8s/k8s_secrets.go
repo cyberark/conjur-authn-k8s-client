@@ -2,16 +2,18 @@ package k8s
 
 import (
 	"fmt"
-	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
-	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
+	"regexp"
+	"strings"
+
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"regexp"
-	"strings"
+
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
+	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
 )
 
 type K8sSecretsHandler struct {
