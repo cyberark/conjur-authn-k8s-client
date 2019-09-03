@@ -25,7 +25,7 @@ pipeline {
 
     stage('Publish client Docker image') {
       when {
-        branch 'master'
+        branch 'push-beta-image'
       }
       steps {
         sh './bin/publish'
