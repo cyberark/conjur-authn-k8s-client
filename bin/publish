@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-DOCKERHUB_IMAGE_NEW='cyberark/cyberark-secrets-provider-for-k8s'
+DOCKERHUB_IMAGE_NEW='registry2.itci.conjur.net/cyberark-secrets-provider-for-k8s'
 VERSION_TAG="$(<VERSION)-beta"
 
 docker tag conjur-authn-k8s-client:dev "$DOCKERHUB_IMAGE_NEW"
