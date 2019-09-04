@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/logger"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
 // Config defines the configuration parameters
@@ -45,14 +45,14 @@ func NewFromEnv() (*Config, error) {
 		"MY_POD_NAME",
 	} {
 		if os.Getenv(envvar) == "" {
-			return nil, logger.PrintAndReturnError(logger.CAKC013E, envvar)
+			return nil, log.RecordedError(log.MissingEnvVarError, envvar)
 		}
 	}
 
 	// Load CA cert
 	caCert, err := readSSLCert()
 	if err != nil {
-		return nil, logger.PrintAndReturnError(logger.CAKC022E, err.Error())
+		return nil, log.RecordedError(log.SSLCertReadError, err.Error())
 	}
 
 	// Load configuration from the environment
@@ -75,7 +75,7 @@ func NewFromEnv() (*Config, error) {
 	if len(tokenRefreshTimeoutString) > 0 {
 		parsedTokenRefreshTimeout, err := time.ParseDuration(tokenRefreshTimeoutString)
 		if err != nil {
-			return nil, logger.PrintAndReturnError(logger.CAKC016E, err.Error())
+			return nil, log.RecordedError(log.TokenTimeoutParseError, err.Error())
 		}
 
 		tokenRefreshTimeout = parsedTokenRefreshTimeout
@@ -112,7 +112,7 @@ func readSSLCert() ([]byte, error) {
 	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
 	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
 	if SSLCert == "" && SSLCertPath == "" {
-		return nil, logger.PrintAndReturnError(logger.CAKC007E)
+		return nil, log.RecordedError(log.MissingEnvVarsErrorSSLCert)
 	}
 
 	if SSLCert != "" {

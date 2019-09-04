@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/logger"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
 // LoginRequest sends a login request
@@ -20,11 +20,11 @@ func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte) (*http
 		authenticateURL = fmt.Sprintf("%s/inject_client_cert", authnURL)
 	}
 
-	logger.InfoLogger.Printf(logger.CAKC011I, authenticateURL)
+	log.InfoLogger.Printf(log.LoginRequestTo, authenticateURL)
 
 	req, err := http.NewRequest("POST", authenticateURL, bytes.NewBuffer(csrBytes))
 	if err != nil {
-		return nil, logger.PrintAndReturnError(logger.CAKC025E, err.Error())
+		return nil, log.RecordedError(log.LoginRequestInitError, err.Error())
 	}
 	req.Header.Set("Content-Type", "text/plain")
 
@@ -43,10 +43,10 @@ func AuthenticateRequest(authnURL string, conjurVersion string, account string, 
 		authenticateURL = fmt.Sprintf("%s/%s/%s/authenticate", authnURL, account, url.QueryEscape(username))
 	}
 
-	logger.InfoLogger.Printf(logger.CAKC012I, authenticateURL)
+	log.InfoLogger.Printf(log.AuthnRequestTo, authenticateURL)
 
 	if req, err = http.NewRequest("POST", authenticateURL, nil); err != nil {
-		return nil, logger.PrintAndReturnError(logger.CAKC024E, err.Error())
+		return nil, log.RecordedError(log.AuthnRequestInitError, err.Error())
 	}
 
 	req.Header.Set("Content-Type", "text/plain")
@@ -59,7 +59,7 @@ func readBody(resp *http.Response) ([]byte, error) {
 
 	responseBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, logger.PrintAndReturnError(logger.CAKC023E, err.Error())
+		return nil, log.RecordedError(log.AuthnResponseReadError, err.Error())
 	}
 
 	return responseBytes, err

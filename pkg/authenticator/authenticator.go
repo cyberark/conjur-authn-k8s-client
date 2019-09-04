@@ -22,7 +22,7 @@ import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/file"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/logger"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
@@ -48,7 +48,7 @@ const (
 func New(config authnConfig.Config) (*Authenticator, error) {
 	accessTokenHandler, err := file.NewAccessToken(config.TokenFilePath)
 	if err != nil {
-		return nil, logger.PrintAndReturnError(logger.CAKC001E)
+		return nil, log.RecordedError(log.CreateAccessTokenError)
 	}
 
 	return NewWithAccessTokenHandler(config, accessTokenHandler)
@@ -57,7 +57,7 @@ func New(config authnConfig.Config) (*Authenticator, error) {
 func NewWithAccessTokenHandler(config authnConfig.Config, accessTokenHandler access_token.AccessToken) (*Authenticator, error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
-		return nil, logger.PrintAndReturnError(logger.CAKC031E, err.Error())
+		return nil, log.RecordedError(log.GenerateRSAError, err.Error())
 	}
 
 	client, err := newHTTPSClient(config.SSLCertificate, nil, nil)
@@ -117,7 +117,7 @@ func (auth *Authenticator) GenerateCSR() ([]byte, error) {
 // successfully retrieved
 func (auth *Authenticator) Login() error {
 
-	logger.InfoLogger.Printf(logger.CAKC006I, auth.Config.Username)
+	log.InfoLogger.Printf(log.LoginAsUser, auth.Config.Username)
 
 	csrRawBytes, err := auth.GenerateCSR()
 
@@ -131,28 +131,28 @@ func (auth *Authenticator) Login() error {
 
 	resp, err := auth.client.Do(req)
 	if err != nil {
-		return logger.PrintAndReturnError(logger.CAKC029E, err.Error())
+		return log.RecordedError(log.HttpsLoginRequestError, err.Error())
 	}
 
 	err = EmptyResponse(resp)
 	if err != nil {
-		return logger.PrintAndReturnError(logger.CAKC030E, err.Error())
+		return log.RecordedError(log.InvalidCertificateResponseError, err.Error())
 	}
 
 	// load client cert
 	certPEMBlock, err := ioutil.ReadFile(auth.Config.ClientCertPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return logger.PrintAndReturnError(logger.CAKC009E, auth.Config.ClientCertPath)
+			return log.RecordedError(log.ClientCertNotFoundError, auth.Config.ClientCertPath)
 		}
 
-		return logger.PrintAndReturnError(logger.CAKC010E, err.Error())
+		return log.RecordedError(log.ClientCertReadError, err.Error())
 	}
 
 	certDERBlock, certPEMBlock := pem.Decode(certPEMBlock)
 	cert, err := x509.ParseCertificate(certDERBlock.Bytes)
 	if err != nil {
-		return logger.PrintAndReturnError(logger.CAKC011E, auth.Config.ClientCertPath, err.Error())
+		return log.RecordedError(log.ClientCertParseError, auth.Config.ClientCertPath, err.Error())
 	}
 
 	auth.PublicCert = cert
@@ -173,9 +173,9 @@ func (auth *Authenticator) IsCertExpired() bool {
 	certExpiresOn := auth.PublicCert.NotAfter.UTC()
 	currentDate := time.Now().UTC()
 
-	logger.InfoLogger.Printf(logger.CAKC007I, certExpiresOn)
-	logger.InfoLogger.Printf(logger.CAKC008I, currentDate)
-	logger.InfoLogger.Printf(logger.CAKC009I, bufferTime)
+	log.InfoLogger.Printf(log.CertExpiration, certExpiresOn)
+	log.InfoLogger.Printf(log.CurrentDate, currentDate)
+	log.InfoLogger.Printf(log.BufferTime, bufferTime)
 
 	return currentDate.Add(bufferTime).After(certExpiresOn)
 }
@@ -184,23 +184,23 @@ func (auth *Authenticator) IsCertExpired() bool {
 // the response data. Also manages state of certificates.
 func (auth *Authenticator) Authenticate() ([]byte, error) {
 	if !auth.IsLoggedIn() {
-		logger.InfoLogger.Printf(logger.CAKC004I)
+		log.InfoLogger.Printf(log.TryingToLogin)
 
 		if err := auth.Login(); err != nil {
-			return nil, logger.PrintAndReturnError(logger.CAKC012E)
+			return nil, log.RecordedError(log.LoginError)
 		}
 
-		logger.InfoLogger.Printf(logger.CAKC010I)
+		log.InfoLogger.Printf(log.LoginSuccess)
 	}
 
 	if auth.IsCertExpired() {
-		logger.InfoLogger.Printf(logger.CAKC003I)
+		log.InfoLogger.Printf(log.CertificateExpiredReLogin)
 
 		if err := auth.Login(); err != nil {
 			return nil, err
 		}
 
-		logger.InfoLogger.Printf(logger.CAKC002I)
+		log.InfoLogger.Printf(log.ReLoginSuccess)
 	}
 
 	privDer := x509.MarshalPKCS1PrivateKey(auth.privateKey)
@@ -225,7 +225,7 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, logger.PrintAndReturnError(logger.CAKC028E, err.Error())
+		return nil, log.RecordedError(log.HttpsAuthnRequestError, err.Error())
 	}
 
 	return DataResponse(resp)
@@ -253,7 +253,7 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		return err
 	}
 
-	logger.InfoLogger.Printf(logger.CAKC001I)
+	log.InfoLogger.Printf(log.AuthenticationSuccess)
 
 	return nil
 }
@@ -261,7 +261,7 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 // generateSANURI returns the formatted uri(SPIFFEE format for now) for the certificate.
 func generateSANURI(namespace, podname string) (string, error) {
 	if namespace == "" || podname == "" {
-		return "", logger.PrintAndReturnError(logger.CAKC008E, namespace, podname)
+		return "", log.RecordedError(log.MissingEnvVarsErrorNamespacePod, namespace, podname)
 	}
 	return fmt.Sprintf("spiffe://cluster.local/namespace/%s/podname/%s", namespace, podname), nil
 }
@@ -294,12 +294,12 @@ func decodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey cry
 	tokenDerBlock, _ := pem.Decode(PEMBlock)
 	p7, err := pkcs7.Parse(tokenDerBlock.Bytes)
 	if err != nil {
-		return nil, logger.PrintAndReturnError(logger.CAKC027E, err.Error())
+		return nil, log.RecordedError(log.DecodeDERError, err.Error())
 	}
 
 	decodedPEM, err = p7.Decrypt(publicCert, privateKey)
 	if err != nil {
-		return nil, logger.PrintAndReturnError(logger.CAKC026E, err.Error())
+		return nil, log.RecordedError(log.DecodePEMError, err.Error())
 	}
 
 	return decodedPEM, nil

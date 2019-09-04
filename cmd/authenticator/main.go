@@ -9,25 +9,25 @@ import (
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/logger"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
 // logging
-var errLogger = logger.ErrorLogger
-var infoLogger = logger.InfoLogger
+var errLogger = log.ErrorLogger
+var infoLogger = log.InfoLogger
 
 func main() {
 	var err error
 
 	config, err := authnConfig.NewFromEnv()
 	if err != nil {
-		printErrorAndExit(logger.CAKC017E)
+		printErrorAndExit(log.AuthnConfigInitError)
 	}
 
 	// Create new Authenticator
 	authn, err := authenticator.New(*config)
 	if err != nil {
-		printErrorAndExit(logger.CAKC018E)
+		printErrorAndExit(log.AuthnInitError)
 	}
 
 	// Configure exponential backoff
@@ -40,15 +40,15 @@ func main() {
 
 	err = backoff.Retry(func() error {
 		for {
-			infoLogger.Printf(logger.CAKC005I, authn.Config.Username)
+			infoLogger.Printf(log.AuthnAsUser, authn.Config.Username)
 			resp, err := authn.Authenticate()
 			if err != nil {
-				return logger.PrintAndReturnError(logger.CAKC019E)
+				return log.RecordedError(log.AuthenticateError)
 			}
 
 			err = authn.ParseAuthenticationResponse(resp)
 			if err != nil {
-				return logger.PrintAndReturnError(logger.CAKC020E)
+				return log.RecordedError(log.AuthnReponseParseError)
 			}
 
 			if authn.Config.ContainerMode == "init" {
@@ -58,7 +58,7 @@ func main() {
 			// Reset exponential backoff
 			expBackoff.Reset()
 
-			infoLogger.Printf(logger.CAKC013I, authn.Config.TokenRefreshTimeout)
+			infoLogger.Printf(log.WaitForRefreshTimeout, authn.Config.TokenRefreshTimeout)
 
 			fmt.Println()
 			time.Sleep(authn.Config.TokenRefreshTimeout)
@@ -66,7 +66,7 @@ func main() {
 	}, expBackoff)
 
 	if err != nil {
-		printErrorAndExit(logger.CAKC021E)
+		printErrorAndExit(log.RetransmitionBackoffExhaustError)
 	}
 }
 

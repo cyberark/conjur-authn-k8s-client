@@ -7,7 +7,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/logger"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
 type ProxyHandlerTokenMemory struct {
@@ -48,7 +48,7 @@ func TestAccessTokenMemory(t *testing.T) {
 				_, err := accessToken.Read()
 
 				Convey("Raises an error that the data is empty", func() {
-					So(err.Error(), ShouldEqual, logger.CAKC006E)
+					So(err.Error(), ShouldEqual, log.ReadAccessTokenError)
 				})
 			})
 		})
@@ -79,7 +79,7 @@ func TestAccessTokenMemory(t *testing.T) {
 			err := accessToken.Write(nil)
 
 			Convey("Raises an error that the data is empty", func() {
-				So(err.Error(), ShouldEqual, logger.CAKC005E)
+				So(err.Error(), ShouldEqual, log.WriteAccessTokenEmptyDataError)
 			})
 		})
 	})
@@ -153,7 +153,7 @@ func TestAccessTokenMemory(t *testing.T) {
 						})
 
 						Convey("Raises the proper error", func() {
-							So(err.Error(), ShouldEqual, logger.CAKC006E)
+							So(err.Error(), ShouldEqual, log.ReadAccessTokenError)
 						})
 					})
 				})
