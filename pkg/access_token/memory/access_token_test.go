@@ -129,7 +129,7 @@ func TestAccessTokenMemory(t *testing.T) {
 			})
 		})
 
-		Convey("Given two instances of the accessTokenHandler interface", func() {
+		Convey("Given two instances of the accessToken interface", func() {
 			// Write Data to source interface
 			dataActual := []byte{'t', 'e', 's', 't'}
 			accessToken.Write(dataActual)

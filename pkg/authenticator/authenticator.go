@@ -31,11 +31,11 @@ var bufferTime = 30 * time.Second
 // Authenticator contains the configuration and client
 // for the authentication connection to Conjur
 type Authenticator struct {
-	client             *http.Client
-	privateKey         *rsa.PrivateKey
-	AccessTokenHandler access_token.AccessToken
-	Config             authnConfig.Config
-	PublicCert         *x509.Certificate
+	client      *http.Client
+	privateKey  *rsa.PrivateKey
+	AccessToken access_token.AccessToken
+	Config      authnConfig.Config
+	PublicCert  *x509.Certificate
 }
 
 const (
@@ -46,15 +46,15 @@ const (
 )
 
 func New(config authnConfig.Config) (*Authenticator, error) {
-	accessTokenHandler, err := file.NewAccessToken(config.TokenFilePath)
+	accessToken, err := file.NewAccessToken(config.TokenFilePath)
 	if err != nil {
 		return nil, log.RecordedError(log.CAKC001E)
 	}
 
-	return NewWithAccessTokenHandler(config, accessTokenHandler)
+	return NewWithAccessToken(config, accessToken)
 }
 
-func NewWithAccessTokenHandler(config authnConfig.Config, accessTokenHandler access_token.AccessToken) (*Authenticator, error) {
+func NewWithAccessToken(config authnConfig.Config, accessToken access_token.AccessToken) (*Authenticator, error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		return nil, log.RecordedError(log.CAKC030E, err.Error())
@@ -66,10 +66,10 @@ func NewWithAccessTokenHandler(config authnConfig.Config, accessTokenHandler acc
 	}
 
 	return &Authenticator{
-		client:             client,
-		privateKey:         signingKey,
-		AccessTokenHandler: accessTokenHandler,
-		Config:             config,
+		client:      client,
+		privateKey:  signingKey,
+		AccessToken: accessToken,
+		Config:      config,
 	}, nil
 }
 
@@ -248,7 +248,7 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		content = response
 	}
 
-	err = auth.AccessTokenHandler.Write(content)
+	err = auth.AccessToken.Write(content)
 	if err != nil {
 		return err
 	}
