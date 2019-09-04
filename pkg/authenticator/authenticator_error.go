@@ -17,8 +17,8 @@ type Error struct {
 
 // ErrorDetails includes JSON data on authenticator.Errors
 type ErrorDetails struct {
-	Message string `json:"message"`
 	Code    string `json:"code"`
+	Message string `json:"message"`
 }
 
 // NewError creates a new instance of authenticator.Error

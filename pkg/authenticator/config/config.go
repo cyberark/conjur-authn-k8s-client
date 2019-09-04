@@ -1,34 +1,39 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
+
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
 // Config defines the configuration parameters
 // for the authentication requests
 type Config struct {
+	Account             string
+	ClientCertPath      string
 	ContainerMode       string
 	ConjurVersion       string
-	Account             string
-	URL                 string
-	Username            string
 	PodName             string
 	PodNamespace        string
 	SSLCertificate      []byte
-	ClientCertPath      string
 	TokenFilePath       string
 	TokenRefreshTimeout time.Duration
+	URL                 string
+	Username            string
 }
 
-// DefaultTokenRefreshTimeout is the default time the system waits to
-// reauthenticate on error
-const DefaultTokenRefreshTimeout = 6 * time.Minute
+const (
+	DefaultClientCertPath = "/etc/conjur/ssl/client.pem"
+	DefaultTokenFilePath  = "/run/conjur/access-token"
+
+	// DefaultTokenRefreshTimeout is the default time the system waits to reauthenticate on error
+	DefaultTokenRefreshTimeout = 6 * time.Minute
+)
 
 // New returns a new authenticator configuration object
-func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
+func NewFromEnv() (*Config, error) {
 	var err error
 
 	// Check that required environment variables are set
@@ -40,15 +45,14 @@ func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
 		"MY_POD_NAME",
 	} {
 		if os.Getenv(envvar) == "" {
-			err = fmt.Errorf("Environment variable %s must be provided", envvar)
-			return nil, err
+			return nil, log.RecordedError(log.CAKC009E, envvar)
 		}
 	}
 
 	// Load CA cert
 	caCert, err := readSSLCert()
 	if err != nil {
-		return nil, err
+		return nil, log.RecordedError(log.CAKC021E, err.Error())
 	}
 
 	// Load configuration from the environment
@@ -71,24 +75,36 @@ func NewFromEnv(clientCertPath *string, tokenPath *string) (*Config, error) {
 	if len(tokenRefreshTimeoutString) > 0 {
 		parsedTokenRefreshTimeout, err := time.ParseDuration(tokenRefreshTimeoutString)
 		if err != nil {
-			return nil, err
+			return nil, log.RecordedError(log.CAKC010E, err.Error())
 		}
 
 		tokenRefreshTimeout = parsedTokenRefreshTimeout
 	}
 
+	tokenFilePath := DefaultTokenFilePath
+	// If CONJUR_TOKEN_FILE_PATH is defined in the env we take its value
+	if envVal := os.Getenv("CONJUR_AUTHN_TOKEN_FILE"); envVal != "" {
+		tokenFilePath = envVal
+	}
+
+	clientCertPath := DefaultClientCertPath
+	// If CONJUR_CLIENT_CERT_PATH is defined in the env we take its value
+	if envVal := os.Getenv("CONJUR_CLIENT_CERT_PATH"); envVal != "" {
+		clientCertPath = envVal
+	}
+
 	return &Config{
+		Account:             account,
+		ClientCertPath:      clientCertPath,
 		ContainerMode:       containerMode,
 		ConjurVersion:       conjurVersion,
-		Account:             account,
-		URL:                 authnURL,
-		Username:            authnLogin,
 		PodName:             podName,
 		PodNamespace:        podNamespace,
 		SSLCertificate:      caCert,
-		ClientCertPath:      *clientCertPath,
-		TokenFilePath:       *tokenPath,
+		TokenFilePath:       tokenFilePath,
 		TokenRefreshTimeout: tokenRefreshTimeout,
+		URL:                 authnURL,
+		Username:            authnLogin,
 	}, nil
 }
 
@@ -96,9 +112,7 @@ func readSSLCert() ([]byte, error) {
 	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
 	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
 	if SSLCert == "" && SSLCertPath == "" {
-		err := fmt.Errorf(
-			"At least one of CONJUR_SSL_CERTIFICATE and CONJUR_CERT_FILE must be provided")
-		return nil, err
+		return nil, log.RecordedError(log.CAKC007E)
 	}
 
 	if SSLCert != "" {

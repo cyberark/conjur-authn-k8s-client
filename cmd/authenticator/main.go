@@ -1,40 +1,33 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/cenkalti/backoff"
+
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
 // logging
-var errLogger = authenticator.ErrorLogger
-var infoLogger = authenticator.InfoLogger
+var errLogger = log.ErrorLogger
+var infoLogger = log.InfoLogger
 
 func main() {
 	var err error
 
-	// Parse any flags for client cert / token paths, and set default values if not passed
-	clientCertPath := flag.String("c", "/etc/conjur/ssl/client.pem",
-		"Path to client certificate")
-	tokenFilePath := flag.String("t", "/run/conjur/access-token",
-		"Path to Conjur access token")
-
-	config, err := authnConfig.NewFromEnv(clientCertPath, tokenFilePath)
+	config, err := authnConfig.NewFromEnv()
 	if err != nil {
-		errLogger.Printf(err.Error())
-		os.Exit(1)
+		printErrorAndExit(log.CAKC018E)
 	}
 
 	// Create new Authenticator
 	authn, err := authenticator.New(*config)
 	if err != nil {
-		errLogger.Printf(err.Error())
-		os.Exit(1)
+		printErrorAndExit(log.CAKC019E)
 	}
 
 	// Configure exponential backoff
@@ -47,17 +40,15 @@ func main() {
 
 	err = backoff.Retry(func() error {
 		for {
-			infoLogger.Printf(fmt.Sprintf("Authenticating as %s ...", authn.Config.Username))
+			infoLogger.Printf(log.CAKC006I, authn.Config.Username)
 			resp, err := authn.Authenticate()
 			if err != nil {
-				errLogger.Printf("Failure authenticating: %s", err.Error())
-				return err
+				return log.RecordedError(log.CAKC016E)
 			}
 
 			err = authn.ParseAuthenticationResponse(resp)
 			if err != nil {
-				errLogger.Printf("Failure parsing response: %s", err.Error())
-				return err
+				return log.RecordedError(log.CAKC020E)
 			}
 
 			if authn.Config.ContainerMode == "init" {
@@ -67,8 +58,7 @@ func main() {
 			// Reset exponential backoff
 			expBackoff.Reset()
 
-			infoLogger.Printf("Waiting for %s to re-authenticate.",
-				authn.Config.TokenRefreshTimeout)
+			infoLogger.Printf(log.CAKC013I, authn.Config.TokenRefreshTimeout)
 
 			fmt.Println()
 			time.Sleep(authn.Config.TokenRefreshTimeout)
@@ -76,7 +66,11 @@ func main() {
 	}, expBackoff)
 
 	if err != nil {
-		errLogger.Printf("Backoff exhausted: %s", err.Error())
-		os.Exit(1)
+		printErrorAndExit(log.CAKC031E)
 	}
+}
+
+func printErrorAndExit(errorMessage string) {
+	errLogger.Printf(errorMessage)
+	os.Exit(1)
 }
