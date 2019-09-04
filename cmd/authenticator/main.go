@@ -66,7 +66,7 @@ func main() {
 	}, expBackoff)
 
 	if err != nil {
-		printErrorAndExit(log.RetransmitionBackoffExhaustError)
+		printErrorAndExit(log.RetransmissionBackoffExhaustError)
 	}
 }
 

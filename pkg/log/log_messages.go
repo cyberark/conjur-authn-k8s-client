@@ -31,7 +31,7 @@ const HttpsAuthnRequestError string = "CAKC027E Failed to send https authenticat
 const HttpsLoginRequestError string = "CAKC028E Failed to send https login request or response. Reason: %s"
 const InvalidCertificateResponseError string = "CAKC029E Received invalid response to certificate signing request. Reason: %s"
 const GenerateRSAError string = "CAKC030E Failed to generate RSA keypair. Reason: %s"
-const RetransmitionBackoffExhaustError string = "CAKC031E Retransmission backoff exhausted"
+const RetransmissionBackoffExhaustError string = "CAKC031E Retransmission backoff exhausted"
 
 // INFO MESSAGES
 const AuthenticationSuccess string = "CAKC001I Successfully authenticated"
