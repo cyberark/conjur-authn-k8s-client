@@ -10,17 +10,17 @@ import (
 	storageConfigProvider "github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 )
 
-// TODO: understand why we need underscore here, otherwise "Storage_Handler is not a type"
-type Storage_Handler struct {
+type StorageHandler struct {
 	AccessTokenHandler access_token.AccessTokenHandler
 	SecretsHandler     secretsHandlers.SecretsHandler
 }
 
-func NewStorageHandler(storageConfig storageConfigProvider.Config) (StorageHandler *Storage_Handler, err error) {
+func NewStorageHandler(storageConfig storageConfigProvider.Config) (*StorageHandler, error) {
 	var infoLogger = log.InfoLogger
 
 	var accessTokenHandler access_token.AccessTokenHandler
 	var secretsHandler secretsHandlers.SecretsHandler
+	var err error
 
 	if storageConfig.StoreType == storageConfigProvider.K8S {
 		infoLogger.Printf(fmt.Sprintf(log.CAKC001I, storageConfigProvider.K8S))
@@ -52,7 +52,7 @@ func NewStorageHandler(storageConfig storageConfigProvider.Config) (StorageHandl
 		return nil, log.PrintAndReturnError(log.CAKC005E, storageConfig.StoreType)
 	}
 
-	return &Storage_Handler{
+	return &StorageHandler{
 		AccessTokenHandler: accessTokenHandler,
 		SecretsHandler:     secretsHandler,
 	}, nil
