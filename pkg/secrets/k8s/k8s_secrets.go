@@ -63,7 +63,7 @@ func (secretsHandler K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, er
 		for key, value := range k8sSecret.Secret.Data {
 			if key == secretsConfig.CONJUR_MAP_KEY {
 				if len(value) == 0 {
-					return nil, log.PrintAndReturnError(log.CAKC067E, secretName, secretsConfig.CONJUR_MAP_KEY)
+					return nil, log.PrintAndReturnError(log.CAKC030E, secretName, secretsConfig.CONJUR_MAP_KEY)
 				}
 				foundConjurMapKey = true
 				// Split the conjur-map to k8s secret keys. each value holds a Conjur variable ID
@@ -71,7 +71,7 @@ func (secretsHandler K8sSecretsHandler) RetrieveK8sSecrets() (*K8sSecretsMap, er
 				for _, entry := range conjurMapEntries {
 					matchedPattern, _ := regexp.MatchString(".+: .+", entry)
 					if matchedPattern == false {
-						return nil, log.PrintAndReturnError(log.CAKC068E, secretName, secretsConfig.CONJUR_MAP_KEY)
+						return nil, log.PrintAndReturnError(log.CAKC043E, secretName, secretsConfig.CONJUR_MAP_KEY)
 					}
 
 					// Parse each secret key and store it in the map
