@@ -16,7 +16,7 @@ func NewAccessToken() (token *AccessToken, err error) {
 
 func (token AccessToken) Read() ([]byte, error) {
 	if token.Data == nil {
-		return nil, log.RecordedError(log.ReadAccessTokenError)
+		return nil, log.RecordedError(log.CAKC006E)
 	}
 
 	return token.Data, nil
@@ -24,7 +24,7 @@ func (token AccessToken) Read() ([]byte, error) {
 
 func (token *AccessToken) Write(Data []byte) (err error) {
 	if Data == nil {
-		return log.RecordedError(log.WriteAccessTokenEmptyDataError)
+		return log.RecordedError(log.CAKC005E)
 	}
 
 	token.Data = Data

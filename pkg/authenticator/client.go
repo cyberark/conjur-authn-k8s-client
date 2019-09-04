@@ -13,7 +13,7 @@ func newHTTPSClient(CACert []byte, certPEMBlock, keyPEMBlock []byte) (*http.Clie
 	caCertPool := x509.NewCertPool()
 	ok := caCertPool.AppendCertsFromPEM(CACert)
 	if !ok {
-		return nil, log.RecordedError(log.CACertAppendError)
+		return nil, log.RecordedError(log.CAKC014E)
 	}
 
 	// Setup HTTPS client
@@ -24,7 +24,7 @@ func newHTTPSClient(CACert []byte, certPEMBlock, keyPEMBlock []byte) (*http.Clie
 	if certPEMBlock != nil && keyPEMBlock != nil {
 		cert, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
 		if err != nil {
-			return nil, log.RecordedError(log.PemParseError, err.Error())
+			return nil, log.RecordedError(log.CAKC017E, err.Error())
 		}
 
 		tlsConfig.GetClientCertificate = func(info *tls.CertificateRequestInfo) (*tls.Certificate, error) {

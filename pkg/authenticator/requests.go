@@ -20,11 +20,11 @@ func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte) (*http
 		authenticateURL = fmt.Sprintf("%s/inject_client_cert", authnURL)
 	}
 
-	log.InfoLogger.Printf(log.LoginRequestTo, authenticateURL)
+	log.InfoLogger.Printf(log.CAKC011I, authenticateURL)
 
 	req, err := http.NewRequest("POST", authenticateURL, bytes.NewBuffer(csrBytes))
 	if err != nil {
-		return nil, log.RecordedError(log.LoginRequestInitError, err.Error())
+		return nil, log.RecordedError(log.CAKC024E, err.Error())
 	}
 	req.Header.Set("Content-Type", "text/plain")
 
@@ -43,10 +43,10 @@ func AuthenticateRequest(authnURL string, conjurVersion string, account string, 
 		authenticateURL = fmt.Sprintf("%s/%s/%s/authenticate", authnURL, account, url.QueryEscape(username))
 	}
 
-	log.InfoLogger.Printf(log.AuthnRequestTo, authenticateURL)
+	log.InfoLogger.Printf(log.CAKC012I, authenticateURL)
 
 	if req, err = http.NewRequest("POST", authenticateURL, nil); err != nil {
-		return nil, log.RecordedError(log.AuthnRequestInitError, err.Error())
+		return nil, log.RecordedError(log.CAKC023E, err.Error())
 	}
 
 	req.Header.Set("Content-Type", "text/plain")
@@ -59,7 +59,7 @@ func readBody(resp *http.Response) ([]byte, error) {
 
 	responseBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, log.RecordedError(log.AuthnResponseReadError, err.Error())
+		return nil, log.RecordedError(log.CAKC022E, err.Error())
 	}
 
 	return responseBytes, err

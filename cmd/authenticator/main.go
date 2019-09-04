@@ -21,13 +21,13 @@ func main() {
 
 	config, err := authnConfig.NewFromEnv()
 	if err != nil {
-		printErrorAndExit(log.AuthnConfigInitError)
+		printErrorAndExit(log.CAKC018E)
 	}
 
 	// Create new Authenticator
 	authn, err := authenticator.New(*config)
 	if err != nil {
-		printErrorAndExit(log.AuthnInitError)
+		printErrorAndExit(log.CAKC019E)
 	}
 
 	// Configure exponential backoff
@@ -40,15 +40,15 @@ func main() {
 
 	err = backoff.Retry(func() error {
 		for {
-			infoLogger.Printf(log.AuthnAsUser, authn.Config.Username)
+			infoLogger.Printf(log.CAKC006I, authn.Config.Username)
 			resp, err := authn.Authenticate()
 			if err != nil {
-				return log.RecordedError(log.AuthenticateError)
+				return log.RecordedError(log.CAKC016E)
 			}
 
 			err = authn.ParseAuthenticationResponse(resp)
 			if err != nil {
-				return log.RecordedError(log.AuthnReponseParseError)
+				return log.RecordedError(log.CAKC020E)
 			}
 
 			if authn.Config.ContainerMode == "init" {
@@ -58,7 +58,7 @@ func main() {
 			// Reset exponential backoff
 			expBackoff.Reset()
 
-			infoLogger.Printf(log.WaitForRefreshTimeout, authn.Config.TokenRefreshTimeout)
+			infoLogger.Printf(log.CAKC013I, authn.Config.TokenRefreshTimeout)
 
 			fmt.Println()
 			time.Sleep(authn.Config.TokenRefreshTimeout)
@@ -66,7 +66,7 @@ func main() {
 	}, expBackoff)
 
 	if err != nil {
-		printErrorAndExit(log.RetransmissionBackoffExhaustError)
+		printErrorAndExit(log.CAKC031E)
 	}
 }
 

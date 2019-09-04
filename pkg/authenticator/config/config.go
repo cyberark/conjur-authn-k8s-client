@@ -45,14 +45,14 @@ func NewFromEnv() (*Config, error) {
 		"MY_POD_NAME",
 	} {
 		if os.Getenv(envvar) == "" {
-			return nil, log.RecordedError(log.MissingEnvVarError, envvar)
+			return nil, log.RecordedError(log.CAKC009E, envvar)
 		}
 	}
 
 	// Load CA cert
 	caCert, err := readSSLCert()
 	if err != nil {
-		return nil, log.RecordedError(log.SSLCertReadError, err.Error())
+		return nil, log.RecordedError(log.CAKC021E, err.Error())
 	}
 
 	// Load configuration from the environment
@@ -75,7 +75,7 @@ func NewFromEnv() (*Config, error) {
 	if len(tokenRefreshTimeoutString) > 0 {
 		parsedTokenRefreshTimeout, err := time.ParseDuration(tokenRefreshTimeoutString)
 		if err != nil {
-			return nil, log.RecordedError(log.TokenTimeoutParseError, err.Error())
+			return nil, log.RecordedError(log.CAKC010E, err.Error())
 		}
 
 		tokenRefreshTimeout = parsedTokenRefreshTimeout
@@ -112,7 +112,7 @@ func readSSLCert() ([]byte, error) {
 	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
 	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
 	if SSLCert == "" && SSLCertPath == "" {
-		return nil, log.RecordedError(log.MissingEnvVarsErrorSSLCert)
+		return nil, log.RecordedError(log.CAKC007E)
 	}
 
 	if SSLCert != "" {
