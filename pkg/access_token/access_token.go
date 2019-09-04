@@ -1,12 +1,12 @@
 package access_token
 
 /*
-	This interface handles a Conjur access token. Structs implementing this interface should have the ability to read,
-	write & delete the access token.
-
-	For example, in the conjur-k8s-secrets-manager we will use AccessTokenMemory. We will create the authenticator
-	object with this handler which will not write the data to a file. Later on, we will use the Read() method to get the
-	token for retrieving secrets from conjur.
+	This interface represents a Conjur access token residing in some arbitrary storage medium (e.g. in-app memory or
+	file system). Structs implementing this interface should have the ability to read, write & delete the access token contents.
+	For example, cyberark-secrets-provider-for-k8s uses memory.AccessToken. The authenticator object is created with an empty
+	access token which is populated with the Write method when access token contents become available. In this case the
+	Write method writes the data to in-app memory. Later, cyberark-secrets-provider-for-k8s can call the Read() method to access
+	the token-contents for retrieving secrets from Conjur.
 */
 type AccessToken interface {
 	Read() ([]byte, error)
