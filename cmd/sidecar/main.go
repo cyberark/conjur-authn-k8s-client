@@ -59,7 +59,7 @@ func main() {
 
 	err = backoff.Retry(func() error {
 		for {
-			infoLogger.Printf(fmt.Sprintf(log.CAKC019I, authn.Config.Username))
+			infoLogger.Printf(log.CAKC019I, authn.Config.Username)
 			authnResp, err := authn.Authenticate()
 			if err != nil {
 				return log.PrintAndReturnError(log.CAKC050E)

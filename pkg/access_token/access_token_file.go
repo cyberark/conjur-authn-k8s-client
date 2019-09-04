@@ -1,12 +1,11 @@
 package access_token
 
 import (
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/storage/config"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
-
 )
 
 type AccessTokenFile struct {
@@ -42,14 +41,14 @@ func (token *AccessTokenFile) Write(Data []byte) (err error) {
 		err = os.MkdirAll(tokenDir, 755)
 		if err != nil {
 			// Do not specify the directory in the error message for security reasons
-			return log.PrintAndReturnError(log.CAKC008E, err.Error())
+			return log.PrintAndReturnError(log.CAKC008E)
 		}
 	}
 
 	err = ioutil.WriteFile(token.TokenFilePath, token.Data, 0644)
 	if err != nil {
 		// Do not specify the file path in the error message for security reasons
-		return log.PrintAndReturnError(log.CAKC007E, err.Error())
+		return log.PrintAndReturnError(log.CAKC007E)
 	}
 
 	return nil

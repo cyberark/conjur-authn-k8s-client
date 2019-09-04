@@ -85,7 +85,7 @@ func updateK8sSecretsMapWithConjurSecrets(k8sSecretsMap *k8s.K8sSecretsMap, conj
 	for variableId, secret := range conjurSecrets {
 		variableId, err = parseVariableID(variableId)
 		if err != nil {
-			return log.PrintAndReturnError(log.CAKC030E)
+			return log.PrintAndReturnError(log.CAKC027E)
 		}
 
 		for _, locationInK8sSecretsMap := range k8sSecretsMap.PathMap[variableId] {

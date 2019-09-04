@@ -1,10 +1,10 @@
 package config
 
 import (
+	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	"io/ioutil"
 	"os"
 	"time"
-	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 )
 
 // Config defines the configuration parameters
@@ -42,7 +42,7 @@ func NewFromEnv() (*Config, error) {
 		"MY_POD_NAME",
 	} {
 		if os.Getenv(envvar) == "" {
-			return nil, log.PrintAndReturnError(log.CAKC043E, envvar)
+			return nil, log.PrintAndReturnError(log.CAKC017E, envvar)
 		}
 	}
 
