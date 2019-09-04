@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.14.0] - 2019-09-04
+
+### Added
+- Added a `log` package with a centralized file for log messages
+- Added a constructor for `Authenticator` that receives an AccessToken
+ 
+### Changed
+- Moved all AccessToken related work to a separate package
+- Moved all log related work to the `log` package
+
 ## [0.13.0] - 2019-03-08
 
 ### Fixed
