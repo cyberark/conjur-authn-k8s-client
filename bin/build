@@ -6,7 +6,7 @@ TAG=conjur-authn-k8s-client:dev
 VERSION=$(< VERSION)
 
 function finish {
-    rm -f authenticator
+    rm -f conjur-sidecar
 }
 trap finish EXIT
 
