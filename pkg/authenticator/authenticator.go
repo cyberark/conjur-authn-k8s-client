@@ -110,7 +110,7 @@ func (auth *Authenticator) GenerateCSR() ([]byte, error) {
 // successfully retrieved
 func (auth *Authenticator) Login() error {
 
-	log.InfoLogger.Printf(fmt.Sprintf(log.CAKC006I, auth.Config.Username))
+	log.InfoLogger.Printf(log.CAKC006I, auth.Config.Username)
 
 	csrRawBytes, err := auth.GenerateCSR()
 
