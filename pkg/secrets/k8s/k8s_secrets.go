@@ -3,16 +3,18 @@ package k8s
 import (
 	"bytes"
 	"fmt"
+	"regexp"
+	"strings"
+
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/apimachinery/pkg/types"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	log "github.com/cyberark/conjur-authn-k8s-client/pkg/logging"
 	secretsConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/secrets/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"regexp"
-	"strings"
 )
 
 type K8sSecretsHandler struct {
@@ -186,12 +188,12 @@ func generateStringDataEntry(stringDataEntriesMap map[string][]byte) ([]byte, er
 	entries := make([][]byte, len(stringDataEntriesMap))
 	// Parse every key-value pair in the map to a "key:value" byte array
 	for key, value := range stringDataEntriesMap {
-		stringDataEntriesMap[key] = bytes.Replace(value, []byte("\\"), []byte("\\\\"), -1)
+		value = escapeDataEntry(value)
 		entry = utils.ByteSlicePrintf(
 			`"%v":"%v"`,
 			"%v",
 			[]byte(key),
-			stringDataEntriesMap[key],
+			value,
 		)
 		entries[index] = entry
 		index++
@@ -213,6 +215,7 @@ func generateStringDataEntry(stringDataEntriesMap map[string][]byte) ([]byte, er
 				entries[i+1],
 			)
 		}
+
 		// Clear secret from memory
 		entries[i] = nil
 	}
@@ -227,4 +230,8 @@ func generateStringDataEntry(stringDataEntriesMap map[string][]byte) ([]byte, er
 	// Clear secret from memory
 	entriesCombined = nil
 	return stringDataEntry, nil
+}
+
+func escapeDataEntry(value []byte) ([]byte) {
+	return bytes.ReplaceAll(value, []byte("\\"), []byte("\\\\"))
 }
