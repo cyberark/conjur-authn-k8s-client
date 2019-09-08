@@ -188,7 +188,7 @@ func generateStringDataEntry(stringDataEntriesMap map[string][]byte) ([]byte, er
 	entries := make([][]byte, len(stringDataEntriesMap))
 	// Parse every key-value pair in the map to a "key:value" byte array
 	for key, value := range stringDataEntriesMap {
-		value = escapeDataEntry(value)
+		value = escapedSecret(value)
 		entry = utils.ByteSlicePrintf(
 			`"%v":"%v"`,
 			"%v",
@@ -232,6 +232,8 @@ func generateStringDataEntry(stringDataEntriesMap map[string][]byte) ([]byte, er
 	return stringDataEntry, nil
 }
 
-func escapeDataEntry(value []byte) ([]byte) {
-	return bytes.ReplaceAll(value, []byte("\\"), []byte("\\\\"))
+// Escape secrets with backslashes
+// Otherwise, patching K8s secrets will fail because backslashes in Conjur secret are not escaped
+func escapedSecret(secretByte []byte) ([]byte) {
+	return bytes.ReplaceAll(secretByte, []byte("\\"), []byte("\\\\"))
 }
