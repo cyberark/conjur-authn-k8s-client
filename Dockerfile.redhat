@@ -11,7 +11,7 @@ VOLUME /run/conjur
 
 ADD authenticator /bin
 
-ADD licenses/LICENSE.md /licenses
+ADD LICENSE /licenses
 
 USER conjur
 
