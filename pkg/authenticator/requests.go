@@ -11,7 +11,7 @@ import (
 )
 
 // LoginRequest sends a login request
-func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte) (*http.Request, error) {
+func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte, usernamePrefix string) (*http.Request, error) {
 	var authenticateURL string
 
 	if conjurVersion == "4" {
@@ -27,6 +27,7 @@ func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte) (*http
 		return nil, log.RecordedError(log.CAKC024E, err.Error())
 	}
 	req.Header.Set("Content-Type", "text/plain")
+	req.Header.Set("Host-Id-Prefix", usernamePrefix)
 
 	return req, nil
 }

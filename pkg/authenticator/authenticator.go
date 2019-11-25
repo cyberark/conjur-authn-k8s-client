@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/fullsailor/pkcs7"
@@ -74,19 +73,13 @@ func NewWithAccessToken(config authnConfig.Config, accessToken access_token.Acce
 }
 
 // GenerateCSR prepares the CSR
-func (auth *Authenticator) GenerateCSR() ([]byte, error) {
+func (auth *Authenticator) GenerateCSR(commonName string) ([]byte, error) {
 	sanURIString, err := generateSANURI(auth.Config.PodNamespace, auth.Config.PodName)
 	sanURI, err := url.Parse(sanURIString)
 	if err != nil {
 		return nil, err
 	}
 
-	// The CSR only uses the :namespace/:resource_type/:resource_id part of the username
-	usernameSplit := strings.Split(auth.Config.Username, "/")
-	usernameCSR := strings.Join(usernameSplit[len(usernameSplit)-3:], "/")
-
-	// Generate CSR
-	commonName := strings.Replace(usernameCSR, "/", ".", -1)
 	subj := pkix.Name{
 		CommonName: commonName,
 	}
@@ -119,12 +112,22 @@ func (auth *Authenticator) Login() error {
 
 	log.InfoLogger.Printf(log.CAKC007I, auth.Config.Username)
 
-	csrRawBytes, err := auth.GenerateCSR()
+	// We want to let hosts authenticate with Conjur from anywhere in the policy
+	// tree. For this to work, we send the full username in the CSR request, instead
+	// of just the username suffix (machine identity) like it was before.
+	// To maintain backwards compatibility, the CSR's common-name still contains
+	// only the username suffix (the machine identity) and the prefix is sent in
+	// a header named "Host-Id-Prefix". This header content will be extracted in
+	// the server and will be appended to the suffix from the CSR's common-name.
+	username := NewUsername(auth.Config.Username)
+
+	csrRawBytes, err := auth.GenerateCSR(username.Suffix)
 
 	csrBytes := pem.EncodeToMemory(&pem.Block{
 		Type: "CERTIFICATE REQUEST", Bytes: csrRawBytes,
 	})
-	req, err := LoginRequest(auth.Config.URL, auth.Config.ConjurVersion, csrBytes)
+
+	req, err := LoginRequest(auth.Config.URL, auth.Config.ConjurVersion, csrBytes, username.Prefix)
 	if err != nil {
 		return err
 	}
