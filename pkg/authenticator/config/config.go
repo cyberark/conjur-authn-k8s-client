@@ -21,7 +21,7 @@ type Config struct {
 	TokenFilePath       string
 	TokenRefreshTimeout time.Duration
 	URL                 string
-	Username            string
+	Username            *Username
 }
 
 const (
@@ -58,7 +58,11 @@ func NewFromEnv() (*Config, error) {
 	// Load configuration from the environment
 	authnURL := os.Getenv("CONJUR_AUTHN_URL")
 	account := os.Getenv("CONJUR_ACCOUNT")
-	authnLogin := os.Getenv("CONJUR_AUTHN_LOGIN")
+	authnLogin, err := NewUsername(os.Getenv("CONJUR_AUTHN_LOGIN"))
+	if err != nil {
+		return nil, err
+	}
+
 	podNamespace := os.Getenv("MY_POD_NAMESPACE")
 	podName := os.Getenv("MY_POD_NAME")
 

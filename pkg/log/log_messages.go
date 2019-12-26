@@ -44,6 +44,7 @@ const CAKC028E string = "CAKC028E Failed to send https login request or response
 const CAKC029E string = "CAKC029E Received invalid response to certificate signing request. Reason: %s"
 const CAKC030E string = "CAKC030E Failed to generate RSA keypair. Reason: %s"
 const CAKC031E string = "CAKC031E Retransmission backoff exhausted"
+const CAKC032E string = "CAKC032E Username %s is invalid"
 
 // INFO MESSAGES
 const CAKC001I string = "CAKC001I Successfully authenticated"

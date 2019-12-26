@@ -1,12 +1,16 @@
 package authenticator
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"io/ioutil"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
+
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 )
 
 func parseCert(filename string) (*x509.Certificate, error) {
@@ -46,6 +50,34 @@ func TestAuthenticator(t *testing.T) {
 			}
 
 			So(authn.IsCertExpired(), ShouldEqual, true)
+		})
+	})
+
+	Convey("GenerateCSR", t, func() {
+		// Create a minimal authenticator with a minimal config
+		authnConfig := config.Config{
+			PodName:      "testPod",
+			PodNamespace: "testNameSpace",
+		}
+
+		signingKey, _ := rsa.GenerateKey(rand.Reader, 1024)
+		authn := &Authenticator{
+			Config:     authnConfig,
+			privateKey: signingKey,
+		}
+
+		Convey("Given a common-name", func() {
+			commonName := "host.path.to.policy"
+			csr, err := authn.GenerateCSR(commonName)
+			Convey("Finishes without raising an error", func() {
+				So(err, ShouldBeNil)
+			})
+
+			// decrypt the CSR
+			csrDecrypted, _ := x509.ParseCertificateRequest(csr)
+			Convey("Inserts the common-name in the subject", func() {
+				So(csrDecrypted.Subject.CommonName, ShouldEqual, commonName)
+			})
 		})
 	})
 }

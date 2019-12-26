@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/fullsailor/pkcs7"
@@ -74,19 +73,13 @@ func NewWithAccessToken(config authnConfig.Config, accessToken access_token.Acce
 }
 
 // GenerateCSR prepares the CSR
-func (auth *Authenticator) GenerateCSR() ([]byte, error) {
+func (auth *Authenticator) GenerateCSR(commonName string) ([]byte, error) {
 	sanURIString, err := generateSANURI(auth.Config.PodNamespace, auth.Config.PodName)
 	sanURI, err := url.Parse(sanURIString)
 	if err != nil {
 		return nil, err
 	}
 
-	// The CSR only uses the :namespace/:resource_type/:resource_id part of the username
-	usernameSplit := strings.Split(auth.Config.Username, "/")
-	usernameCSR := strings.Join(usernameSplit[len(usernameSplit)-3:], "/")
-
-	// Generate CSR
-	commonName := strings.Replace(usernameCSR, "/", ".", -1)
 	subj := pkix.Name{
 		CommonName: commonName,
 	}
@@ -119,12 +112,13 @@ func (auth *Authenticator) Login() error {
 
 	log.InfoLogger.Printf(log.CAKC007I, auth.Config.Username)
 
-	csrRawBytes, err := auth.GenerateCSR()
+	csrRawBytes, err := auth.GenerateCSR(auth.Config.Username.Suffix)
 
 	csrBytes := pem.EncodeToMemory(&pem.Block{
 		Type: "CERTIFICATE REQUEST", Bytes: csrRawBytes,
 	})
-	req, err := LoginRequest(auth.Config.URL, auth.Config.ConjurVersion, csrBytes)
+
+	req, err := LoginRequest(auth.Config.URL, auth.Config.ConjurVersion, csrBytes, auth.Config.Username.Prefix)
 	if err != nil {
 		return err
 	}
@@ -217,7 +211,7 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 		auth.Config.URL,
 		auth.Config.ConjurVersion,
 		auth.Config.Account,
-		auth.Config.Username,
+		auth.Config.Username.FullUsername,
 	)
 	if err != nil {
 		return nil, err
