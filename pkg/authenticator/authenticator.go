@@ -112,22 +112,13 @@ func (auth *Authenticator) Login() error {
 
 	log.InfoLogger.Printf(log.CAKC007I, auth.Config.Username)
 
-	// We want to let hosts authenticate with Conjur from anywhere in the policy
-	// tree. For this to work, we send the full username in the CSR request, instead
-	// of just the username suffix (machine identity) like it was before.
-	// To maintain backwards compatibility, the CSR's common-name still contains
-	// only the username suffix (the machine identity) and the prefix is sent in
-	// a header named "Host-Id-Prefix". This header content will be extracted in
-	// the server and will be appended to the suffix from the CSR's common-name.
-	username := NewUsername(auth.Config.Username)
-
-	csrRawBytes, err := auth.GenerateCSR(username.Suffix)
+	csrRawBytes, err := auth.GenerateCSR(auth.Config.Username.Suffix)
 
 	csrBytes := pem.EncodeToMemory(&pem.Block{
 		Type: "CERTIFICATE REQUEST", Bytes: csrRawBytes,
 	})
 
-	req, err := LoginRequest(auth.Config.URL, auth.Config.ConjurVersion, csrBytes, username.Prefix)
+	req, err := LoginRequest(auth.Config.URL, auth.Config.ConjurVersion, csrBytes, auth.Config.Username.Prefix)
 	if err != nil {
 		return err
 	}
@@ -220,7 +211,7 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 		auth.Config.URL,
 		auth.Config.ConjurVersion,
 		auth.Config.Account,
-		auth.Config.Username,
+		auth.Config.Username.FullUsername,
 	)
 	if err != nil {
 		return nil, err
