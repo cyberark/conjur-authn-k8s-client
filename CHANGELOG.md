@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.0.0] - 2019-11-26
+
+### Changed
+- The signature of NewFromEnv does not get `clientCertPath` & `TokenPath` as
+  parameters anymore and has default values for them instead. This is an 
+  incompatible API change and thus we need to bump the MAJOR version
+
 ## [0.15.0] - 2019-11-26
 
 ### Changed
