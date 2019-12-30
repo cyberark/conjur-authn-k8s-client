@@ -21,6 +21,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Moved all AccessToken related work to a separate package
 - Moved all log related work to the `log` package
+- NewFromEnv **signature has changed** - method does not take input parameters 
+  anymore and is using default values for `tokenFilePath` & `clientCertPath`.
+  These parameters can also be set as environment variables:
+    - `tokenFilePath` can be set with `CONJUR_AUTHN_TOKEN_FILE`
+    - `clientCertPath` can be set with `CONJUR_CLIENT_CERT_PATH`
 
 ## [0.13.0] - 2019-03-08
 
