@@ -8,8 +8,8 @@ import (
 
 // Represents the username of the host that is authenticating with Conjur.
 // We separate the username into 2 parts:
-//   - Suffix: includes the machine identity (e.g [namespace]/*/*)
-//   - Prefix: Everything that precedes the machine identity (e.g host/path/to/policy)
+//   - Suffix: includes the host id
+//   - Prefix: includes the policy id (and the "host/" prefix)
 // The separation above comes to support backwards compatibility of the username
 // that is sent to the server. Previously, only hosts under the
 // `conjur/authn-k8s/<service-id>/apps` policy branch were able to authenticate
@@ -26,13 +26,15 @@ type Username struct {
 
 func NewUsername(username string) (*Username, error) {
 	usernameSplit := strings.Split(username, "/")
-	// Verify that the host-id starts with 'host/' and contains a 3-part machine-identity
-	if len(usernameSplit) < 4 || usernameSplit[0] != "host" {
+	// Verify that the host-id starts with 'host/'
+	if usernameSplit[0] != "host" {
 		return nil, log.RecordedError(log.CAKC032E, username)
 	}
 
-	prefix := toRequestFormat(usernameSplit[:len(usernameSplit)-3])
-	suffix := toRequestFormat(usernameSplit[len(usernameSplit)-3:])
+	separator := getIdSeparator(len(usernameSplit))
+
+	prefix := toRequestFormat(usernameSplit[:len(usernameSplit)-separator])
+	suffix := toRequestFormat(usernameSplit[len(usernameSplit)-separator:])
 
 	return &Username{
 		FullUsername: username,
@@ -43,4 +45,31 @@ func NewUsername(username string) (*Username, error) {
 
 func toRequestFormat(usernameParts []string) string {
 	return strings.Join(usernameParts, ".")
+}
+
+// Return an index that will be the separator between the prefix and suffix of
+// the username.
+// By default, the suffix includes only the last part of the id, which indicates
+// the actual host id, while the prefix is the policy id.
+//
+// To maintain backwards compatibility with an old Conjur server, we need to support
+// a suffix that includes the 3-part application identity (and as mentioned
+// earlier, the suffix should include the host-id which in this case is the 3-part
+// application identity). In such a case, we take the last 3 parts of the host
+// id as the suffix so it will have the application identity as the id.
+//
+// Note: In case the host id's length is higher than 4 but does not have the
+// application identity in the id (e.g host/long/policy/name/<host_id>),
+// the suffix will have the last 3 parts that may not be the application identity.
+// This may look weird (prefix = host/long, suffix = policy/name/<host_id>)
+// but although the suffix doesn't include the host id, it will work with a new
+// Conjur server as it will concatenate the parts.
+// It won't work with an old Conjur server but it shouldn't anyway.
+func getIdSeparator(usernameLen int) int {
+	separator := 1
+	if usernameLen >= 4 {
+		separator = 3
+	}
+
+	return separator
 }
