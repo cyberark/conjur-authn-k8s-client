@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.16.0] - 2020-01-21
+
+### Changed
+- Enable authenticating hosts that have their application identity defined in
+  annotations instead of in the id. Hosts that have their application identity
+  in the id can be authenticated as well.
+  
 ## [0.15.0] - 2019-11-26
 
 ### Changed
