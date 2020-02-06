@@ -6,7 +6,6 @@ REDHAT_IMAGE='scan.connect.redhat.com/ospid-1c46a2de-1d88-40e6-a433-7114ad0099cb
 
 readonly REGISTRY="cyberark"
 readonly TAG="$(version_tag)"
-readonly INTERNAL_REGISTRY="registry.tld"
 readonly VERSION="$(cat VERSION)"
 
 readonly IMAGES=(
@@ -24,11 +23,8 @@ git fetch --tags
 git_description=$(git describe)
 
 for image_name in "${IMAGES[@]}"; do
-  # always push the tag with the commit hash to internal registry
-   echo "Tagging $INTERNAL_REGISTRY/$image_name:${TAG}"
-   docker tag "$image_name:$TAG" "$INTERNAL_REGISTRY/$image_name:$TAG"
-   echo "Pushing $INTERNAL_REGISTRY/$image_name:${TAG}"
-   docker push "$INTERNAL_REGISTRY/$image_name:$TAG"
+   echo "Tagging $REGISTRY/$image_name:$TAG"
+   docker tag conjur-authn-k8s-client:dev "$image_name:$TAG"
 
   # if it’s not a tagged commit, VERSION will have extra characters (i.e. -g666c4b2), so that commit won't be published
   # only when tag matches the VERSION, push VERSION and latest releases
@@ -40,6 +36,9 @@ for image_name in "${IMAGES[@]}"; do
       echo "Tagging and pushing $REGISTRY/$image_name:$tag"
       docker tag "$image_name:$TAG" "$REGISTRY/$image_name:$tag"
       docker push "$REGISTRY/$image_name:$tag"
+      echo "Tagging and pushing $REGISTRY/$image_name:latest"
+      docker tag "$image_name:$TAG" "$REGISTRY/$image_name:latest"
+      docker push "$REGISTRY/$image_name:latest"
     done
   fi
 done
