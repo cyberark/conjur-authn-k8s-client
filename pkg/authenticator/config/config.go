@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -24,95 +25,59 @@ type Config struct {
 	Username            *Username
 }
 
+// Default settings (this comment added to satisfy linter)
 const (
 	DefaultClientCertPath = "/etc/conjur/ssl/client.pem"
 	DefaultTokenFilePath  = "/run/conjur/access-token"
+
+	DefaultConjurVersion = "5"
 
 	// DefaultTokenRefreshTimeout is the default time the system waits to reauthenticate on error
 	DefaultTokenRefreshTimeout = 6 * time.Minute
 )
 
-// New returns a new authenticator configuration object
+var requiredEnvVariables = []string{
+	"CONJUR_AUTHN_URL",
+	"CONJUR_ACCOUNT",
+	"CONJUR_AUTHN_LOGIN",
+	"MY_POD_NAMESPACE",
+	"MY_POD_NAME",
+}
+
+// ReadFileFunc defines the interface for reading an SSL Certificate from the env
+type ReadFileFunc func(filename string) ([]byte, error)
+
+// NewFromEnv returns a config FromEnv using the standard file reader for reading certs
 func NewFromEnv() (*Config, error) {
+	return FromEnv(ioutil.ReadFile)
+}
+
+// FromEnv returns a new authenticator configuration object
+func FromEnv(readFileFunc ReadFileFunc) (*Config, error) {
 	var err error
 
-	// Check that required environment variables are set
-	for _, envvar := range []string{
-		"CONJUR_AUTHN_URL",
-		"CONJUR_ACCOUNT",
-		"CONJUR_AUTHN_LOGIN",
-		"MY_POD_NAMESPACE",
-		"MY_POD_NAME",
-	} {
-		if os.Getenv(envvar) == "" {
-			return nil, log.RecordedError(log.CAKC009E, envvar)
-		}
-	}
-
-	// Load CA cert
-	caCert, err := readSSLCert()
-	if err != nil {
-		return nil, log.RecordedError(log.CAKC021E, err.Error())
-	}
-
-	// Load configuration from the environment
-	authnURL := os.Getenv("CONJUR_AUTHN_URL")
-	account := os.Getenv("CONJUR_ACCOUNT")
-	authnLogin, err := NewUsername(os.Getenv("CONJUR_AUTHN_LOGIN"))
+	// Fill config with 'simple' values from environment
+	config, err := populateConfig()
 	if err != nil {
 		return nil, err
 	}
 
-	podNamespace := os.Getenv("MY_POD_NAMESPACE")
-	podName := os.Getenv("MY_POD_NAME")
-
-	containerMode := os.Getenv("CONTAINER_MODE")
-
-	conjurVersion := os.Getenv("CONJUR_VERSION")
-	if len(conjurVersion) == 0 {
-		conjurVersion = "5"
+	// Load CA cert from Environment
+	config.SSLCertificate, err = readSSLCert(readFileFunc)
+	if err != nil {
+		return nil, log.RecordedError(log.CAKC021E, err.Error())
 	}
 
-	// Parse token refresh rate if one is provided from env
-	tokenRefreshTimeout := DefaultTokenRefreshTimeout
-	tokenRefreshTimeoutString := os.Getenv("CONJUR_TOKEN_TIMEOUT")
-	if len(tokenRefreshTimeoutString) > 0 {
-		parsedTokenRefreshTimeout, err := time.ParseDuration(tokenRefreshTimeoutString)
-		if err != nil {
-			return nil, log.RecordedError(log.CAKC010E, err.Error())
-		}
-
-		tokenRefreshTimeout = parsedTokenRefreshTimeout
+	// Load Username from Environment
+	config.Username, err = NewUsername(os.Getenv("CONJUR_AUTHN_LOGIN"))
+	if err != nil {
+		return nil, err
 	}
 
-	tokenFilePath := DefaultTokenFilePath
-	// If CONJUR_TOKEN_FILE_PATH is defined in the env we take its value
-	if envVal := os.Getenv("CONJUR_AUTHN_TOKEN_FILE"); envVal != "" {
-		tokenFilePath = envVal
-	}
-
-	clientCertPath := DefaultClientCertPath
-	// If CONJUR_CLIENT_CERT_PATH is defined in the env we take its value
-	if envVal := os.Getenv("CONJUR_CLIENT_CERT_PATH"); envVal != "" {
-		clientCertPath = envVal
-	}
-
-	return &Config{
-		Account:             account,
-		ClientCertPath:      clientCertPath,
-		ContainerMode:       containerMode,
-		ConjurVersion:       conjurVersion,
-		PodName:             podName,
-		PodNamespace:        podNamespace,
-		SSLCertificate:      caCert,
-		TokenFilePath:       tokenFilePath,
-		TokenRefreshTimeout: tokenRefreshTimeout,
-		URL:                 authnURL,
-		Username:            authnLogin,
-	}, nil
+	return config, nil
 }
 
-func readSSLCert() ([]byte, error) {
+func readSSLCert(readFile ReadFileFunc) ([]byte, error) {
 	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
 	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
 	if SSLCert == "" && SSLCertPath == "" {
@@ -122,5 +87,61 @@ func readSSLCert() ([]byte, error) {
 	if SSLCert != "" {
 		return []byte(SSLCert), nil
 	}
-	return ioutil.ReadFile(SSLCertPath)
+	return readFile(SSLCertPath)
+}
+
+func populateConfig() (*Config, error) {
+	// Check that required environment variables are set
+	for _, envvar := range requiredEnvVariables {
+		if os.Getenv(envvar) == "" {
+			return nil, log.RecordedError(log.CAKC009E, envvar)
+		}
+	}
+
+	defaultConfig := &Config{
+		Account:             os.Getenv("CONJUR_ACCOUNT"),
+		ContainerMode:       os.Getenv("CONTAINER_MODE"),
+		PodName:             os.Getenv("MY_POD_NAME"),
+		PodNamespace:        os.Getenv("MY_POD_NAMESPACE"),
+		URL:                 os.Getenv("CONJUR_AUTHN_URL"),
+	}
+
+	// Only versions '4' & '5' are allowed, with '5' being used as the default
+	defaultConfig.ConjurVersion = DefaultConjurVersion
+	switch os.Getenv("CONJUR_VERSION") {
+	case "4":
+		defaultConfig.ConjurVersion = "4"
+	case "5":
+		break // Stick with default
+	case "":
+		break // Stick with default
+	default:
+		return nil, log.RecordedError(log.CAKC021E, fmt.Errorf("invalid conjur version"))
+	}
+
+	// Parse token refresh rate if one is provided from env
+	defaultConfig.TokenRefreshTimeout = DefaultTokenRefreshTimeout
+	tokenRefreshTimeoutString := os.Getenv("CONJUR_TOKEN_TIMEOUT")
+	if len(tokenRefreshTimeoutString) > 0 {
+		parsedTokenRefreshTimeout, err := time.ParseDuration(tokenRefreshTimeoutString)
+		if err != nil {
+			return nil, log.RecordedError(log.CAKC010E, err.Error())
+		}
+
+		defaultConfig.TokenRefreshTimeout = parsedTokenRefreshTimeout
+	}
+
+	defaultConfig.TokenFilePath = DefaultTokenFilePath
+	// If CONJUR_TOKEN_FILE_PATH is defined in the env we take its value
+	if envVal := os.Getenv("CONJUR_AUTHN_TOKEN_FILE"); envVal != "" {
+		defaultConfig.TokenFilePath = envVal
+	}
+
+	defaultConfig.ClientCertPath = DefaultClientCertPath
+	// If CONJUR_CLIENT_CERT_PATH is defined in the env we take its value
+	if envVal := os.Getenv("CONJUR_CLIENT_CERT_PATH"); envVal != "" {
+		defaultConfig.ClientCertPath = envVal
+	}
+
+	return defaultConfig, nil
 }
