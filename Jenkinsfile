@@ -28,7 +28,7 @@ pipeline {
         branch 'master'
       }
       steps {
-        sh './bin/publish'
+        sh 'summon ./bin/publish'
       }
     }
   }
