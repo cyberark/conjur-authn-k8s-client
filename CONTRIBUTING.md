@@ -1,0 +1,67 @@
+# Contributing
+
+Thanks for your interest in contributing to the Conjur authn-k8s client! In
+this document you'll find guidelines for how to get started.
+
+## Table of Contents
+
+- [Development](#development)
+- [Testing](#testing)
+- [Releases](#releases)
+- [Contributing](#contributing)
+
+## Development
+
+### Prerequisites
+
+- To work in this codebase, you will want to have at least Go v1.13 installed. The
+  code may work on older versions but it has not been tested nor evaluated to be
+  compatible for those configurations. We expect at the very least that you will
+  need Go modules support so you will at minimum need Go v1.11+.
+
+## Testing
+
+To run the test suite, run `./bin/build` and `./bin/test`.
+
+## Releases
+
+Releases should be created by maintainers only. To create a tag and release,
+follow the instructions in this section.
+
+### Update the version and changelog
+1. Create a new branch for the version bump.
+1. Based on the unreleased content, determine the new version number and update
+   the [VERSION](VERSION) file.
+1. Review the git log and ensure the [changelog](CHANGELOG.md) contains all
+   relevant recent changes with references to GitHub issues or PRs, if possible
+1. Commit these changes - `Bump version to x.y.z` is an acceptable commit
+   message - and open a PR for review.
+
+### Add a git tag
+1. Once your changes have been reviewed and merged into master, tag the version
+   using `git tag -s v0.1.1`. Note this requires you to be  able to sign releases.
+   Consult the [github documentation on signing commits](https://help.github.com/articles/signing-commits-with-gpg/)
+   on how to set this up. `vx.y.z` is an acceptable tag message.
+1. Push the tag: `git push vx.y.z` (or `git push origin vx.y.z` if you are working
+   from your local machine).
+
+### Publish the git release
+1. In the GitHub UI, create a release from the new tag and copy the change log
+   for the new version into the GitHub release description.
+1. The Jenkins pipeline auto-publishes new images to DockerHub, but to publish
+   the Red Hat certified image you will need to visit its
+   [management page](https://connect.redhat.com/project/795581/view) and
+   manually publish the image.
+
+## Contributing
+
+1. [Fork the project](https://help.github.com/en/github/getting-started-with-github/fork-a-repo)
+2. [Clone your fork](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository)
+3. Make local changes to your fork by editing files
+3. [Commit your changes](https://help.github.com/en/github/managing-files-in-a-repository/adding-a-file-to-a-repository-using-the-command-line)
+4. [Push your local changes to the remote server](https://help.github.com/en/github/using-git/pushing-commits-to-a-remote-repository)
+5. [Create new Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork)
+
+From here your pull request will be reviewed and once you've responded to all
+feedback it will be merged into the project. Congratulations, you're a
+contributor!
