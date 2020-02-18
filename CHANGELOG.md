@@ -7,24 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ## [0.16.0] - 2020-01-21
-
 ### Changed
 - Enable authenticating hosts that have their application identity defined in
   annotations instead of in the id. Hosts that have their application identity
   in the id can be authenticated as well.
-  
-## [0.15.0] - 2019-11-26
 
+## [0.15.0] - 2019-11-26
 ### Changed
 - Sending the full host-id in the CSR request. The prefix is sent in the 
   "Host-Id-Prefix" header and the suffix is sent in the common-name
 
 ## [0.14.0] - 2019-09-04
-
 ### Added
 - Added a `log` package with a centralized file for log messages
 - Added a constructor for `Authenticator` that receives an AccessToken
- 
+
 ### Changed
 - Moved all AccessToken related work to a separate package
 - Moved all log related work to the `log` package
@@ -35,7 +32,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
     - `clientCertPath` can be set with `CONJUR_CLIENT_CERT_PATH`
 
 ## [0.13.0] - 2019-03-08
-
 ### Fixed
 - Fixed issues with certificate expiration not being handled properly
 
@@ -46,28 +42,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Modules have been reorganized to DRY out the main runner module
 
 ## [0.12.0] - 0000-00-00
-
 ### Changed
 - Reorganized file structure of project to make importable
 
 ## [0.11.1] - 0000-00-00
-
 ### Fixed
 - Fixed bug with request body during v4 authentication.
 
 ## [0.11.0] - 0000-00-00
-
 ### Added
 - Added support for Conjur v5.
 - Added `CONJUR_VERSION` env variable ('4' or '5', defaults to '5').
 
 ## [0.10.2] - 0000-00-00
-
 ### Added
 - Added a RedHat-certified version of the image.
 
 ## [0.10.1] - 0000-00-00
-
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 

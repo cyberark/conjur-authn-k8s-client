@@ -31,6 +31,13 @@ pipeline {
         sh 'summon ./bin/publish'
       }
     }
+    stage('Validate') {
+      parallel {
+        stage('Changelog') {
+          steps { sh './bin/parse-changelog.sh' }
+        }
+      }
+    }
   }
 
   post {
