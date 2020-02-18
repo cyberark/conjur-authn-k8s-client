@@ -9,6 +9,14 @@ pipeline {
   }
 
   stages {
+    stage('Validate') {
+      parallel {
+        stage('Changelog') {
+          steps { sh './bin/parse-changelog.sh' }
+        }
+      }
+    }
+
     stage('Build client Docker image') {
       steps {
         sh './bin/build'
@@ -29,13 +37,6 @@ pipeline {
       }
       steps {
         sh 'summon ./bin/publish'
-      }
-    }
-    stage('Validate') {
-      parallel {
-        stage('Changelog') {
-          steps { sh './bin/parse-changelog.sh' }
-        }
       }
     }
   }

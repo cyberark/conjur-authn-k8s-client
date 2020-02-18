@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.16.1] - 2020-02-18
+### Fixed
+- Only publish to DockerHub / RH registry when there is a new version (#72, #74,
+  #79, #83)
+
+### Changed
+- Clean up implementation of default CONJUR_VERSION and add unit tests (#80)
+
+### Added
+- Added pipeline step to validate CHANGELOG format and update CHANGELOG to meet
+  keepachangelog standard (#82)
+
 ## [0.16.0] - 2020-01-21
 ### Changed
 - Enable authenticating hosts that have their application identity defined in
