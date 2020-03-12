@@ -38,7 +38,7 @@ The client's process logs its flow to `stdout` and `stderr`.
 1. Client decrypts the auth token and writes it to to the shared memory volume (`/run/conjur/access-token`)
 1. Client proceeds to authenticate time and time again
 
-# Development
+## Contributing
 
 We welcome contributions of all kinds to this repository. For instructions on how to get started and descriptions of our development workflows, please see our [contributing
 guide][contrib].
