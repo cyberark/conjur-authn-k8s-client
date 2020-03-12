@@ -3,6 +3,8 @@
 Thanks for your interest in contributing to the Conjur authn-k8s client! In
 this document you'll find guidelines for how to get started.
 
+For general contribution and community guidelines, please see the [community repo](https://github.com/cyberark/community).
+
 ## Table of Contents
 
 - [Development](#development)

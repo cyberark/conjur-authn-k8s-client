@@ -37,3 +37,10 @@ The client's process logs its flow to `stdout` and `stderr`.
 1. Client picks up signed client certificate, deletes it from disk and uses to authenticator via mutual TLS -> Server responds with auth token (retrieved via authn-local) encrypted with the public key of the client.
 1. Client decrypts the auth token and writes it to to the shared memory volume (`/run/conjur/access-token`)
 1. Client proceeds to authenticate time and time again
+
+## Contributing
+
+We welcome contributions of all kinds to this repository. For instructions on how to get started and descriptions of our development workflows, please see our [contributing
+guide][contrib].
+
+[contrib]: https://github.com/cyberark/conjur-authn-k8s-client/blob/master/CONTRIBUTING.md
