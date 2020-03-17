@@ -54,6 +54,10 @@ follow the instructions in this section.
    the Red Hat certified image you will need to visit its
    [management page](https://connect.redhat.com/project/795581/view) and
    manually publish the image.
+   
+### Publish the Red Hat image
+1. Visit the [Red Hat project page](https://connect.redhat.com/project/795581/view) once the images have
+   been pushed and manually choose to publish the latest release.
 
 ## Contributing
 
