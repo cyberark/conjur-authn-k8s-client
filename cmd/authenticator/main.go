@@ -17,6 +17,8 @@ var errLogger = log.ErrorLogger
 var infoLogger = log.InfoLogger
 
 func main() {
+	printVersion()
+
 	var err error
 
 	config, err := authnConfig.NewFromEnv()
@@ -73,4 +75,8 @@ func main() {
 func printErrorAndExit(errorMessage string) {
 	errLogger.Printf(errorMessage)
 	os.Exit(1)
+}
+
+func printVersion(){
+	infoLogger.Printf("Kubernetes Authenticator Client v%s starting up...", authenticator.FullVersionName)
 }

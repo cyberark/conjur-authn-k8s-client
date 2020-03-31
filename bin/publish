@@ -5,8 +5,8 @@
 REDHAT_IMAGE='scan.connect.redhat.com/ospid-1c46a2de-1d88-40e6-a433-7114ad0099cb/conjur-openshift-authenticator-client'
 
 readonly REGISTRY="cyberark"
+readonly VERSION="$(short_version_tag)"
 readonly TAG="$(version_tag)"
-readonly VERSION="$(cat VERSION)"
 
 readonly IMAGES=(
   "conjur-kubernetes-authenticator"
