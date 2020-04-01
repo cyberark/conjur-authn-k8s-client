@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 . bin/build_utils
 
@@ -28,9 +28,6 @@ docker run --rm \
               go build -a -installsuffix cgo \
                -ldflags="-X github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.Tag=$TAG" \
               -o authenticator ./cmd/authenticator
-
-# bin/build conjur-authn-k8s-client:dev
-# run image with newly build conjur-authn-k8s-client/ would appear in logs
 
 docker build -f Dockerfile.scratch \
              -t "${FULL_TAG}" \

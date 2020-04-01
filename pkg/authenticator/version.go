@@ -12,3 +12,4 @@ var Tag = "dev"
 // FullVersionName is the user-visible aggregation of version and tag
 // of this codebase
 var FullVersionName = fmt.Sprintf("%s-%s", Version, Tag)
+
