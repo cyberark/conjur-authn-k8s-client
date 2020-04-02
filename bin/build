@@ -7,8 +7,7 @@ set -euo pipefail
 # Supports two different tags to represent a tagged build (./bin/build) and dev build
 # (env GOOS=darwin GOARCH=amd64 go build) of project binaries
 TAG="$(git rev-parse --short HEAD)"
-FULL_TAG="conjur-authn-k8s-client:$(version_tag)"
-
+FULL_TAG="conjur-authn-k8s-client:dev"
 VERSION="$(short_version_tag)"
 
 function finish {
