@@ -17,6 +17,8 @@ var errLogger = log.ErrorLogger
 var infoLogger = log.InfoLogger
 
 func main() {
+	infoLogger.Printf(log.CAKC014I, authenticator.FullVersionName)
+
 	var err error
 
 	config, err := authnConfig.NewFromEnv()

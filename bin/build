@@ -1,19 +1,25 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
+. bin/build_utils
+
+# Supports two different tags to represent a tagged build (./bin/build) and dev build
+# (env GOOS=darwin GOARCH=amd64 go build) of project binaries
 IMAGE_NAME=conjur-authn-k8s-client
 TAG=dev
-VERSION=$(< VERSION)
+VERSION="$(short_version_tag)"
 
 echo "---"
 echo "Building conjur-authn-k8s-client with tag ${TAG} <<"
 
 docker build --tag "${IMAGE_NAME}:${TAG}" \
+             --build-arg TAG=$(git_tag) \
              --target "authenticator-client" \
              .
 
 docker build --tag "${IMAGE_NAME}-redhat:${TAG}" \
+             --build-arg TAG=$(git_tag) \
              --build-arg VERSION="$VERSION" \
              --target "authenticator-client-redhat" \
              .

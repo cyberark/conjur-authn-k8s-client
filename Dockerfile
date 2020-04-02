@@ -5,6 +5,9 @@ ENV GOOS=linux
 ENV GOARCH=amd64
 ENV CGO_ENABLED=0
 
+# this value changes in ./bin/build
+ARG TAG="dev"
+
 WORKDIR /opt/conjur-authn-k8s-client
 COPY . /opt/conjur-authn-k8s-client
 
@@ -15,7 +18,9 @@ RUN apt-get update && apt-get install -y jq
 RUN go get -u github.com/jstemmer/go-junit-report && \
     go get github.com/smartystreets/goconvey
 
-RUN go build -a -installsuffix cgo -o authenticator ./cmd/authenticator
+RUN go build -a -installsuffix cgo \
+    -ldflags="-X github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.Tag=$TAG" \
+    -o authenticator ./cmd/authenticator
 
 # =================== BUSYBOX LAYER ===================
 # this layer is used to get binaries into the main container
