@@ -26,8 +26,16 @@ pipeline {
     stage('Run Tests') {
       steps {
         sh './bin/test'
-        
+
         junit 'test/junit.xml'
+      }
+    }
+
+    // Cannot scan dev image as it's based on busybox and trivy can't determine
+    // the OS
+    stage("Scan redhat image") {
+      steps {
+        scanAndReport("conjur-authn-k8s-client-redhat:dev", "NONE")
       }
     }
 
