@@ -10,15 +10,16 @@ IMAGE_NAME=conjur-authn-k8s-client
 TAG=dev
 VERSION="$(short_version_tag)"
 
-
 echo "---"
 echo "Building conjur-authn-k8s-client with tag ${TAG} <<"
 
 docker build --tag "${IMAGE_NAME}:${TAG}" \
+             --build-arg TAG=$(git_tag) \
              --target "authenticator-client" \
              .
 
 docker build --tag "${IMAGE_NAME}-redhat:${TAG}" \
+             --build-arg TAG=$(git_tag) \
              --build-arg VERSION="$VERSION" \
              --target "authenticator-client-redhat" \
              .
