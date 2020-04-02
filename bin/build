@@ -2,31 +2,20 @@
 
 set -e
 
-TAG=conjur-authn-k8s-client:dev
+IMAGE_NAME=conjur-authn-k8s-client
+TAG=dev
 VERSION=$(< VERSION)
 
-function finish {
-    rm -f authenticator
-}
-trap finish EXIT
-
 echo "---"
-echo "Building conjur-authn-k8s-client-go with tag ${TAG} <<"
+echo "Building conjur-authn-k8s-client with tag ${TAG} <<"
 
-docker build -t conjur-authn-k8s-client-go:builder .
-
-docker run --rm \
-           -v $PWD:/opt/conjur-authn-k8s-client \
-           conjur-authn-k8s-client-go:builder env CGO_ENABLED=0 GOOS=linux \
-                                              go build -a -installsuffix cgo -o authenticator ./cmd/authenticator
-
-docker build -f Dockerfile.scratch \
-             -t "${TAG}" \
+docker build --tag "${IMAGE_NAME}:${TAG}" \
+             --target "authenticator-client" \
              .
 
-docker build --build-arg VERSION="$VERSION" \
-             -f Dockerfile.redhat \
-             -t "${TAG}-redhat" \
+docker build --tag "${IMAGE_NAME}-redhat:${TAG}" \
+             --build-arg VERSION="$VERSION" \
+             --target "authenticator-client-redhat" \
              .
 
 echo "---"

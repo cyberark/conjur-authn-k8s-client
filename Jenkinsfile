@@ -33,9 +33,9 @@ pipeline {
 
     // Cannot scan dev image as it's based on busybox and trivy can't determine
     // the OS
-    stage("Scan dev-redhat image") {
+    stage("Scan redhat image") {
       steps {
-        scanAndReport("conjur-authn-k8s-client:dev-redhat", "NONE")
+        scanAndReport("conjur-authn-k8s-client-redhat:dev", "NONE")
       }
     }
 
