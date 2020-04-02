@@ -16,10 +16,6 @@ function git_tag() {
   git rev-parse --short HEAD
 }
 
-function version_tag() {
-   echo "$(short_version_tag)-$(git_tag)"
-}
-
 # generate less specific versions, eg. given 1.2.3 will print 1.2 and 1
 # (note: the argument itself is not printed, append it explicitly if needed)
 function gen_versions() {
