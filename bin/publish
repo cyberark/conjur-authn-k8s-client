@@ -12,8 +12,6 @@ readonly IMAGES=(
   "conjur-authn-k8s-client"
 )
 
-readonly TAG="latest"
-
 readonly TAGS=(
   "$VERSION"
   "latest"
@@ -25,8 +23,6 @@ git_description=$(git describe)
 
 # tagging and pushing to dockerhub
 for image_name in "${IMAGES[@]}"; do
-  echo "Tagging $REGISTRY/$image_name:$TAG"
-  docker tag conjur-authn-k8s-client:dev "$image_name:$TAG"
 
   # if it’s not a tagged commit, VERSION will have extra characters (i.e. -g666c4b2), so that commit won't be published
   # only when tag matches the VERSION, push VERSION and latest releases
@@ -36,11 +32,11 @@ for image_name in "${IMAGES[@]}"; do
 
     for tag in "${TAGS[@]}" $(gen_versions $VERSION); do
       echo "Tagging and pushing $REGISTRY/$image_name:$tag"
-      docker tag "$image_name:$TAG" "$REGISTRY/$image_name:$tag"
+      docker tag conjur-authn-k8s-client:dev "$REGISTRY/$image_name:$tag"
       docker push "$REGISTRY/$image_name:$tag"
 
       echo "Tagging and pushing $REGISTRY/$image_name:latest"
-      docker tag "$image_name:$TAG" "$REGISTRY/$image_name:latest"
+      docker tag conjur-authn-k8s-client:dev "$REGISTRY/$image_name:latest"
       docker push "$REGISTRY/$image_name:latest"
     done
   fi
