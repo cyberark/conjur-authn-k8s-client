@@ -12,8 +12,6 @@ readonly IMAGES=(
   "conjur-authn-k8s-client"
 )
 
-readonly TAG="latest"
-
 readonly TAGS=(
   "$VERSION"
   "latest"
@@ -23,35 +21,32 @@ readonly TAGS=(
 git fetch --tags
 git_description=$(git describe)
 
-# tagging and pushing to dockerhub
-for image_name in "${IMAGES[@]}"; do
-  echo "Tagging $REGISTRY/$image_name:$TAG"
-  docker tag conjur-authn-k8s-client:dev "$image_name:$TAG"
-
-  # if it’s not a tagged commit, VERSION will have extra characters (i.e. -g666c4b2), so that commit won't be published
-  # only when tag matches the VERSION, push VERSION and latest releases
-  # and x and x.y releases
-  if [ "$git_description" = "v${VERSION}" ]; then
-    echo "Revision $git_description matches version $VERSION exactly. Pushing to Dockerhub..."
-
-    for tag in "${TAGS[@]}" $(gen_versions $VERSION); do
-      echo "Tagging and pushing $REGISTRY/$image_name:$tag"
-      docker tag "$image_name:$TAG" "$REGISTRY/$image_name:$tag"
-      docker push "$REGISTRY/$image_name:$tag"
-
-      echo "Tagging and pushing $REGISTRY/$image_name:latest"
-      docker tag "$image_name:$TAG" "$REGISTRY/$image_name:latest"
-      docker push "$REGISTRY/$image_name:latest"
-    done
-  fi
-done
-
-# tagging and pushing to redhat container registry
-# only push when the tag matches the VERSION
+# if it’s not a tagged commit, VERSION will have extra characters (i.e. -g666c4b2), so that commit won't be published
+# only when tag matches the VERSION, push VERSION and latest releases
+# and x and x.y releases
 if [ "$git_description" = "v${VERSION}" ]; then
-  docker tag conjur-authn-k8s-client-redhat:dev "$REDHAT_IMAGE:$VERSION"
+  echo "Revision $git_description matches version $VERSION exactly"
 
-  if docker login scan.connect.redhat.com -u unused -p $REDHAT_API_KEY; then
+  echo "Pushing to Dockerhub..."
+  source_image=conjur-authn-k8s-client:dev
+  # tagging and pushing to dockerhub
+  for image_name in "${IMAGES[@]}"; do
+      for tag in "${TAGS[@]}" $(gen_versions "$VERSION"); do
+        echo "Tagging and pushing $REGISTRY/$image_name:$tag"
+        docker tag $source_image "$REGISTRY/$image_name:$tag"
+        docker push "$REGISTRY/$image_name:$tag"
+
+        echo "Tagging and pushing $REGISTRY/$image_name:latest"
+        docker tag $source_image "$REGISTRY/$image_name:latest"
+        docker push "$REGISTRY/$image_name:latest"
+      done
+  done
+
+  echo "Pushing to RedHat container registry..."
+  source_redhat_image=conjur-authn-k8s-client-redhat:dev
+  docker tag $source_redhat_image "$REDHAT_IMAGE:$VERSION"
+
+  if docker login scan.connect.redhat.com -u unused -p "$REDHAT_API_KEY"; then
     # you can't push the same tag twice to redhat registry, so ignore errors
     if ! docker push "${REDHAT_IMAGE}:${VERSION}"; then
       echo 'RedHat push FAILED! (maybe the image was pushed already?)'
