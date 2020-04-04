@@ -7,7 +7,9 @@ REDHAT_IMAGE='scan.connect.redhat.com/ospid-1c46a2de-1d88-40e6-a433-7114ad0099cb
 readonly REGISTRY="cyberark"
 readonly VERSION="$(short_version_tag)"
 
-readonly IMAGES=(
+# we changed the name to `conjur-authn-k8s-client`. Leaving `conjur-kubernetes-authenticator`
+# for backwards-compatibility.
+readonly DESTINATION_IMAGES=(
   "conjur-kubernetes-authenticator"
   "conjur-authn-k8s-client"
 )
@@ -29,17 +31,12 @@ if [ "$git_description" = "v${VERSION}" ]; then
 
   echo "Pushing to Dockerhub..."
   source_image=conjur-authn-k8s-client:dev
-  # tagging and pushing to dockerhub
-  for image_name in "${IMAGES[@]}"; do
-      for tag in "${TAGS[@]}" $(gen_versions "$VERSION"); do
-        echo "Tagging and pushing $REGISTRY/$image_name:$tag"
-        docker tag $source_image "$REGISTRY/$image_name:$tag"
-        docker push "$REGISTRY/$image_name:$tag"
-
-        echo "Tagging and pushing $REGISTRY/$image_name:latest"
-        docker tag $source_image "$REGISTRY/$image_name:latest"
-        docker push "$REGISTRY/$image_name:latest"
-      done
+  for destination_image_name in "${DESTINATION_IMAGES[@]}"; do
+    for tag in "${TAGS[@]}" $(gen_versions "$VERSION"); do
+      echo "Tagging and pushing $REGISTRY/$destination_image_name:$tag"
+      docker tag $source_image "$REGISTRY/$destination_image_name:$tag"
+      docker push "$REGISTRY/$destination_image_name:$tag"
+    done
   done
 
   echo "Pushing to RedHat container registry..."
