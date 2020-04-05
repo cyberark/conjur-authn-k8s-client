@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Authenticator client prints its version upon startup (#93)
 
+### Changed
+- The project now uses `goboring/golang` as its base image to be FIPS compliant
+
 ## [0.16.1] - 2020-02-18
 ### Fixed
 - Only publish to DockerHub / RH registry when there is a new version (#72, #74,
