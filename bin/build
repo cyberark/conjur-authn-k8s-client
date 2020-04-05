@@ -11,7 +11,7 @@ TAG=dev
 VERSION="$(short_version_tag)"
 
 echo "---"
-echo "Building conjur-authn-k8s-client with tag ${TAG} <<"
+echo "Building ${IMAGE_NAME} with tag ${TAG} <<"
 
 docker build --tag "${IMAGE_NAME}:${TAG}" \
              --build-arg TAG=$(git_tag) \
