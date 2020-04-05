@@ -1,5 +1,5 @@
 FROM golang:1.12 as authenticator-client-builder
-MAINTAINER Conjur Inc
+MAINTAINER CyberArk Software Ltd.
 
 ENV GOOS=linux
 ENV GOARCH=amd64

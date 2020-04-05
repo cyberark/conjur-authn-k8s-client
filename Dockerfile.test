@@ -1,5 +1,5 @@
 FROM golang:1.12.0-alpine3.9
-MAINTAINER Conjur Inc.
+MAINTAINER CyberArk Software Ltd.
 LABEL id="conjur-authn-k8s-client-test-runner"
 
 ENTRYPOINT [ "go", "test", "-v", "-timeout", "3m" ]
