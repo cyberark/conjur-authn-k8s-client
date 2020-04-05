@@ -1,4 +1,4 @@
-FROM golang:1.12 as authenticator-client-builder
+FROM goboring/golang:1.12.17b4 as authenticator-client-builder
 MAINTAINER CyberArk Software Ltd.
 
 ENV GOOS=linux \
@@ -23,6 +23,10 @@ RUN go get -u github.com/jstemmer/go-junit-report && \
 RUN go build -a -installsuffix cgo \
     -ldflags="-X github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.Tag=$TAG" \
     -o authenticator ./cmd/authenticator
+
+# Verify the binary is using BoringCrypto.
+# Outputting to /dev/null so the output doesn't include all the files
+RUN sh -c "go tool nm authenticator | grep '_Cfunc__goboringcrypto_' 1> /dev/null"
 
 # =================== BUSYBOX LAYER ===================
 # this layer is used to get binaries into the main container
