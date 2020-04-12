@@ -31,6 +31,14 @@ pipeline {
       }
     }
 
+    stage('Run Kubernetes Conjur Demo') {
+      steps {
+        script {
+          build (job:'../kubernetes-conjur-demo/split-local-authenticator-and-secretless', wait: true)
+        }
+      }
+    }
+
     // Cannot scan dev image as it's based on busybox and trivy can't determine
     // the OS
     stage("Scan redhat image") {
