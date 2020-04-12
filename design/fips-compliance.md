@@ -164,15 +164,35 @@ before we merge their PRs.
 ### Summary
 
 To summarize the options, let's look at the following table:
-| **Option**                                                                             | **Build Time** | **Implementation time**                                                                                                                  | **Feedback on Failure**                                                           | **Ease of adding tests**                                                                                   | **Community Contribution**                                                                                                                                                                                                      |
+| **Option**                                                                             | **Build Time** | **Design and Implementation time**                                                                                                                  | **Feedback on Failure**                                                           | **Ease of adding tests**                                                                                   | **Community Contribution**                                                                                                                                                                                                      |
 |----------------------------------------------------------------------------------------|----------------|------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Trigger `kubernetes-conjur-demo` to run after every build of `conjur-authn-k8s-client` | ~30 minutes    | Depends on whether we can utilize the LOCAL_AUTHENTICATOR environment variable. If we can then the implementation time should take ~1 day | Immediate feedback as all integration tests will  run before the end of the build | Adding tests to this project is not simple. Especially error flows.                                        | The community member will not be able to investigate a failure in case  there was one so the build will never be green (unless they ask for help from a Conjur team member).  There is also no option to add integration tests. |
-| Trigger `kubernetes-conjur-demo` to run after every master build                       | ~3 minutes     | 1 hour                                                                                                                                   | After nightly build and only after the change is merged into `master`             | Adding tests to this project is not simple. Especially error flows.                                        | The community member will still be able to contribute as the tests will not run as part of the build                                                                                                                            |
-| secrets-provider model - deploy different scenarios and check output                   | ~30 minutes    | ~5 days                                                                                                                                  | Immediate feedback as all integration tests will run before the end of the build  | - Should be easier to add tests. Adding tests to the `secrets-provider-for-k8s` is pretty straight forward | The community member will not be able to investigate a failure in case there was one so the build will never be green (unless they askfor help from a Conjur team member). There is also no option to add integration tests.    |
+| (a) Trigger `kubernetes-conjur-demo` to run after every build of `conjur-authn-k8s-client` | ~30 minutes    | Depends on whether we can utilize the LOCAL_AUTHENTICATOR environment variable. If we can then the implementation time should take ~1 day | Immediate feedback as all integration tests will  run before the end of the build | Adding tests to this project is not simple. Especially error flows.                                        | The community member will not be able to investigate a failure in case  there was one so the build will never be green (unless they ask for help from a Conjur team member).  There is also no option to add integration tests. |
+| (b) Trigger `kubernetes-conjur-demo` to run after every master build                       | ~3 minutes     | 1 hour                                                                                                                                   | After nightly build and only after the change is merged into `master`             | Adding tests to this project is not simple. Especially error flows.                                        | The community member will still be able to contribute as the tests will not run as part of the build                                                                                                                            |
+| (c) secrets-provider model - deploy different scenarios and check output                   | ~30 minutes    | ~10 days                                                                                                                                  | Immediate feedback as all integration tests will run before the end of the build  | - Should be easier to add tests. Adding tests to the `secrets-provider-for-k8s` is pretty straight forward | The community member will not be able to investigate a failure in case there was one so the build will never be green (unless they askfor help from a Conjur team member). There is also no option to add integration tests.    |
 
 ### Decision
 
-TBD
+The best solution is to run the tests in the same repo as the application code.
+It will give the highest confidence in every merge to master. 
+
+I would not implement option (a) as it has some work to do and the solution is not optimal.
+It won't be easy to debug in case of a failure as we will need to jump between builds
+and find the errors. Furthermore, `kubernetes-conjur-demo` runs also tests for
+the `secretless-broker` so failures there will fail builds of the authn-client.
+
+My suggestion is as follows:
+  - If we can get 10 days for testing then we should research and design the best 
+    option to run the integration tests in the same repo. Finding a good solution 
+    will be useful also in the `secrets-provider-for-k8s` and in the `secretless-broker`.
+    The options are:
+      - `secrets-provider` style: deploy different scenarios and check output   
+      - [`KInD`](https://github.com/kubernetes-sigs/kind)
+      - Any other option found in the research
+  - If we can't get 10 days, implement option (b). We won't have the same confidence 
+    and we may merge to `master` code that will break the integration tests but the
+    implementation time will be very short. Developers who merge to `master` will need
+    to verify that the build `kubernetes-conjur-demo` succeeded after the merge
+    (and in case of failure we will get notified in Slack)
 
 ### Integration Tests
 
