@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.17.0] - 2020-04-07
 ### Added
-- Added ability for authn client to print its version upon startup (#93)
+- Authenticator client prints its version upon startup (#93)
 
 ## [0.16.1] - 2020-02-18
 ### Fixed
