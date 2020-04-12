@@ -33,9 +33,9 @@ pipeline {
 
     stage('Run Kubernetes Conjur Demo') {
       steps {
-        script {
-          build (job:'../kubernetes-conjur-demo/split-local-authenticator-and-secretless', wait: true)
-        }
+        build job: 'conjurdemos--kubernetes-conjur-demo/split-local-authenticator-and-secretless', wait: true, parameters: [
+          string(name: 'LOCAL_AUTHENTICATOR', value: 'true')
+        ]
       }
     }
 
