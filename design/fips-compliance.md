@@ -193,7 +193,10 @@ these test run in the `conjur` repository. As far as the authenticator-client
 
 ## Docs
 
-TBD
+We should document any change that will affect the customer (e.g if we release 
+both FIPS & Non-FIPS versions).
+
+If no customer-facing changes are introduced, we will not need to add documentation.
 
 ## Version update
 
@@ -207,7 +210,14 @@ and will not be affected by the base image change.
 
 ## Security
 
-TBD
+It's important to note that this solution is secure. Google is maintaining this 
+fork of Go that uses BoringCrypto and they [intend to maintain in this branch 
+the latest release plus BoringCrypto patches](https://go.googlesource.com/go/+/refs/heads/dev.boringcrypto/README.boringcrypto.md).
+It's also worth to link to [FIPS certification of the crypto library of dev.boringcrypto](https://csrc.nist.gov/CSRC/media/projects/cryptographic-module-validation-program/documents/security-policies/140sp3318.pdf).
+
+Furthermore, the DoD of this effort is to be able to tell customers that we are using only 
+FIPS compliant crypto libraries and not that our product is FIPS compliant by itself. 
+Our solution meets that requirement so it meets the security needs.
 
 ## DoD
 
