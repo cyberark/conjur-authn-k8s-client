@@ -40,6 +40,7 @@ We looked into 3 options for making our product FIPS compliant:
 1. Use BoringSSL based crypto
    Use [Google’s fork of Golang](https://github.com/golang/go/blob/dev.boringcrypto.go1.12/misc/boring/README.md) 
    that uses dev.boringcrypto as its crypto engine. dev.boringcrypto wraps BoringSSL which is FIPS compliant.
+   More info can be found in the [Security section](#security).
    
 Looking into the options above, it was clear that the best option is BoringSSL.
 Using cgo (option 1) was disqualified due to its complexity and consuming time
@@ -79,6 +80,8 @@ versions will bring to the development team.
 
 Note: If the performance of the `goboring/golang` version will be much worse than that
       of the `golang` version (degradation of more than 5%) then we will release both versions.
+      More info on the performance tests that will be done in this effort can be found in the
+      [Performance section](#performance)
 
 ### Red Hat image
 
