@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.17.0] - 2020-04-07
 ### Added
-- Added ability for authn client to print its version upon startup (#93)
+- Authenticator client prints its version upon startup (#93)
 
 ## [0.16.1] - 2020-02-18
 ### Fixed
@@ -30,8 +30,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.15.0] - 2019-11-26
 ### Changed
-- Sending the full host-id in the CSR request. The prefix is sent in the 
-  "Host-Id-Prefix" header and the suffix is sent in the common-name
+- Enable authenticating hosts that are defined anywhere in the policy tree, instead
+  of only hosts that are defined under `conjur/authn-k8s/<service-id>/apps`.
 
 ## [0.14.0] - 2019-09-04
 ### Added
