@@ -279,11 +279,8 @@ The delivery plan will include the following steps:
 - Will we release a Non-FIPS version?
   - Depends on the performance test outcome
 - How will we test the project?
-  - Depends on research 
-  - Mitigation plan: in case the solution we decide on will require a long implementation
-    time (the definition of that will be decided after the design) we can go with
-    option (b) for the FIPS compliancy effort and improve the tests infrastructure
-    straight after that. 
+  - As mentioned above, we will need to research and design the best solution 
+    for testing this project
 
 ## DoD
 
