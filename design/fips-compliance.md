@@ -10,6 +10,13 @@ modules that include both hardware and software components.
 By making the conjur-authn-k8s-client FIPS compliant, our customer will gain a 
 cryptographic standard to protect their unclassified, but sensitive data.
 
+It should be noted that this project isn't only available for use for big 
+enterprise players - it's also a key part of our open source suite, and open 
+source users may very well not care about FIPS and may not have purchased 
+access to RedHat's tooling. Throughout the design and implementation
+we should verify that non-enterprise users get the same quality from the project,
+even if it is FIPS compliant.
+
 ## Useful Links
 
 | **Name**                        | **Link**                                            |
@@ -188,7 +195,8 @@ My suggestion is to implement option (c) for 2 main reasons:
   
 We will need to further research and design the best solution for our needs, before
 we can implement it. We should look into [`KInD`](https://github.com/kubernetes-sigs/kind)
-that seems to be suitable.
+that seems to be suitable. Once the design is ready we will perform a meeting including 
+Architects and Repository Owner. 
 
 We will not implement the tests in bash scripts like we do in the `secrets-provider-for-k8s`.
 
@@ -215,6 +223,7 @@ We should document any change that will affect the customer (e.g if we release
 both FIPS & Non-FIPS versions).
 
 If no customer-facing changes are introduced, we will not need to add documentation.
+The current design does not introduce any customer-facing changes.
 
 ## Version update
 
@@ -228,14 +237,42 @@ and will not be affected by the base image change.
 
 ## Security
 
-It's important to note that this solution is secure. Google is maintaining this 
+Google is maintaining this 
 fork of Go that uses BoringCrypto and they [intend to maintain in this branch 
 the latest release plus BoringCrypto patches](https://go.googlesource.com/go/+/refs/heads/dev.boringcrypto/README.boringcrypto.md).
-It's also worth to link to [FIPS certification of the crypto library of dev.boringcrypto](https://csrc.nist.gov/CSRC/media/projects/cryptographic-module-validation-program/documents/security-policies/140sp3318.pdf).
+You can read more about [FIPS certification of the crypto library of dev.boringcrypto](https://csrc.nist.gov/CSRC/media/projects/cryptographic-module-validation-program/documents/security-policies/140sp3318.pdf).
 
 Furthermore, the DoD of this effort is to be able to tell customers that we are using only 
 FIPS compliant crypto libraries and not that our product is FIPS compliant by itself. 
 Our solution meets that requirement so it meets the security needs.
+
+## Delivery Plan
+
+The delivery plan will include the following steps:
+  - Test performance and compare between versions
+    - EE: 2 days
+  - Implement fips-compliancy
+    - Finalize the open PR for the implementation. Most of the work is already done.
+    - EE: 2 days
+  - Implement tests
+    - Research and design the solution 
+    - Implement the tests
+    - EE: 10 days (~5 for design & ~5 for implementation)
+  - Update versions
+    - EE: 1 day
+  - Add documentation (if needed)
+    - EE: 1 day
+
+## Open Issues
+
+- Will we release a Non-FIPS version?
+  - Depends on the performance test outcome
+- How will we test the project?
+  - Depends on research 
+  - Mitigation plan: in case the solution we decide on will require a long implementation
+    time (the definition of that will be decided after the design) we can go with
+    option (b) for the FIPS compliancy effort and improve the tests infrastructure
+    straight after that. 
 
 ## DoD
 
