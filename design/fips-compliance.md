@@ -86,10 +86,7 @@ Note: If the performance of the `goboring/golang` version will be much worse tha
 ### Red Hat image
 
 We will also release a FIPS compliant Red Hat image of the `conjur-authn-k8s
--client` to our Red Hat registry. Before we do that, we should create a 
-`conjur-authn-k8s-client` FIPS project in the RH container registry.
-
-TBD - how do we create the FIPS project in the RH container registry?
+-client` to our Red Hat registry.
 
 ### Performance
 
