@@ -110,7 +110,8 @@ This performance test should be (in high level):
 Before we dig into which tests should run, we should decide where, and how, they
 should run. Currently, the `conjur-authn-k8s-client` have UTs in its project
 and a vanilla test that runs in `kubernetes-conjur-demo`. The `kubernetes-conjur-demo`
-is triggered only when we push code to that repository. 
+is triggered daily and when we push code to that repository., and pulls from `latest` tag of 
+`conjur-authn-k8s-client`. 
 
 Even while putting aside the fact that we have only a vanilla test, our current
  test flow is still not optimal. 
@@ -131,6 +132,10 @@ This will give us full confidence in the green build as it also passed
   against multiple environments.
   . This means that it will harder to merge PRs into the `conjur-authn-k8s
   -client`.
+  
+Furthermore, it won't be easy to debug in case of a failure as we will need to jump between builds
+and find the errors. In addition, `kubernetes-conjur-demo` runs also tests for
+the `secretless-broker` so failures there will fail builds of the authn-client.
   
 I am not sure that this can be implemented. By setting `LOCAL_AUTHENTICATOR
 ` to `true` we use the last built image (ran in the `./bin/build` step. In
@@ -166,33 +171,26 @@ before we merge their PRs.
 To summarize the options, let's look at the following table:
 | **Option**                                                                             | **Build Time** | **Design and Implementation time**                                                                                                                  | **Feedback on Failure**                                                           | **Ease of adding tests**                                                                                   | **Community Contribution**                                                                                                                                                                                                      |
 |----------------------------------------------------------------------------------------|----------------|------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| (a) Trigger `kubernetes-conjur-demo` to run after every build of `conjur-authn-k8s-client` | ~30 minutes    | Depends on whether we can utilize the LOCAL_AUTHENTICATOR environment variable. If we can then the implementation time should take ~1 day | Immediate feedback as all integration tests will  run before the end of the build | Adding tests to this project is not simple. Especially error flows.                                        | The community member will not be able to investigate a failure in case  there was one so the build will never be green (unless they ask for help from a Conjur team member).  There is also no option to add integration tests. |
+| (a) Trigger `kubernetes-conjur-demo` to run after every build of `conjur-authn-k8s-client` | ~30 minutes    | Depends on whether we can utilize the LOCAL_AUTHENTICATOR environment variable. If we can then the implementation time should take 2-3 days | Immediate feedback as all integration tests will  run before the end of the build | Adding tests to this project is not simple. Especially error flows.                                        | The community member will not be able to investigate a failure in case  there was one so the build will never be green (unless they ask for help from a Conjur team member).  There is also no option to add integration tests. |
 | (b) Trigger `kubernetes-conjur-demo` to run after every master build                       | ~3 minutes     | 1 hour                                                                                                                                   | After nightly build and only after the change is merged into `master`             | Adding tests to this project is not simple. Especially error flows.                                        | The community member will still be able to contribute as the tests will not run as part of the build                                                                                                                            |
 | (c) secrets-provider model - deploy different scenarios and check output                   | ~30 minutes    | ~10 days                                                                                                                                  | Immediate feedback as all integration tests will run before the end of the build  | - Should be easier to add tests. Adding tests to the `secrets-provider-for-k8s` is pretty straight forward | The community member will not be able to investigate a failure in case there was one so the build will never be green (unless they askfor help from a Conjur team member). There is also no option to add integration tests.    |
 
 ### Decision
 
-The best solution is to run the tests in the same repo as the application code.
-It will give the highest confidence in every merge to master. 
-
 I would not implement option (a) as it has some work to do and the solution is not optimal.
-It won't be easy to debug in case of a failure as we will need to jump between builds
-and find the errors. Furthermore, `kubernetes-conjur-demo` runs also tests for
-the `secretless-broker` so failures there will fail builds of the authn-client.
 
-My suggestion is as follows:
-  - If we can get 10 days for testing then we should research and design the best 
-    option to run the integration tests in the same repo. Finding a good solution 
-    will be useful also in the `secrets-provider-for-k8s` and in the `secretless-broker`.
-    The options are:
-      - `secrets-provider` style: deploy different scenarios and check output   
-      - [`KInD`](https://github.com/kubernetes-sigs/kind)
-      - Any other option found in the research
-  - If we can't get 10 days, implement option (b). We won't have the same confidence 
-    and we may merge to `master` code that will break the integration tests but the
-    implementation time will be very short. Developers who merge to `master` will need
-    to verify that the build `kubernetes-conjur-demo` succeeded after the merge
-    (and in case of failure we will get notified in Slack)
+Option (b) is the easiest one but it won't give us the required confidence before
+merging to master so we should avoid that approach.
+
+My suggestion is to implement option (c) for 2 main reasons:
+  - Integration tests are maintained in the same repo as the application code 
+  - Integration tests run as part of the build
+  
+We will need to further research and design the best solution for our needs, before
+we can implement it. We should look into [`KInD`](https://github.com/kubernetes-sigs/kind)
+that seems to be suitable.
+
+We will not implement the tests in bash scripts like we do in the `secrets-provider-for-k8s`.
 
 ### Integration Tests
 
