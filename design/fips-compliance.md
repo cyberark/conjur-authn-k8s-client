@@ -97,9 +97,20 @@ We will also release a FIPS compliant Red Hat image of the `conjur-authn-k8s
 
 ### Performance
 
-Same SLA of performance should be kept. As of today, we don't have any
-performance tests and an SLA (that I know of). We should decide on one and
-verify that the change to GoBoring doesn't impact the performance.
+We should verify that the performance of the FIPS-compliant image doesn't 
+have a degradation that is "visible to the naked eye". We will deploy a pod with
+an init container of the Non-Fips image, and then deploy a pod with an 
+init container of the Fips image. If the difference is a matter of seconds it 
+will be ok. If the difference is a matter of minutes then the performance of the 
+FIPS-compliant image will not be good.
+
+The way we perform the performance test is to utilize the infrastructure of 
+`kubernetes-conjur-demo` with the `LOCAL_AUTHENTICATOR` environment variable. We 
+capture the time (using `date +%s`)
+[just before deploying the init container](https://github.com/conjurdemos/kubernetes-conjur-demo/blob/master/6_deploy_test_app.sh#L138),
+and the time [just after we finished to query the URL of the application container](https://github.com/conjurdemos/kubernetes-conjur-demo/blob/master/start#L24) 
+(that implements the pet-store). We also removed all other pods (summon-side-car, secretless, etc.) 
+from the project for the purpose of this test.
 
 We should write a performance test and run it twice - once on the `master` 
 image and once on the new FIPS-compliance image - and verify that the
