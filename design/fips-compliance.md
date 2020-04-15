@@ -77,8 +77,8 @@ look into some pros and cons of both approaches.
  
  | **Option**                             | **Implications**                                                                                                                                                                                                                                                                                                                                                        |
  |----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
- | Release only `goboring/golang` version | - Customers use the client and don't require FIPS compliancy, will now miss libraries that are available in `golang` but are not available in `goboring/golang`                                                                                                                                                                                                       |
- | Release both versions                  | <ul><li>One more Dockerfile to maintain. Any change made to the original Dockerfile should be done also to `Dockerfile.fips` which can be easily forgotten</li><li>Another version to test. Our UTs will stay the same but we will need to run integration tests on both images, in order to release them. This adds complexity to our tests and doubles the tests run-time</li></ul> |
+ | Release only `goboring/golang` version | <ul><li>Customers who use the client and don't require FIPS compliancy, will now miss libraries that are available in `golang` but are not available in `goboring/golang`</li></ul>                                                                                                                                                                                                      |
+ | Release both versions                  | <ul><li>One more Dockerfile to maintain. Any change made to the original Dockerfile should be done also to `Dockerfile.fips` which can be easily forgotten</li><li>Another version to test and document. Our UTs will stay the same but we will need to run integration tests on both images, in order to release them. This adds complexity to our tests and doubles the tests run-time</li></ul> |
 
 From the table above, I think that we should release only the FIPS compliant
 version. The advantages that customers will get by using the `golang` image
@@ -86,50 +86,42 @@ as the base image is not worth the maintenance burden that releasing both
 versions will bring to the development team.
 
 Note: If the performance of the `goboring/golang` version will be much worse than that
-      of the `golang` version (degradation of more than 5%) then we will release both versions.
-      More info on the performance tests that will be done in this effort can be found in the
+      of the `golang` version then we will release both versions.
+      More info on the required performance, and the performance tests that will be done in this effort can be found in the
       [Performance section](#performance)
 
 ### Red Hat image
 
 We will also release a FIPS compliant Red Hat image of the `conjur-authn-k8s
--client` to our Red Hat registry.
+-client` to our Red Hat registry. As with the regular image, we will replace the
+current one with a FIPS-compliant image.
 
 ### Performance
 
 We should verify that the performance of the FIPS-compliant image doesn't 
 have a degradation that is "visible to the naked eye". We will deploy a pod with
 an init container of the Non-Fips image, and then deploy a pod with an 
-init container of the Fips image. If the difference is a matter of seconds it 
-will be ok. If the difference is a matter of minutes then the performance of the 
-FIPS-compliant image will not be good.
+init container of the Fips image. If the difference is a matter of seconds then
+the performance is good. If the difference is a matter of minutes then the performance of the 
+FIPS-compliant image is not good.
 
-The way we perform the performance test is to utilize the infrastructure of 
+The way we will perform the performance test is to utilize the infrastructure of 
 `kubernetes-conjur-demo` with the `LOCAL_AUTHENTICATOR` environment variable. We 
-capture the time (using `date +%s`)
+will capture the time (using `date +%s`)
 [just before deploying the init container](https://github.com/conjurdemos/kubernetes-conjur-demo/blob/master/6_deploy_test_app.sh#L138),
 and the time [just after we finished to query the URL of the application container](https://github.com/conjurdemos/kubernetes-conjur-demo/blob/master/start#L24) 
-(that implements the pet-store). We also removed all other pods (summon-side-car, secretless, etc.) 
+(that implements the pet-store). We will also remove all other pods (summon-side-car, secretless, etc.) 
 from the project for the purpose of this test.
 
-We should write a performance test and run it twice - once on the `master` 
-image and once on the new FIPS-compliance image - and verify that the
- performance is not affected by the change. We can live with a degradation of less
- than 5% between the versions.
-
-This performance test should be (in high level):
-  - Deploy a pod with the `conjur-authn-k8s-client` image and an application container
-    that retrieves a secret from Conjur using the access token retrieved by the authenticator client.
-  - Test how long the procedure above took
-  - Run this for 1000 times and get the average time
+We will run the test above 3 times for each image and get the average time. 
 
 ## Test plan
 
 Before we dig into which tests should run, we should decide where, and how, they
 should run. Currently, the `conjur-authn-k8s-client` have UTs in its project
 and a vanilla test that runs in `kubernetes-conjur-demo`. The `kubernetes-conjur-demo`
-is triggered daily and when we push code to that repository., and pulls from `latest` tag of 
-`conjur-authn-k8s-client`. 
+is triggered daily and when we push code to that repository. The tests run against
+a `latest` tag of `conjur-authn-k8s-client`. 
 
 Even while putting aside the fact that we have only a vanilla test, our current
  test flow is still not optimal. 
@@ -145,20 +137,13 @@ We can find a way to run `kubernetes-conjur-demo` using the currently built
 This will give us full confidence in the green build as it also passed
  integration tests.
  
- However, the build time of `kubernetes-conjur-demo` is ~25 minutes (opposing
-  2-3 minutes of the `conjur-authn-k8s-client`) and it is not very stable as it runs
-  against multiple environments.
-  . This means that it will harder to merge PRs into the `conjur-authn-k8s
-  -client`.
-  
-Furthermore, it won't be easy to debug in case of a failure as we will need to jump between builds
-and find the errors. In addition, `kubernetes-conjur-demo` runs also tests for
-the `secretless-broker` so failures there will fail builds of the authn-client.
-  
-I am not sure that this can be implemented. By setting `LOCAL_AUTHENTICATOR
-` to `true` we use the last built image (ran in the `./bin/build` step. In
- case we have builds running in parallel it may affect the latest built image
-  so it is possible that we can't use a local authenticator in Jenkins.
+However, this approach has several flaws:
+  - The build time of `kubernetes-conjur-demo` is ~25 minutes (opposing
+    2-3 minutes of the `conjur-authn-k8s-client`) and it is not very stable as it runs
+    against multiple environments. This means that it will harder to merge PRs into the `conjur-authn-k8s-client`.
+  - It won't be easy to debug in case of a failure as we will need to jump between builds
+    and find the errors.
+  - `kubernetes-conjur-demo` runs also tests for the `secretless-broker` so failures there will fail builds of the authn-client.
 
 ### Trigger `kubernetes-conjur-demo` to run after every master build of `conjur-authn-k8s-client`
 
@@ -168,8 +153,14 @@ After we will merge the PR into `master` we can follow the `master` build of
 `kubernetes-conjur-demo` to see if it passed. This is better than a nightly
 build also because at the end of the day we will see which PR
 introduced a failure and it will be easier to fix the error. 
+
+The main flaw in this approach is that we don't get immediate feedback on failures
+and errors will be merged into `master`. The chance that we will be able to cut 
+a release whenever we want is greatly reduced (and broken merges may interrupt 
+other developers as they hit the same bug on rebases) since a merge is only 
+assumed to be working until it lands into master that would confirm it.
   
-### Add integration tests to `conjur-authn-k8s-client` as we have in the `secrets-provider-for-kubernetes`
+### Add integration tests to `conjur-authn-k8s-client`
   
 In the `secrets-provider-for-kubernetes` we have integration tests
 with different scenarios, that each one deploys its own pod and verifies
@@ -177,8 +168,8 @@ the expected output.
 
 The caveat of this approach is that members of the community will not be able
 to contribute to this repo as they can today as they will not be able to run
-the integration tests (as they run with `summon` which requires `conjurops
-` access). They will not be able to fix tests that broke because of their
+the integration tests (as they run with `summon` which requires `conjurops` access).
+They will not be able to fix tests that broke because of their
 change and will not be able to add tests for their contribution. However, this
 is not really different than today where community members cannot run the
 tests in `kubernetes-conjur-demo`, so it's better that tests will fail
@@ -214,12 +205,12 @@ We will not implement the tests in bash scripts like we do in the `secrets-provi
 ### Integration Tests
 
 Regardless of how we will run our tests, it is not optimal that we have only
- a vanilla flow. We should add another test where in case the authenticator
- -client fails to authenticate with Conjur we don't provide an access token
+ a vanilla flow. We should add another test where in case the authenticator-client 
+ fails to authenticate with Conjur we don't provide an access token
   and the log shows `CAKC015E Login failed`.
   
 We do not need to test different permutations of error flows (e.g host does
-not exist, host is not permitted on the authn-k8s/prod authenticator) as
+not exist, host is not permitted on the `authn-k8s/prod` authenticator) as
 these test run in the `conjur` repository. As far as the authenticator-client
  is concerned, the output is binary - Authentication success or failure.
    
@@ -233,8 +224,8 @@ these test run in the `conjur` repository. As far as the authenticator-client
 We should document any change that will affect the customer (e.g if we release 
 both FIPS & Non-FIPS versions).
 
-If no customer-facing changes are introduced, we will not need to add documentation.
-The current design does not introduce any customer-facing changes.
+If no customer-facing changes are introduced (as is the case in the suggested solution),
+ we will not need to add documentation.
 
 ## Version update
 
@@ -260,10 +251,10 @@ Our solution meets that requirement so it meets the security needs.
 ## Delivery Plan
 
 The delivery plan will include the following steps:
-  - Test performance and compare between versions
-    - EE: 2 days
   - Implement fips-compliancy
-    - Finalize the open PR for the implementation. Most of the work is already done.
+    - Finalize the [open PR](https://github.com/cyberark/conjur-authn-k8s-client/pull/97) for the implementation. Most of the work is already done.
+    - EE: 3 days
+  - Test performance and compare between versions
     - EE: 2 days
   - Implement tests
     - Research and design the solution 
@@ -277,10 +268,13 @@ The delivery plan will include the following steps:
 ## Open Issues
 
 - Will we release a Non-FIPS version?
-  - Depends on the performance test outcome
+  - Depends on the performance test outcome. If the performance of the FIPS-compliant
+    image is not good enough, we will release both versions. In that case, an addition
+    of ~5 days will be added to the EE.
 - How will we test the project?
-  - As mentioned above, we will need to research and design the best solution 
-    for testing this project
+  - As mentioned above, we will research and design the best solution 
+    for testing this project. This R&D will lower the risk of going out of time
+    in the test plan implementation.
 
 ## DoD
 
