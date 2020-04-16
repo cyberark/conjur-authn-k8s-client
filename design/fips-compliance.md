@@ -284,7 +284,7 @@ The delivery plan will include the following steps:
   - [ ] Repository Owner: Geri Jennings (@izgeri)
   - [ ] QA Architect: Elad Kugman (@eladkug)
   - [ ] System Architect: Ofira Burstein (@oburstein-hub)
-  - [ ] Security Architect: Shahar Glazner: (@shaharglazner)
+  - [x] Security Architect: Shahar Glazner: (@shaharglazner)
 - [ ] `conjur-authn-k8s-client` is FIPS compliant
 - [ ] Tests are implemented according to Test Plan and are passing
 - [ ] Required documentation changes are implemented
