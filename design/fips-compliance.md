@@ -279,7 +279,7 @@ The delivery plan will include the following steps:
 ## DoD
 
 - [ ] Solution design is approved by the following personas
-  - [ ] Team Leader: Dekel Asaf (@Tovli)
+  - [x] Team Leader: Dekel Asaf (@Tovli)
   - [ ] Product Owner: Hila Gross (@hilagross)
   - [ ] Repository Owner: Geri Jennings (@izgeri)
   - [ ] QA Architect: Elad Kugman (@eladkug)
