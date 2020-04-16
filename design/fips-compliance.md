@@ -85,11 +85,6 @@ version. The advantages that customers will get by using the `golang` image
 as the base image is not worth the maintenance burden that releasing both
 versions will bring to the development team.
 
-Note: If the performance of the `goboring/golang` version will be much worse than that
-      of the `golang` version then we will release both versions.
-      More info on the required performance, and the performance tests that will be done in this effort can be found in the
-      [Performance section](#performance)
-
 ### Red Hat image
 
 We will also release a FIPS compliant Red Hat image of the `conjur-authn-k8s
@@ -114,6 +109,19 @@ and the time [just after we finished to query the URL of the application contain
 from the project for the purpose of this test.
 
 We will run the test above 3 times for each image and get the average time. 
+
+#### Performance test results
+
+We ran the above test 3 times on each image. The results are:
+
+| **Image**          | **Run #1** | **Run #1** | **Run #1** | **Average Time** |
+|--------------------|------------|------------|------------|------------------|
+| FIPS compliant     | 51 s       | 50 s       | 49 s       | 50 s             |
+| Non-FIPS compliant | 49 s       | 48 s       | 50 s       | 49 s             |
+
+We can see that the performance of the FIPS-compliant image is the same as 
+that of the original one. Therefore, we will release only the FIPS-compliant
+version of the authenticator.
 
 ## Test plan
 
@@ -267,10 +275,6 @@ The delivery plan will include the following steps:
 
 ## Open Issues
 
-- Will we release a Non-FIPS version?
-  - Depends on the performance test outcome. If the performance of the FIPS-compliant
-    image is not good enough, we will release both versions. In that case, an addition
-    of ~5 days will be added to the EE.
 - How will we test the project?
   - As mentioned above, we will research and design the best solution 
     for testing this project. This R&D will lower the risk of going out of time
@@ -278,13 +282,7 @@ The delivery plan will include the following steps:
 
 ## DoD
 
-- [ ] Solution design is approved by the following personas
-  - [x] Team Leader: Dekel Asaf (@Tovli)
-  - [ ] Product Owner: Hila Gross (@hilagross)
-  - [ ] Repository Owner: Geri Jennings (@izgeri)
-  - [ ] QA Architect: Elad Kugman (@eladkug)
-  - [x] System Architect: Ofira Burstein (@oburstein-hub)
-  - [ ] Security Architect: Shahar Glazner: (@shaharglazner)
+- [x] Solution design is approved
 - [ ] `conjur-authn-k8s-client` is FIPS compliant
 - [ ] Tests are implemented according to Test Plan and are passing
 - [ ] Required documentation changes are implemented
