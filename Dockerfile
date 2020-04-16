@@ -1,9 +1,9 @@
 FROM golang:1.12 as authenticator-client-builder
 MAINTAINER CyberArk Software Ltd.
 
-ENV GOOS=linux
-ENV GOARCH=amd64
-ENV CGO_ENABLED=0
+ENV GOOS=linux \
+    GOARCH=amd64 \
+    CGO_ENABLED=1
 
 # this value changes in ./bin/build
 ARG TAG="dev"
@@ -14,6 +14,8 @@ COPY . /opt/conjur-authn-k8s-client
 EXPOSE 8080
 
 RUN apt-get update && apt-get install -y jq
+
+RUN go mod download
 
 RUN go get -u github.com/jstemmer/go-junit-report && \
     go get github.com/smartystreets/goconvey
@@ -27,7 +29,7 @@ RUN go build -a -installsuffix cgo \
 FROM busybox
 
 # =================== MAIN CONTAINER ===================
-FROM scratch as authenticator-client
+FROM alpine:latest as authenticator-client
 MAINTAINER CyberArk Software, Inc.
 
 # copy a few commands from busybox
@@ -41,34 +43,71 @@ COPY --from=busybox /bin/mkdir /bin/mkdir
 COPY --from=busybox /bin/chmod /bin/chmod
 COPY --from=busybox /bin/cat /bin/cat
 
-# allow anyone to write to this dir, container may not run as root
-RUN mkdir -p /etc/conjur/ssl && chmod 777 /etc/conjur/ssl
+RUN apk add -u shadow libc6-compat && \
+    # Add Limited user
+    groupadd -r authenticator \
+             -g 777 && \
+    useradd -c "authenticator runner account" \
+            -g authenticator \
+            -u 777 \
+            -m \
+            -r \
+            authenticator && \
+    # Ensure authenticator dir is owned by authenticator user and setup a
+    # directory for the Conjur client certificate/access token
+    mkdir -p /usr/local/lib/authenticator /etc/conjur/ssl /run/conjur && \
+    # Use GID of 0 since that is what OpenShift will want to be able to read things
+    chown authenticator:0 /usr/local/lib/authenticator \
+                       /etc/conjur/ssl \
+                       /run/conjur && \
+    # We need open group permissions in these directories since OpenShift won't
+    # match our UID when we try to write files to them
+    chmod 770 /etc/conjur/ssl \
+              /run/conjur
+
+USER authenticator
 
 VOLUME /run/conjur
 
-COPY --from=authenticator-client-builder /opt/conjur-authn-k8s-client/authenticator /bin
+COPY --from=authenticator-client-builder /opt/conjur-authn-k8s-client/authenticator /usr/local/bin/
 
-CMD ["authenticator"]
+ENTRYPOINT [ "/usr/local/bin/authenticator" ]
 
 # =================== MAIN CONTAINER (REDHAT) ===================
 FROM registry.access.redhat.com/rhel as authenticator-client-redhat
-
 MAINTAINER CyberArk Software, Inc.
 
-# allow anyone to write to this dir, container may not run as root
-RUN mkdir -p /etc/conjur/ssl && chmod 777 /etc/conjur/ssl && mkdir -p /licenses
-
-RUN useradd -ms /bin/bash conjur
+    # Add Limited user
+RUN groupadd -r authenticator \
+             -g 777 && \
+    useradd -c "authenticator runner account" \
+            -g authenticator \
+            -u 777 \
+            -m \
+            -r \
+            authenticator && \
+    # Ensure plugin dir is owned by authenticator user
+    mkdir -p /usr/local/lib/authenticator && \
+    # Make and setup a directory for the Conjur client certificate/access token
+    mkdir -p /etc/conjur/ssl /run/conjur /licenses && \
+    # Use GID of 0 since that is what OpenShift will want to be able to read things
+    chown authenticator:0 /usr/local/lib/authenticator \
+                       /etc/conjur/ssl \
+                       /run/conjur && \
+    # We need open group permissions in these directories since OpenShift won't
+    # match our UID when we try to write files to them
+    chmod 770 /etc/conjur/ssl \
+              /run/conjur
 
 VOLUME /run/conjur
 
-COPY --from=authenticator-client-builder /opt/conjur-authn-k8s-client/authenticator /bin
+COPY --from=authenticator-client-builder /opt/conjur-authn-k8s-client/authenticator /usr/local/bin/
 
 ADD LICENSE /licenses
 
-USER conjur
+USER authenticator
 
-CMD ["authenticator"]
+CMD [ "/usr/local/bin/authenticator" ]
 
 ARG VERSION
 
