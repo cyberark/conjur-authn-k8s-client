@@ -30,12 +30,15 @@ To run the test suite, run `./bin/build` and `./bin/test`.
 Releases should be created by maintainers only. To create a tag and release,
 follow the instructions in this section.
 
-### Update the version and changelog
+### Update the version, changelog, and notices
 1. Create a new branch for the version bump.
 1. Based on the unreleased content, determine the new version number and update
-   the [VERSION](VERSION) file.
+   the [version](pkg/authenticator/version.go) file.
 1. Review the git log and ensure the [changelog](CHANGELOG.md) contains all
-   relevant recent changes with references to GitHub issues or PRs, if possible
+   relevant recent changes with references to GitHub issues or PRs, if possible.
+1. Review the changes since the last tag, and if the dependencies have changed
+   revise the [NOTICES](NOTICES.txt) to correctly capture the included
+   dependencies and their licenses / copyrights.
 1. Commit these changes - `Bump version to x.y.z` is an acceptable commit
    message - and open a PR for review.
 
