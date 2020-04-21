@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Changed
 - The project now uses `goboring/golang` as its base image to be FIPS compliant
-- The authenticator-client now runs with a limited user instead with root 
+- The authenticator-client now runs as a limited user in the Docker image instead of as root 
   ([cyberark/conjur-authn-k8s-client#111](https://github.com/cyberark/conjur-authn-k8s-client/pull/111))
 
 ## [0.17.0] - 2020-04-07
