@@ -5,9 +5,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.18.0] - 2020-04-21
+### Added
+- Design for making project FIPS compliant to support users that require it -
+  [design](design/fips-compliance.md), [cyberark/conjur-authn-k8s-client#106](https://github.com/cyberark/conjur-authn-k8s-client/issues/106)
+
 ### Changed
 - The project now uses `goboring/golang` as its base image to be FIPS compliant
-- The authenticator-client now runs as a limited user in the Docker image instead of as root 
+  [cyberark/conjur-authn-k8s-client#113](https://github.com/cyberark/conjur-authn-k8s-client/issues/113)
+- The authenticator-client now runs as a limited user in the Docker image
+  instead of as root, which is best practice and better follows the principle of
+  least privilege 
   ([cyberark/conjur-authn-k8s-client#111](https://github.com/cyberark/conjur-authn-k8s-client/pull/111))
 
 ## [0.17.0] - 2020-04-07
@@ -82,7 +91,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.16.1...v0.17.0
 [0.16.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.16.0...v0.16.1
 [0.16.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.15.0...v0.16.0
