@@ -5,13 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- The project now uses `goboring/golang` as its base image to be FIPS compliant
 
 ## [0.17.0] - 2020-04-07
 ### Added
 - Authenticator client prints its version upon startup (#93)
-
-### Changed
-- The project now uses `goboring/golang` as its base image to be FIPS compliant
 
 ## [0.16.1] - 2020-02-18
 ### Fixed
