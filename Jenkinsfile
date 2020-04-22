@@ -59,6 +59,13 @@ pipeline {
   }
 
   post {
+    success {
+      script {
+        if (env.BRANCH_NAME == 'master') {
+          build (job:'conjurdemos--kubernetes-conjur-demo/master', wait: false)
+        }
+      }
+    }
     always {
       cleanupAndNotify(currentBuild.currentResult)
     }
