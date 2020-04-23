@@ -31,10 +31,18 @@ pipeline {
       }
     }
 
-    // Cannot scan dev image as it's based on busybox and trivy can't determine
-    // the OS
-    stage("Scan redhat image") {
+    stage("Scan images") {
       parallel {
+        stage ("Scan main image for fixable vulns") {
+          steps {
+            scanAndReport("conjur-authn-k8s-client:dev", "HIGH", false)
+          }
+        }
+        stage ("Scan main image for total vulns") {
+          steps {
+            scanAndReport("conjur-authn-k8s-client:dev", "NONE", true)
+          }
+        }
         stage ("Scan redhat image for fixable vulns") {
           steps {
             scanAndReport("conjur-authn-k8s-client-redhat:dev", "HIGH", false)
