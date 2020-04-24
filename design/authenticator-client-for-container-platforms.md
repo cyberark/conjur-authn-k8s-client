@@ -1,10 +1,14 @@
+
 # Conjur Authenticator for Container Platforms - Secret-Zero
 
 Created: November 21, 2017
-Revised: November 30, 2017
+Revised: April 24, 2020
 
 ## History
 
+- April 24, 2020 - Reviewed the original design and added some notes about the initial implementation. It is worth
+  noting that a more thorough review that adds more details about the current implementation would still be valuable
+   - this review was not comprehensive, and was only meant to clear up obvious errors.
 - November 30, 2017 - Reviewed and addressed some comments.
 - November 27, 2017 - Change the login flow so that the server issues the client’s certificate over a side-channel
   such as ssh or kubectl exec. For authentication, use mutual SSL.
@@ -79,51 +83,67 @@ access token. Each access token thus obtained is encrypted by the client's publi
 The `login` method resists identity spoofing by installing the signed certificate onto the client using a Container
 Platform Engine API.
 
-Once the client has obtained its signed certificate, it uses the certificate to authenticate, thereby  obtaining a
-short-lived access token which is IP-restricted and also encrypted by the client's public key. The IP restriction
-prevents the token from being used outside of the container cluster. The encryption ensures that an attacker cannot
-use a token without having access to the private key as well (which requires access to the client container's memory).
+Once the client has obtained its signed certificate (which is asynchronously injected into the client's environment
+by the Authenticator) it uses the certificate to authenticate, thereby obtaining a short-lived access token.
+
+**Note:** in the original design, we also proposed apply IP restrictions to the short-lived access token. This is not
+yet implemented. We also originally planned to have the Authenticator encrypt the access token using the client's
+private key (and have it implemented this way for Conjur Enterprise v4), but since the `authenticate` request is sent
+using mTLS for DAP v10+ and Conjur OSS v1+, we do not encrypt the access token for these versions.
 
 ## Description
 
 ### Login
 
-The Authenticator performs a function similar to a Certificate Authority: verifying a CSR (certificate signing request)
-and issuing a certificate for it. The client container generates a CSR with the following attributes:
+The Authenticator performs a function similar to a Certificate Authority but through Container Platform Engine APIs:
+verifying a CSR (certificate signing request) and issuing a certificate for it. The client container generates a
+CSR with the following attributes:
 
-- Subject Name: Cluster-specific Identifier of the container
-- Subject Alternative Name: Cluster-specific IP address of the container
+- Subject Name: Application identifier (e.g. host identity)
+- Subject Alternative Name: Container identifier (e.g. SPIFFE identity of the form
+  `spiffe://cluster.local/namespace/{app namespace}/podname/{app pod name}`)
 
 The corresponding private key is stored in a memory file on the client. The client sends the CSR to the Authenticator
-using the HTTPS method GET /login. When the Authenticator receives a CSR, it verifies the CSR attributes with the
-Container Platform Engine1. The Authenticator CA then signs the CSR using a CA key which it obtains from a Conjur
-variable, and installs the certificate on the client via side channel. The client stores the certificate in a memory
-file alongside the key. The client can use the certificate and key as client TLS information on subsequent requests
-to the Authenticator.
+using the HTTPS method `POST /inject_client_cert`. When the Authenticator receives a CSR, it verifies the CSR attributes with
+the Container Platform Engine. Once the Authenticator has verified the validity of the request, it returns a 200 response
+to the Client. The Authenticator continues to process the request asynchronously from this point, and the Authenticator
+CA signs the CSR using a CA key which it obtains from a Conjur variable and installs the certificate on the client via
+asynchronously via Container Platform Engine APIs. The client stores the signed cert on file and the key is only stored
+in memory. The client can use the certificate and key as client TLS information on subsequent requests to the Authenticator.
+
+**Note:** The attributes of the application are different in the actual implementation than in the original design, and
+we have updated this section to reflect the current implementation. See the document history for info on the original
+design.
 
 #### Login flow
 
-**Note:** `login` is typically performed once per Client Container. It may be repeated if the client knows that its
-certificate is due to expire.
+**Note:** The login process is typically performed once per Client Container. It may be repeated if the client knows that
+its certificate is due to expire.
 
 1. Create an application container
 1. Client container generates a certificate private key and stores it in memory
 1. Client container generates a CSR
-1. Client container sends the CSR to the Authenticator `login` method
+1. Client container sends the CSR to the Authenticator `inject_client_cert` method
 1. Authenticator verifies the Subject Name, Subject Alternative Name(s), and any other attributes of the client request.
 1. Authenticator signs the certificate
-1. Authenticator installs the certificate onto the client using a side-channel (Container Platform Service API)
+1. Authenticator installs the certificate onto the client using a side-channel (Container Platform Service API) and in
+   an asynchronous thread
 1. Authenticator responds with “OK” on the original request channel
 
 ### Authenticate
 
 The client wants to obtain an access token from the Authenticator. It sends an HTTPS request to `POST /authenticate`.
-The Authenticator verifies the client certificate, and verifies the certificate metadata e.g. container IP address.
-The Authenticator issues an access token, and encrypts it with the client certificate. It sends the encrypted access
-token back to the client, who decrypts it using the certificate key.
 
-**Note:** `authenticate` is performed as often as the Client Container needs. Access tokens issued by `authenticate`
-have a short lifespan (minutes to hours).
+The Authenticator verifies the client certificate, and verifies the certificate metadata.  The Authenticator issues an
+access token and sends the access token back to the client.
+
+**Notes:**
+- `authenticate` is performed as often as the Client Container needs. Access tokens issued by `authenticate`
+  have a short lifespan (minutes to hours); the default duration is 8 minutes.
+- In the original design (and in the Conjur Enterprise v4 implementation) the Conjur Authenticator encrypts the
+  access token using the client certificate before returning it, and the client decrypts the access token upon
+  receipt. In the DAP v10+ and Conjur OSS v1+ implementations, the access token is returned over the encrypted
+  connection using the same process as the default authenticator.
 
 #### Authenticate flow
 
@@ -178,19 +198,15 @@ Further guidance on securing the Authenticator will be provided by CyberArk and 
 It's more secure if the Authenticator never knows the client private keys. It's also better to make the clients
 provide entropy rather than making the Authenticator provide the entropy for all the keys.
 
-### If am able to spoof a request IP, can I fool the Authenticator into logging me in me as any arbitrary application?
+### If am able to spoof a request, can I fool the Authenticator into logging me in as any arbitrary application?
 
 No. When you login, the Authenticator will install the certificate onto the client container using a side-channel
 routed through the orchestration controller. So, you will also need to intercept this request, and you will need
 to MITM the SSL between the Authenticator and the orchestration controller.
 
-As long as there is proper validation of the CSR's subject name on login, we don't need to worry about ARP spoofing
-as the IP should only be one of two factors considered
+### If am able to spoof a request, can I fool the Authenticator into authenticating me as any arbitrary application?
 
-### If am able to spoof a request IP, can I fool the Authenticator into authenticating me in me as any arbitrary application?
-
-No. When you try and authenticate,  the Authenticator will send you an access token that’s encrypted with the private
-key of the container you are impersonating. You can only get the private key by having access to the memory of that
-container.
-
-Also, when you authenticate you must have a valid certificate which contains the container IP as a Subject Alternative Name.
+No. The injection of certificates into the proper container via the side-channel Container Platform API ensures that
+only the valid client receives the signed certificate. Furthermore, the mutual TLS session for authenticating to
+retrieve the access token requires the client's SSL key (which is stored only in the client's memory) and a
+valid/signed certificate.
