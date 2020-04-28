@@ -46,6 +46,8 @@ And it should:
 - Have an implementation as similar as possible across the supported platforms.
 
 ## Architecture
+
+```
                                         +------------+
                                         |E. Security |
                           +------------->   Service  |
@@ -64,6 +66,7 @@ And it should:
 |                                                          |
 |                                   A: Compute Cluster     |
 +----------------------------------------------------------+
+```
 
 A. Compute Cluster - A pool of servers or VMs which run a container engine.
 B. Container Platform Engine - Schedules application containers across the Compute Cluster.
