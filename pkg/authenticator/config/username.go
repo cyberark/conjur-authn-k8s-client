@@ -24,6 +24,12 @@ type Username struct {
 	Suffix       string
 }
 
+// String is used to format the username to only the needed user-visible information
+// rather than all the fields
+func (username Username) String() string {
+	return username.FullUsername
+}
+
 func NewUsername(username string) (*Username, error) {
 	usernameSplit := strings.Split(username, "/")
 	// Verify that the host-id starts with 'host/'
