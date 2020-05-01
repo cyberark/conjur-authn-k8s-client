@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -49,6 +51,14 @@ func TestUsername(t *testing.T) {
 			Convey("Raises an invalid username error", func() {
 				So(err.Error(), ShouldStartWith, "CAKC032E")
 			})
+		})
+
+		Convey("String representation of username only shows full username", func() {
+			username := "host/path/to/policy/namespace/resource_type/resource_id"
+
+			usernameStruct, _ := NewUsername(username)
+			usernameStructStr := fmt.Sprintf("%s", usernameStruct)
+			So(usernameStructStr, ShouldEqual, username)
 		})
 	})
 }
