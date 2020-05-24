@@ -34,7 +34,7 @@ FROM busybox
 
 # =================== MAIN CONTAINER ===================
 FROM alpine:latest as authenticator-client
-MAINTAINER CyberArk Software, Inc.
+MAINTAINER CyberArk Software Ltd.
 
 # copy a few commands from busybox
 COPY --from=busybox /bin/tar /bin/tar
@@ -79,7 +79,7 @@ ENTRYPOINT [ "/usr/local/bin/authenticator" ]
 
 # =================== MAIN CONTAINER (REDHAT) ===================
 FROM registry.access.redhat.com/rhel as authenticator-client-redhat
-MAINTAINER CyberArk Software, Inc.
+MAINTAINER CyberArk Software Ltd.
 
     # Add Limited user
 RUN groupadd -r authenticator \
