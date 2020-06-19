@@ -19,3 +19,7 @@ Connected to #[relevant GitHub issues, eg 76]
 #### Documentation
 - [ ] Docs (e.g. `README`s) were updated in this PR, and/or there is a follow-on issue to update docs, or
 - [ ] This PR does not require updating any documentation
+
+#### Manual tests
+**If you are preparing for a release**, have you run the following manual tests to verify existing functionality continues to function as expected?
+- [ ] Manually run [Kubernetes-Conjur demo](https://github.com/conjurdemos/kubernetes-conjur-demo) with a local authn-k8s client image build
