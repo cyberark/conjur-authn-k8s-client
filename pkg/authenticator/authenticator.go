@@ -142,6 +142,7 @@ func (auth *Authenticator) Login() error {
 
 		return log.RecordedError(log.CAKC012E, err.Error())
 	}
+	log.InfoLogger.Printf(log.CAKC015I, auth.Config.ClientCertPath)
 
 	certDERBlock, certPEMBlock := pem.Decode(certPEMBlock)
 	cert, err := x509.ParseCertificate(certDERBlock.Bytes)
@@ -153,6 +154,7 @@ func (auth *Authenticator) Login() error {
 
 	// clean up the client cert so it's only available in memory
 	os.Remove(auth.Config.ClientCertPath)
+	log.InfoLogger.Printf(log.CAKC016I)
 
 	return nil
 }
