@@ -14,6 +14,17 @@ The Conjur Kubernetes authenticator client is designed to have a light footprint
 
 The client is configured entirely through environment variables. These are listed below.
 
+### Using conjur-authn-k8s-client with Conjur OSS 
+
+Are you using this project with [Conjur OSS](https://github.com/cyberark/conjur)? Then we 
+**strongly** recommend choosing the version of this project to use from the latest [Conjur OSS 
+suite release](https://docs.conjur.org/Latest/en/Content/Overview/Conjur-OSS-Suite-Overview.html). 
+Conjur maintainers perform additional testing on the suite release versions to ensure 
+compatibility. When possible, upgrade your Conjur version to match the 
+[latest suite release](https://docs.conjur.org/Latest/en/Content/ReleaseNotes/ConjurOSS-suite-RN.htm); 
+when using integrations, choose the latest suite release that matches your Conjur version. For any 
+questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/c/conjur/5).
+
 ## Orchestrator
 - `MY_POD_NAME`: Pod name (see [downwards API](https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information))
 - `MY_POD_NAMESPACE`: Pod namespace (see [downwards API](https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information))
