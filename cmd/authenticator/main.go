@@ -18,6 +18,7 @@ var infoLogger = log.InfoLogger
 
 func main() {
 	infoLogger.Printf(log.CAKC014I, authenticator.FullVersionName)
+	infoLogger.Printf("****** conjur-authn-k8s-client SPIRE_POC")
 
 	var err error
 
