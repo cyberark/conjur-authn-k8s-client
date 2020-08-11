@@ -12,25 +12,27 @@ import (
 // Config defines the configuration parameters
 // for the authentication requests
 type Config struct {
-	Account             string
-	ClientCertPath      string
-	ContainerMode       string
-	ConjurVersion       string
-	PodName             string
-	PodNamespace        string
-	SSLCertificate      []byte
-	TokenFilePath       string
-	TokenRefreshTimeout time.Duration
-	URL                 string
-	Username            *Username
+	Account                     string
+	ClientCertPath              string
+	ContainerMode               string
+	SupportMultipleApplications string
+	ConjurVersion               string
+	PodName                     string
+	PodNamespace                string
+	SSLCertificate              []byte
+	TokenFilePath               string
+	TokenRefreshTimeout         time.Duration
+	URL                         string
+	Username                    *Username
 }
 
 // Default settings (this comment added to satisfy linter)
 const (
-	DefaultClientCertPath = "/etc/conjur/ssl/client.pem"
-	DefaultTokenFilePath  = "/run/conjur/access-token"
-
-	DefaultConjurVersion = "5"
+	DefaultClientCertPath              = "/etc/conjur/ssl/client.pem"
+	DefaultTokenFilePath               = "/run/conjur/access-token"
+	DefaultContainerMode               = "sidecar"
+	DefaultSupportMultipleApplications = "false"
+	DefaultConjurVersion               = "5"
 
 	// DefaultTokenRefreshTimeout is the default time the system waits to reauthenticate on error
 	DefaultTokenRefreshTimeout = 6 * time.Minute
@@ -99,11 +101,10 @@ func populateConfig() (*Config, error) {
 	}
 
 	defaultConfig := &Config{
-		Account:             os.Getenv("CONJUR_ACCOUNT"),
-		ContainerMode:       os.Getenv("CONTAINER_MODE"),
-		PodName:             os.Getenv("MY_POD_NAME"),
-		PodNamespace:        os.Getenv("MY_POD_NAMESPACE"),
-		URL:                 os.Getenv("CONJUR_AUTHN_URL"),
+		Account:      os.Getenv("CONJUR_ACCOUNT"),
+		PodName:      os.Getenv("MY_POD_NAME"),
+		PodNamespace: os.Getenv("MY_POD_NAMESPACE"),
+		URL:          os.Getenv("CONJUR_AUTHN_URL"),
 	}
 
 	// Only versions '4' & '5' are allowed, with '5' being used as the default
@@ -141,6 +142,18 @@ func populateConfig() (*Config, error) {
 	// If CONJUR_CLIENT_CERT_PATH is defined in the env we take its value
 	if envVal := os.Getenv("CONJUR_CLIENT_CERT_PATH"); envVal != "" {
 		defaultConfig.ClientCertPath = envVal
+	}
+
+	defaultConfig.ContainerMode = DefaultContainerMode
+	// If CONTAINER_MODE is defined in the env we take its value
+	if envVal := os.Getenv("CONTAINER_MODE"); envVal != "" {
+		defaultConfig.ContainerMode = os.Getenv("CONTAINER_MODE")
+	}
+
+	defaultConfig.SupportMultipleApplications = DefaultSupportMultipleApplications
+	// If SUPPORT_MULTIPLE_APPS is defined in the env we take its value
+	if envVal := os.Getenv("SUPPORT_MULTIPLE_APPS"); envVal != "" {
+		defaultConfig.SupportMultipleApplications = os.Getenv("SUPPORT_MULTIPLE_APPS")
 	}
 
 	return defaultConfig, nil
