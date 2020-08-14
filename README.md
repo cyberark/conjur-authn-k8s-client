@@ -1,6 +1,8 @@
 # conjur-authn-k8s-client
 
-On DockerHub: https://hub.docker.com/r/cyberark/conjur-kubernetes-authenticator/
+Available images:
+- [DockerHub](https://hub.docker.com/r/cyberark/conjur-authn-k8s-client)
+- [RedHat Container Registry](https://catalog.redhat.com/software/containers/cyberark/conjur-openshift-authenticator/5c67286cecb5240adf708252)
 
 ## What's inside ?
 
