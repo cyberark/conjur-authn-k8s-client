@@ -14,6 +14,7 @@ import (
 type Config struct {
 	Account             string
 	ClientCertPath      string
+	ClientCertTimeout   time.Duration
 	ContainerMode       string
 	ConjurVersion       string
 	PodName             string
@@ -34,6 +35,10 @@ const (
 
 	// DefaultTokenRefreshTimeout is the default time the system waits to reauthenticate on error
 	DefaultTokenRefreshTimeout = 6 * time.Minute
+
+	// DefaultClientCertTimeout is the amount of time we wait after successful
+	// login for the client certificate file to exist
+	DefaultClientCertTimeout = 10 * time.Second
 )
 
 var requiredEnvVariables = []string{
@@ -99,11 +104,11 @@ func populateConfig() (*Config, error) {
 	}
 
 	defaultConfig := &Config{
-		Account:             os.Getenv("CONJUR_ACCOUNT"),
-		ContainerMode:       os.Getenv("CONTAINER_MODE"),
-		PodName:             os.Getenv("MY_POD_NAME"),
-		PodNamespace:        os.Getenv("MY_POD_NAMESPACE"),
-		URL:                 os.Getenv("CONJUR_AUTHN_URL"),
+		Account:       os.Getenv("CONJUR_ACCOUNT"),
+		ContainerMode: os.Getenv("CONTAINER_MODE"),
+		PodName:       os.Getenv("MY_POD_NAME"),
+		PodNamespace:  os.Getenv("MY_POD_NAMESPACE"),
+		URL:           os.Getenv("CONJUR_AUTHN_URL"),
 	}
 
 	// Only versions '4' & '5' are allowed, with '5' being used as the default
@@ -141,6 +146,18 @@ func populateConfig() (*Config, error) {
 	// If CONJUR_CLIENT_CERT_PATH is defined in the env we take its value
 	if envVal := os.Getenv("CONJUR_CLIENT_CERT_PATH"); envVal != "" {
 		defaultConfig.ClientCertPath = envVal
+	}
+
+	// Parse client cert timeout if one is provided from env
+	defaultConfig.ClientCertTimeout = DefaultClientCertTimeout
+	clientCertTimeoutString := os.Getenv("CONJUR_CLIENT_CERT_TIMEOUT")
+	if len(clientCertTimeoutString) > 0 {
+		parsedClientCertTimeout, err := time.ParseDuration(clientCertTimeoutString)
+		if err != nil {
+			return nil, log.RecordedError(log.CAKC034E, err.Error())
+		}
+
+		defaultConfig.ClientCertTimeout = parsedClientCertTimeout
 	}
 
 	return defaultConfig, nil

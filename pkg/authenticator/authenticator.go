@@ -135,6 +135,13 @@ func (auth *Authenticator) Login() error {
 		return log.RecordedError(log.CAKC029E, err.Error())
 	}
 
+	// ensure client certificate exists before attempting to read it, with a tolerance
+	// for small delays
+	err = waitForInjectedCertificateFile(auth.Config.ClientCertPath, auth.Config.ClientCertTimeout)
+	if err != nil {
+		return err
+	}
+
 	// load client cert
 	certPEMBlock, err := ioutil.ReadFile(auth.Config.ClientCertPath)
 	if err != nil {
@@ -254,6 +261,28 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 	log.InfoLogger.Printf(log.CAKC001I)
 
 	return nil
+}
+
+// waitForInjectedCertificateFile waits for a given timeout to see if the cert file
+// exists in the given path. If it's not there by the end of the timeout, it returns
+// an error.
+func waitForInjectedCertificateFile(certificatePath string, timeout time.Duration) error {
+	deadline := time.Now().UTC().Add(timeout)
+	for {
+		info, err := os.Stat(certificatePath)
+
+		if !os.IsNotExist(err) && !info.IsDir() {
+			// No error, the certificate exists within the deadline
+			return nil
+		}
+
+		if time.Now().After(deadline) {
+			// Timed out waiting for the certificate to exist
+			return log.RecordedError(log.CAKC033E, certificatePath)
+		}
+
+		time.Sleep(500 * time.Millisecond)
+	}
 }
 
 // generateSANURI returns the formatted uri(SPIFFEE format for now) for the certificate.
