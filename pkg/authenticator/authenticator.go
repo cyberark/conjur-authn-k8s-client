@@ -272,6 +272,9 @@ func waitForInjectedCertificateFile(certificatePath string, timeout time.Duratio
 		info, err := os.Stat(certificatePath)
 
 		if !os.IsNotExist(err) && !info.IsDir() {
+			// Certificate file is available
+			log.InfoLogger.Printf(log.CAKC017I, certificatePath)
+
 			// No error, the certificate exists within the deadline
 			return nil
 		}
@@ -281,7 +284,9 @@ func waitForInjectedCertificateFile(certificatePath string, timeout time.Duratio
 			return log.RecordedError(log.CAKC033E, certificatePath)
 		}
 
-		time.Sleep(500 * time.Millisecond)
+		// Wait before checking for the certificate to exist again
+		log.InfoLogger.Printf(log.CAKC018I)
+		time.Sleep(1 * time.Second)
 	}
 }
 
