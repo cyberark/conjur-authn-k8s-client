@@ -112,28 +112,64 @@ func (auth *Authenticator) Login() error {
 
 	log.InfoLogger.Printf(log.CAKC007I, auth.Config.Username)
 
-	csrRawBytes, err := auth.GenerateCSR(auth.Config.Username.Suffix)
+	// The cert file may be present from a previous login request
+	if !auth.CertFileExist() {
+		csrRawBytes, err := auth.GenerateCSR(auth.Config.Username.Suffix)
 
-	csrBytes := pem.EncodeToMemory(&pem.Block{
-		Type: "CERTIFICATE REQUEST", Bytes: csrRawBytes,
-	})
+		csrBytes := pem.EncodeToMemory(&pem.Block{
+			Type: "CERTIFICATE REQUEST", Bytes: csrRawBytes,
+		})
 
-	req, err := LoginRequest(auth.Config.URL, auth.Config.ConjurVersion, csrBytes, auth.Config.Username.Prefix)
+		req, err := LoginRequest(auth.Config.URL, auth.Config.ConjurVersion, csrBytes, auth.Config.Username.Prefix)
+		if err != nil {
+			return err
+		}
+
+		resp, err := auth.client.Do(req)
+		if err != nil {
+			return log.RecordedError(log.CAKC028E, err.Error())
+		}
+
+		err = EmptyResponse(resp)
+		if err != nil {
+			return log.RecordedError(log.CAKC029E, err.Error())
+		}
+	}
+
+	err := auth.LoadClientCert()
 	if err != nil {
 		return err
 	}
 
-	resp, err := auth.client.Do(req)
-	if err != nil {
-		return log.RecordedError(log.CAKC028E, err.Error())
-	}
+	return nil
+}
 
-	err = EmptyResponse(resp)
-	if err != nil {
-		return log.RecordedError(log.CAKC029E, err.Error())
-	}
+// Returns true if we are logged in (have a cert)
+func (auth *Authenticator) IsLoggedIn() bool {
+	return auth.PublicCert != nil
+}
 
-	// load client cert
+// CertFileExist returns true if certificate file exists in the ClientCertPath
+func (auth *Authenticator) CertFileExist() bool {
+	_, err := os.Stat(auth.Config.ClientCertPath)
+	return !os.IsNotExist(err)
+}
+
+// Returns true if certificate is expired or close to expiring
+func (auth *Authenticator) IsCertExpired() bool {
+	certExpiresOn := auth.PublicCert.NotAfter.UTC()
+	currentDate := time.Now().UTC()
+
+	log.InfoLogger.Printf(log.CAKC008I, certExpiresOn)
+	log.InfoLogger.Printf(log.CAKC009I, currentDate)
+	log.InfoLogger.Printf(log.CAKC010I, bufferTime)
+
+	return currentDate.Add(bufferTime).After(certExpiresOn)
+}
+
+// LoadClientCert loads the client certificate from the file into a parameter of
+// the Authenticator struct
+func (auth *Authenticator) LoadClientCert() error {
 	certPEMBlock, err := ioutil.ReadFile(auth.Config.ClientCertPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -157,23 +193,6 @@ func (auth *Authenticator) Login() error {
 	log.InfoLogger.Printf(log.CAKC016I)
 
 	return nil
-}
-
-// Returns true if we are logged in (have a cert)
-func (auth *Authenticator) IsLoggedIn() bool {
-	return auth.PublicCert != nil
-}
-
-// Returns true if certificate is expired or close to expiring
-func (auth *Authenticator) IsCertExpired() bool {
-	certExpiresOn := auth.PublicCert.NotAfter.UTC()
-	currentDate := time.Now().UTC()
-
-	log.InfoLogger.Printf(log.CAKC008I, certExpiresOn)
-	log.InfoLogger.Printf(log.CAKC009I, currentDate)
-	log.InfoLogger.Printf(log.CAKC010I, bufferTime)
-
-	return currentDate.Add(bufferTime).After(certExpiresOn)
 }
 
 // Authenticate sends Conjur an authenticate request and returns
