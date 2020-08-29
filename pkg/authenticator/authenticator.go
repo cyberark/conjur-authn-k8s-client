@@ -114,31 +114,42 @@ func (auth *Authenticator) Login() error {
 
 	// The cert file may be present from a previous login request
 	if !auth.CertFileExist() {
-		csrRawBytes, err := auth.GenerateCSR(auth.Config.Username.Suffix)
-
-		csrBytes := pem.EncodeToMemory(&pem.Block{
-			Type: "CERTIFICATE REQUEST", Bytes: csrRawBytes,
-		})
-
-		req, err := LoginRequest(auth.Config.URL, auth.Config.ConjurVersion, csrBytes, auth.Config.Username.Prefix)
+		err := auth.SendLoginRequest()
 		if err != nil {
 			return err
-		}
-
-		resp, err := auth.client.Do(req)
-		if err != nil {
-			return log.RecordedError(log.CAKC028E, err.Error())
-		}
-
-		err = EmptyResponse(resp)
-		if err != nil {
-			return log.RecordedError(log.CAKC029E, err.Error())
 		}
 	}
 
 	err := auth.LoadClientCert()
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// SendLoginRequest sends Conjur an authenticate request and returns
+// an error if it occurred
+func (auth *Authenticator) SendLoginRequest() error {
+	csrRawBytes, err := auth.GenerateCSR(auth.Config.Username.Suffix)
+
+	csrBytes := pem.EncodeToMemory(&pem.Block{
+		Type: "CERTIFICATE REQUEST", Bytes: csrRawBytes,
+	})
+
+	req, err := LoginRequest(auth.Config.URL, auth.Config.ConjurVersion, csrBytes, auth.Config.Username.Prefix)
+	if err != nil {
+		return err
+	}
+
+	resp, err := auth.client.Do(req)
+	if err != nil {
+		return log.RecordedError(log.CAKC028E, err.Error())
+	}
+
+	err = EmptyResponse(resp)
+	if err != nil {
+		return log.RecordedError(log.CAKC029E, err.Error())
 	}
 
 	return nil
