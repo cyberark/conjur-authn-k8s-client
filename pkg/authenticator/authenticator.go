@@ -272,8 +272,6 @@ func waitForInjectedCertificateFile(certificatePath string, timeout time.Duratio
 		info, err := os.Stat(certificatePath)
 
 		if !os.IsNotExist(err) && !info.IsDir() {
-			// Certificate file is available
-			log.InfoLogger.Printf(log.CAKC017I, certificatePath)
 
 			// No error, the certificate exists within the deadline
 			return nil
