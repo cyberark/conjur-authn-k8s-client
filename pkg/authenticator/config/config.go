@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
@@ -12,18 +13,18 @@ import (
 // Config defines the configuration parameters
 // for the authentication requests
 type Config struct {
-	Account             string
-	ClientCertPath      string
-	ClientCertTimeout   time.Duration
-	ContainerMode       string
-	ConjurVersion       string
-	PodName             string
-	PodNamespace        string
-	SSLCertificate      []byte
-	TokenFilePath       string
-	TokenRefreshTimeout time.Duration
-	URL                 string
-	Username            *Username
+	Account                   string
+	ClientCertPath            string
+	ClientCertRetryCountLimit int
+	ContainerMode             string
+	ConjurVersion             string
+	PodName                   string
+	PodNamespace              string
+	SSLCertificate            []byte
+	TokenFilePath             string
+	TokenRefreshTimeout       time.Duration
+	URL                       string
+	Username                  *Username
 }
 
 // Default settings (this comment added to satisfy linter)
@@ -36,9 +37,9 @@ const (
 	// DefaultTokenRefreshTimeout is the default time the system waits to reauthenticate on error
 	DefaultTokenRefreshTimeout = 6 * time.Minute
 
-	// DefaultClientCertTimeout is the amount of time we wait after successful
-	// login for the client certificate file to exist
-	DefaultClientCertTimeout = 10 * time.Second
+	// DefaultClientCertRetryCountLimit is the amount of times we wait after successful
+	// login for the client certificate file to exist, where each time we wait for a second.
+	DefaultClientCertRetryCountLimit = 10
 )
 
 var requiredEnvVariables = []string{
@@ -148,16 +149,16 @@ func populateConfig() (*Config, error) {
 		defaultConfig.ClientCertPath = envVal
 	}
 
-	// Parse client cert timeout if one is provided from env
-	defaultConfig.ClientCertTimeout = DefaultClientCertTimeout
-	clientCertTimeoutString := os.Getenv("CONJUR_CLIENT_CERT_TIMEOUT")
-	if len(clientCertTimeoutString) > 0 {
-		parsedClientCertTimeout, err := time.ParseDuration(clientCertTimeoutString)
+	// Parse client cert retry count limit if one is provided from env
+	defaultConfig.ClientCertRetryCountLimit = DefaultClientCertRetryCountLimit
+	clientCertRetryCountLimitString := os.Getenv("CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT")
+	if len(clientCertRetryCountLimitString) > 0 {
+		parsedClientCertRetryCountLimit, err := strconv.Atoi(clientCertRetryCountLimitString)
 		if err != nil {
 			return nil, log.RecordedError(log.CAKC034E, err.Error())
 		}
 
-		defaultConfig.ClientCertTimeout = parsedClientCertTimeout
+		defaultConfig.ClientCertRetryCountLimit = parsedClientCertRetryCountLimit
 	}
 
 	return defaultConfig, nil

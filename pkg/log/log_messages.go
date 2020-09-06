@@ -45,8 +45,8 @@ const CAKC029E string = "CAKC029E Received invalid response to certificate signi
 const CAKC030E string = "CAKC030E Failed to generate RSA keypair. Reason: %s"
 const CAKC031E string = "CAKC031E Retransmission backoff exhausted"
 const CAKC032E string = "CAKC032E Username %s is invalid"
-const CAKC033E string = "CAKC033E Timed out waiting for certificate file to exist: %s"
-const CAKC034E string = "CAKC034E Failed to parse CONJUR_CLIENT_CERT_TIMEOUT. Reason: %s"
+const CAKC033E string = "CAKC033E Timed out after waiting for %d seconds for certificate file to exist: %s"
+const CAKC034E string = "CAKC034E Failed to parse CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT. Reason: %s"
 
 // INFO MESSAGES
 const CAKC001I string = "CAKC001I Successfully authenticated"

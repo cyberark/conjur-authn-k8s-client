@@ -16,6 +16,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/fullsailor/pkcs7"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
@@ -137,7 +138,7 @@ func (auth *Authenticator) Login() error {
 
 	// ensure client certificate exists before attempting to read it, with a tolerance
 	// for small delays
-	err = waitForInjectedCertificateFile(auth.Config.ClientCertPath, auth.Config.ClientCertTimeout)
+	err = waitForInjectedCertificateFile(auth.Config.ClientCertPath, auth.Config.ClientCertRetryCountLimit)
 	if err != nil {
 		return err
 	}
@@ -263,29 +264,29 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 	return nil
 }
 
-// waitForInjectedCertificateFile waits for a given timeout to see if the cert file
-// exists in the given path. If it's not there by the end of the timeout, it returns
+// waitForInjectedCertificateFile waits for retryCountLimit seconds to see if the cert file
+// exists in the given path. If it's not there by the end of the retry count limit, it returns
 // an error.
-func waitForInjectedCertificateFile(certificatePath string, timeout time.Duration) error {
-	deadline := time.Now().UTC().Add(timeout)
-	for {
+func waitForInjectedCertificateFile(certificatePath string, retryCountLimit int) error {
+	constantBackOff := backoff.NewConstantBackOff(time.Second)
+	count := 0
+	return backoff.Retry(func() error {
 		info, err := os.Stat(certificatePath)
-
 		if !os.IsNotExist(err) && !info.IsDir() {
-
 			// No error, the certificate exists within the deadline
 			return nil
 		}
 
-		if time.Now().After(deadline) {
-			// Timed out waiting for the certificate to exist
-			return log.RecordedError(log.CAKC033E, certificatePath)
+		count++
+		if count >= retryCountLimit {
+			return backoff.Permanent(log.RecordedError(log.CAKC033E, retryCountLimit, certificatePath))
 		}
 
 		// Wait before checking for the certificate to exist again
 		log.InfoLogger.Printf(log.CAKC018I)
-		time.Sleep(1 * time.Second)
-	}
+
+		return err
+	}, constantBackOff)
 }
 
 // generateSANURI returns the formatted uri(SPIFFEE format for now) for the certificate.
