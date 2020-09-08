@@ -138,7 +138,7 @@ func (auth *Authenticator) Login() error {
 
 	// ensure client certificate exists before attempting to read it, with a tolerance
 	// for small delays
-	err = waitForInjectedCertificateFile(auth.Config.ClientCertPath, auth.Config.ClientCertRetryCountLimit)
+	err = auth.WaitForInjectedCertificateFile(auth.Config.ClientCertPath, auth.Config.ClientCertRetryCountLimit, os.Stat, os.IsNotExist)
 	if err != nil {
 		return err
 	}
@@ -264,15 +264,19 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 	return nil
 }
 
-// waitForInjectedCertificateFile waits for retryCountLimit seconds to see if the cert file
+// We define these functions so we can mock WaitForInjectedCertificateFile
+type OsStatFunc func(name string) (os.FileInfo, error)
+type OsIsNotExistFunc func(err error) bool
+
+// WaitForInjectedCertificateFile waits for retryCountLimit seconds to see if the cert file
 // exists in the given path. If it's not there by the end of the retry count limit, it returns
 // an error.
-func waitForInjectedCertificateFile(certificatePath string, retryCountLimit int) error {
+func (auth *Authenticator) WaitForInjectedCertificateFile(certificatePath string, retryCountLimit int, osStatFunc OsStatFunc, osIsNotExistFunc OsIsNotExistFunc) error {
 	constantBackOff := backoff.NewConstantBackOff(time.Second)
 	count := 0
 	return backoff.Retry(func() error {
-		info, err := os.Stat(certificatePath)
-		if !os.IsNotExist(err) && !info.IsDir() {
+		info, err := osStatFunc(certificatePath)
+		if !osIsNotExistFunc(err) && !info.IsDir() {
 			// No error, the certificate exists within the deadline
 			return nil
 		}
