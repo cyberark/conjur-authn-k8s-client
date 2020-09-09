@@ -138,7 +138,7 @@ func (auth *Authenticator) Login() error {
 
 	// Ensure client certificate exists before attempting to read it, with a tolerance
 	// for small delays
-	err = utils.WaitForFileToExist(
+	err = utils.WaitForFile(
 		auth.Config.ClientCertPath,
 		auth.Config.ClientCertRetryCountLimit,
 		nil,

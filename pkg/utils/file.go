@@ -9,18 +9,20 @@ import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
+var defaultVerifyFileExistsFunc = verifyFileExists
+
 type VerifyFileExistsFunc func(path string) error
 
-// WaitForFileToExist waits for retryCountLimit seconds to see if the file
+// WaitForFile waits for retryCountLimit seconds to see if the file
 // exists in the given path. If it's not there by the end of the retry count limit, it returns
 // an error.
-func WaitForFileToExist(
+func WaitForFile(
 	path string,
 	retryCountLimit int,
 	verifyFileExistsFunc VerifyFileExistsFunc,
 ) error {
 	if verifyFileExistsFunc == nil {
-		verifyFileExistsFunc = verifyFileExists
+		verifyFileExistsFunc = defaultVerifyFileExistsFunc
 	}
 
 	limitedBackOff := NewLimitedBackOff(

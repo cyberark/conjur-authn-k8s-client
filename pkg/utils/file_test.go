@@ -21,14 +21,14 @@ func MockVerifyFileExistsFunc(path string) error {
 }
 
 func TestFile(t *testing.T) {
-	Convey("WaitForFileToExist", t, func() {
+	Convey("WaitForFile", t, func() {
 		retryCountLimit := 10
-		Convey("Returns nil if cert is installed", func() {
-			certificatePath := ExistingFilePath
+		Convey("Returns nil if file exists", func() {
+			path := ExistingFilePath
 
 			So(
-				WaitForFileToExist(
-					certificatePath,
+				WaitForFile(
+					path,
 					retryCountLimit,
 					MockVerifyFileExistsFunc,
 				),
@@ -37,17 +37,17 @@ func TestFile(t *testing.T) {
 		})
 
 		Convey("Waits for whole time if file does not exist", func() {
-			certificatePath := "path/to/non-existing/file"
+			path := "path/to/non-existing/file"
 
 			expectedOutput := fmt.Errorf(
 				"CAKC033E Timed out after waiting for %d seconds for file to exist: %s",
 				retryCountLimit,
-				certificatePath,
+				path,
 			)
 
 			So(
-				WaitForFileToExist(
-					certificatePath,
+				WaitForFile(
+					path,
 					retryCountLimit,
 					MockVerifyFileExistsFunc,
 				),
