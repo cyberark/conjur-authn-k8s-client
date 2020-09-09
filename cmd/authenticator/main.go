@@ -57,13 +57,13 @@ func main() {
 				os.Exit(0)
 			}
 
-			// Reset exponential backoff
-			expBackoff.Reset()
-
 			infoLogger.Printf(log.CAKC013I, authn.Config.TokenRefreshTimeout)
 
 			fmt.Println()
 			time.Sleep(authn.Config.TokenRefreshTimeout)
+
+			// Reset exponential backoff
+			expBackoff.Reset()
 		}
 	}, expBackoff)
 
