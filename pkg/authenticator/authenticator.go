@@ -16,13 +16,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/cenkalti/backoff"
 	"github.com/fullsailor/pkcs7"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/file"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
@@ -136,9 +136,13 @@ func (auth *Authenticator) Login() error {
 		return log.RecordedError(log.CAKC029E, err.Error())
 	}
 
-	// ensure client certificate exists before attempting to read it, with a tolerance
+	// Ensure client certificate exists before attempting to read it, with a tolerance
 	// for small delays
-	err = auth.WaitForInjectedCertificateFile(auth.Config.ClientCertPath, auth.Config.ClientCertRetryCountLimit, os.Stat, os.IsNotExist)
+	err = utils.WaitForFileToExist(
+		auth.Config.ClientCertPath,
+		auth.Config.ClientCertRetryCountLimit,
+		nil,
+	)
 	if err != nil {
 		return err
 	}
@@ -262,35 +266,6 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 	log.InfoLogger.Printf(log.CAKC001I)
 
 	return nil
-}
-
-// We define these functions so we can mock WaitForInjectedCertificateFile
-type OsStatFunc func(name string) (os.FileInfo, error)
-type OsIsNotExistFunc func(err error) bool
-
-// WaitForInjectedCertificateFile waits for retryCountLimit seconds to see if the cert file
-// exists in the given path. If it's not there by the end of the retry count limit, it returns
-// an error.
-func (auth *Authenticator) WaitForInjectedCertificateFile(certificatePath string, retryCountLimit int, osStatFunc OsStatFunc, osIsNotExistFunc OsIsNotExistFunc) error {
-	constantBackOff := backoff.NewConstantBackOff(time.Second)
-	count := 0
-	return backoff.Retry(func() error {
-		info, err := osStatFunc(certificatePath)
-		if !osIsNotExistFunc(err) && !info.IsDir() {
-			// No error, the certificate exists within the deadline
-			return nil
-		}
-
-		count++
-		if count >= retryCountLimit {
-			return backoff.Permanent(log.RecordedError(log.CAKC033E, retryCountLimit, certificatePath))
-		}
-
-		// Wait before checking for the certificate to exist again
-		log.InfoLogger.Printf(log.CAKC018I)
-
-		return err
-	}, constantBackOff)
 }
 
 // generateSANURI returns the formatted uri(SPIFFEE format for now) for the certificate.

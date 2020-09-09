@@ -5,14 +5,12 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
 	"io/ioutil"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/mocks"
 )
 
 func parseCert(filename string) (*x509.Certificate, error) {
@@ -52,28 +50,6 @@ func TestAuthenticator(t *testing.T) {
 			}
 
 			So(authn.IsCertExpired(), ShouldEqual, true)
-		})
-	})
-
-	Convey("WaitForInjectedCertificateFile", t, func() {
-		retryCountLimit := 10
-		authn := Authenticator{}
-		Convey("Returns nil if cert is installed", func() {
-			certificatePath := "exist"
-
-			So(authn.WaitForInjectedCertificateFile(certificatePath, retryCountLimit, mocks.MockOsStatFunc, mocks.MockOsIsNotExistFunc), ShouldBeNil)
-		})
-
-		Convey("Waits for whole time if cert is not installed", func() {
-			certificatePath := "path/to/non-existing/file"
-
-			expectedOutput := fmt.Errorf(
-				"CAKC033E Timed out after waiting for %d seconds for certificate file to exist: %s",
-				retryCountLimit,
-				certificatePath,
-			)
-
-			So(authn.WaitForInjectedCertificateFile(certificatePath, retryCountLimit, mocks.MockOsStatFunc, mocks.MockOsIsNotExistFunc), ShouldResemble, expectedOutput)
 		})
 	})
 

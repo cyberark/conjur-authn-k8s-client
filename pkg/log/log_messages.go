@@ -45,7 +45,7 @@ const CAKC029E string = "CAKC029E Received invalid response to certificate signi
 const CAKC030E string = "CAKC030E Failed to generate RSA keypair. Reason: %s"
 const CAKC031E string = "CAKC031E Retransmission backoff exhausted"
 const CAKC032E string = "CAKC032E Username %s is invalid"
-const CAKC033E string = "CAKC033E Timed out after waiting for %d seconds for certificate file to exist: %s"
+const CAKC033E string = "CAKC033E Timed out after waiting for %d seconds for file to exist: %s"
 const CAKC034E string = "CAKC034E Failed to parse CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT. Reason: %s"
 
 // INFO MESSAGES
@@ -65,4 +65,4 @@ const CAKC013I string = "CAKC013I Waiting for %s to re-authenticate"
 const CAKC014I string = "CAKC014I Kubernetes Authenticator Client v%s starting up..."
 const CAKC015I string = "CAKC015I Loaded client certificate successfully from %s"
 const CAKC016I string = "CAKC016I Deleted client certificate from memory"
-const CAKC018I string = "CAKC018I Waiting for client certificate to become available..."
+const CAKC017I string = "CAKC017I Waiting for file %s to become available..."
