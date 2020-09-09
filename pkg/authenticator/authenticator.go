@@ -22,6 +22,7 @@ import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/file"
 	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
@@ -44,6 +45,7 @@ const (
 	nameTypeIP    = 7
 )
 
+// New creates a new authenticator instance from a token file
 func New(config authnConfig.Config) (*Authenticator, error) {
 	accessToken, err := file.NewAccessToken(config.TokenFilePath)
 	if err != nil {
@@ -53,6 +55,7 @@ func New(config authnConfig.Config) (*Authenticator, error) {
 	return NewWithAccessToken(config, accessToken)
 }
 
+// NewWithAccessToken creates a new authenticator instance from a given access token
 func NewWithAccessToken(config authnConfig.Config, accessToken access_token.AccessToken) (*Authenticator, error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
@@ -133,6 +136,17 @@ func (auth *Authenticator) Login() error {
 		return log.RecordedError(log.CAKC029E, err.Error())
 	}
 
+	// Ensure client certificate exists before attempting to read it, with a tolerance
+	// for small delays
+	err = utils.WaitForFile(
+		auth.Config.ClientCertPath,
+		auth.Config.ClientCertRetryCountLimit,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
 	// load client cert
 	certPEMBlock, err := ioutil.ReadFile(auth.Config.ClientCertPath)
 	if err != nil {
@@ -159,12 +173,12 @@ func (auth *Authenticator) Login() error {
 	return nil
 }
 
-// Returns true if we are logged in (have a cert)
+// IsLoggedIn returns true if we are logged in (have a cert)
 func (auth *Authenticator) IsLoggedIn() bool {
 	return auth.PublicCert != nil
 }
 
-// Returns true if certificate is expired or close to expiring
+// IsCertExpired returns true if certificate is expired or close to expiring
 func (auth *Authenticator) IsCertExpired() bool {
 	certExpiresOn := auth.PublicCert.NotAfter.UTC()
 	currentDate := time.Now().UTC()

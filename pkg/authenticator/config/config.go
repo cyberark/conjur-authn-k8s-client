@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
@@ -12,17 +13,18 @@ import (
 // Config defines the configuration parameters
 // for the authentication requests
 type Config struct {
-	Account             string
-	ClientCertPath      string
-	ContainerMode       string
-	ConjurVersion       string
-	PodName             string
-	PodNamespace        string
-	SSLCertificate      []byte
-	TokenFilePath       string
-	TokenRefreshTimeout time.Duration
-	URL                 string
-	Username            *Username
+	Account                   string
+	ClientCertPath            string
+	ClientCertRetryCountLimit int
+	ContainerMode             string
+	ConjurVersion             string
+	PodName                   string
+	PodNamespace              string
+	SSLCertificate            []byte
+	TokenFilePath             string
+	TokenRefreshTimeout       time.Duration
+	URL                       string
+	Username                  *Username
 }
 
 // Default settings (this comment added to satisfy linter)
@@ -34,6 +36,10 @@ const (
 
 	// DefaultTokenRefreshTimeout is the default time the system waits to reauthenticate on error
 	DefaultTokenRefreshTimeout = 6 * time.Minute
+
+	// DefaultClientCertRetryCountLimit is the amount of times we wait after successful
+	// login for the client certificate file to exist, where each time we wait for a second.
+	DefaultClientCertRetryCountLimit = 10
 )
 
 var requiredEnvVariables = []string{
@@ -99,11 +105,11 @@ func populateConfig() (*Config, error) {
 	}
 
 	defaultConfig := &Config{
-		Account:             os.Getenv("CONJUR_ACCOUNT"),
-		ContainerMode:       os.Getenv("CONTAINER_MODE"),
-		PodName:             os.Getenv("MY_POD_NAME"),
-		PodNamespace:        os.Getenv("MY_POD_NAMESPACE"),
-		URL:                 os.Getenv("CONJUR_AUTHN_URL"),
+		Account:       os.Getenv("CONJUR_ACCOUNT"),
+		ContainerMode: os.Getenv("CONTAINER_MODE"),
+		PodName:       os.Getenv("MY_POD_NAME"),
+		PodNamespace:  os.Getenv("MY_POD_NAMESPACE"),
+		URL:           os.Getenv("CONJUR_AUTHN_URL"),
 	}
 
 	// Only versions '4' & '5' are allowed, with '5' being used as the default
@@ -141,6 +147,18 @@ func populateConfig() (*Config, error) {
 	// If CONJUR_CLIENT_CERT_PATH is defined in the env we take its value
 	if envVal := os.Getenv("CONJUR_CLIENT_CERT_PATH"); envVal != "" {
 		defaultConfig.ClientCertPath = envVal
+	}
+
+	// Parse client cert retry count limit if one is provided from env
+	defaultConfig.ClientCertRetryCountLimit = DefaultClientCertRetryCountLimit
+	clientCertRetryCountLimitString := os.Getenv("CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT")
+	if len(clientCertRetryCountLimitString) > 0 {
+		parsedClientCertRetryCountLimit, err := strconv.Atoi(clientCertRetryCountLimitString)
+		if err != nil {
+			return nil, log.RecordedError(log.CAKC034E, err.Error())
+		}
+
+		defaultConfig.ClientCertRetryCountLimit = parsedClientCertRetryCountLimit
 	}
 
 	return defaultConfig, nil

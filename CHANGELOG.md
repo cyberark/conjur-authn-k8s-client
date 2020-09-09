@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Username formatting now correctly only prints FullUsername field ([#126](https://github.com/cyberark/conjur-authn-k8s-client/issues/126))
 
+### Changed
+- Wait slightly for the client certificate file to exist after login before
+  raising an error.
+  [cyberark/conjur-authn-k8s-client#119](https://github.com/cyberark/conjur-authn-k8s-client/issues/119)
+
 ## [0.18.0] - 2020-04-21
 ### Added
 - Design for making project FIPS compliant to support users that require it -
