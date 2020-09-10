@@ -22,7 +22,7 @@ const CAKC006E string = "CAKC006E Error reading access token, reason: data is em
 const CAKC007E string = "CAKC007E At least one of CONJUR_SSL_CERTIFICATE and CONJUR_CERT_FILE must be provided"
 const CAKC008E string = "CAKC008E Namespace or podname can't be empty namespace=%v podname=%v"
 const CAKC009E string = "CAKC009E Environment variable '%s' must be provided"
-const CAKC010E string = "CAKC010E Failed to parse CONJUR_TOKEN_TIMEOUT. Reason: %s"
+const CAKC010E string = "CAKC010E Failed to parse %s. Reason: %s"
 const CAKC011E string = "CAKC011E Client certificate not found at '%s'"
 const CAKC012E string = "CAKC012E Failed to read client certificate file: %s"
 const CAKC013E string = "CAKC013E Failed parsing certificate file '%s'. Reason: %s"
@@ -46,7 +46,6 @@ const CAKC030E string = "CAKC030E Failed to generate RSA keypair. Reason: %s"
 const CAKC031E string = "CAKC031E Retransmission backoff exhausted"
 const CAKC032E string = "CAKC032E Username %s is invalid"
 const CAKC033E string = "CAKC033E Timed out after waiting for %d seconds for file to exist: %s"
-const CAKC034E string = "CAKC034E Failed to parse CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT. Reason: %s"
 
 // INFO MESSAGES
 const CAKC001I string = "CAKC001I Successfully authenticated"

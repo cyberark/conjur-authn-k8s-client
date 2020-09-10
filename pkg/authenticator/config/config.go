@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
 )
 
 // Config defines the configuration parameters
@@ -35,11 +35,11 @@ const (
 	DefaultConjurVersion = "5"
 
 	// DefaultTokenRefreshTimeout is the default time the system waits to reauthenticate on error
-	DefaultTokenRefreshTimeout = 6 * time.Minute
+	DefaultTokenRefreshTimeout = "6m0s"
 
 	// DefaultClientCertRetryCountLimit is the amount of times we wait after successful
 	// login for the client certificate file to exist, where each time we wait for a second.
-	DefaultClientCertRetryCountLimit = 10
+	DefaultClientCertRetryCountLimit = "10"
 )
 
 var requiredEnvVariables = []string{
@@ -104,7 +104,7 @@ func populateConfig() (*Config, error) {
 		}
 	}
 
-	defaultConfig := &Config{
+	config := &Config{
 		Account:       os.Getenv("CONJUR_ACCOUNT"),
 		ContainerMode: os.Getenv("CONTAINER_MODE"),
 		PodName:       os.Getenv("MY_POD_NAME"),
@@ -113,10 +113,10 @@ func populateConfig() (*Config, error) {
 	}
 
 	// Only versions '4' & '5' are allowed, with '5' being used as the default
-	defaultConfig.ConjurVersion = DefaultConjurVersion
+	config.ConjurVersion = DefaultConjurVersion
 	switch os.Getenv("CONJUR_VERSION") {
 	case "4":
-		defaultConfig.ConjurVersion = "4"
+		config.ConjurVersion = "4"
 	case "5":
 		break // Stick with default
 	case "":
@@ -126,40 +126,38 @@ func populateConfig() (*Config, error) {
 	}
 
 	// Parse token refresh rate if one is provided from env
-	defaultConfig.TokenRefreshTimeout = DefaultTokenRefreshTimeout
-	tokenRefreshTimeoutString := os.Getenv("CONJUR_TOKEN_TIMEOUT")
-	if len(tokenRefreshTimeoutString) > 0 {
-		parsedTokenRefreshTimeout, err := time.ParseDuration(tokenRefreshTimeoutString)
-		if err != nil {
-			return nil, log.RecordedError(log.CAKC010E, err.Error())
-		}
-
-		defaultConfig.TokenRefreshTimeout = parsedTokenRefreshTimeout
+	tokenRefreshTimeout, err := utils.DurationFromEnvOrDefault(
+		"CONJUR_TOKEN_TIMEOUT",
+		DefaultTokenRefreshTimeout,
+		nil,
+	)
+	if err != nil {
+		return nil, err
 	}
+	config.TokenRefreshTimeout = tokenRefreshTimeout
 
-	defaultConfig.TokenFilePath = DefaultTokenFilePath
+	config.TokenFilePath = DefaultTokenFilePath
 	// If CONJUR_TOKEN_FILE_PATH is defined in the env we take its value
 	if envVal := os.Getenv("CONJUR_AUTHN_TOKEN_FILE"); envVal != "" {
-		defaultConfig.TokenFilePath = envVal
+		config.TokenFilePath = envVal
 	}
 
-	defaultConfig.ClientCertPath = DefaultClientCertPath
+	config.ClientCertPath = DefaultClientCertPath
 	// If CONJUR_CLIENT_CERT_PATH is defined in the env we take its value
 	if envVal := os.Getenv("CONJUR_CLIENT_CERT_PATH"); envVal != "" {
-		defaultConfig.ClientCertPath = envVal
+		config.ClientCertPath = envVal
 	}
 
 	// Parse client cert retry count limit if one is provided from env
-	defaultConfig.ClientCertRetryCountLimit = DefaultClientCertRetryCountLimit
-	clientCertRetryCountLimitString := os.Getenv("CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT")
-	if len(clientCertRetryCountLimitString) > 0 {
-		parsedClientCertRetryCountLimit, err := strconv.Atoi(clientCertRetryCountLimitString)
-		if err != nil {
-			return nil, log.RecordedError(log.CAKC034E, err.Error())
-		}
-
-		defaultConfig.ClientCertRetryCountLimit = parsedClientCertRetryCountLimit
+	clientCertRetryCountLimit, err := utils.IntFromEnvOrDefault(
+		"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT",
+		DefaultClientCertRetryCountLimit,
+		nil,
+	)
+	if err != nil {
+		return nil, err
 	}
+	config.ClientCertRetryCountLimit = clientCertRetryCountLimit
 
-	return defaultConfig, nil
+	return config, nil
 }
