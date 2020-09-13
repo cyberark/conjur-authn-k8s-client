@@ -38,7 +38,9 @@ questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/
 - `CONJUR_AUTHN_URL`: URL pointing to authenticator service endpoint
 - `CONJUR_AUTHN_LOGIN`: Host login for pod e.g. `namespace/service_account/some_service_account`
 - `CONJUR_SSL_CERTIFICATE`: Public SSL cert for Conjur connection
-- `CONJUR_TOKEN_TIMEOUT`: Timeout for fetching a new token (defaults to 6 minutes). In most cases, this variable should not be modified.
+- `CONJUR_TOKEN_TIMEOUT`: Timeout for fetching a new token (defaults to 6 minutes). 
+                          In most cases, this variable should not be modified. The value should be in a
+                          format that can be parsed with [time.ParseDuration](https://golang.org/pkg/time/#ParseDuration) (e.g "6m0s")
 
 Flow:
 
