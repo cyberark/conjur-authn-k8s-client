@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Log messages now show microseconds, for clarity and easier troubleshooting.
+  ([cyberark/conjur-authn-k8s-client#164](https://github.com/cyberark/conjur-authn-k8s-client/issues/164))
 
 ## [0.18.1] - 2020-09-13
 ### Fixed

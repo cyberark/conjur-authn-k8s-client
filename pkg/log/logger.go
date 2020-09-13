@@ -1,13 +1,15 @@
 package log
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 )
 
-var InfoLogger = log.New(os.Stdout, "INFO: ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
-var ErrorLogger = log.New(os.Stderr, "ERROR: ", log.LUTC|log.Ldate|log.Ltime|log.Lshortfile)
+var infoLogger = log.New(os.Stdout, "INFO:  ", log.LUTC|log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
+var errorLogger = log.New(os.Stderr, "ERROR: ", log.LUTC|log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
+var isDebug = false
 
 /*
 	Prints an error message to the error log and returns a new error with the given message.
@@ -26,10 +28,44 @@ var ErrorLogger = log.New(os.Stderr, "ERROR: ", log.LUTC|log.Ldate|log.Ltime|log
 
 		returnVal, err := 3rdParty.someMethod()
 		if err != nil {
-			return nil, log.RecordedError(fmt.Sprintf("failed to run someMethod. Reason: %s", err))
+			return nil, log.RecordedError("failed to run someMethod. Reason: %s", err)
 		}
 */
 func RecordedError(errorMessage string, args ...interface{}) error {
-	ErrorLogger.Output(2, fmt.Sprintf(errorMessage, args...))
-	return fmt.Errorf(fmt.Sprintf(errorMessage, args...))
+	message := fmt.Sprintf(errorMessage, args...)
+	writeLog(errorLogger, "ERROR", message)
+	return errors.New(message)
+}
+
+func Error(message string, args ...interface{}) {
+	writeLog(errorLogger, "ERROR", message, args...)
+}
+
+func Warn(message string, args ...interface{}) {
+	writeLog(infoLogger, "WARN", message, args...)
+}
+
+func Info(message string, args ...interface{}) {
+	writeLog(infoLogger, "INFO", message, args...)
+}
+
+func Debug(infoMessage string, args ...interface{}) {
+	if isDebug {
+		writeLog(infoLogger, "DEBUG", infoMessage, args...)
+	}
+}
+
+func EnableDebugMode() {
+	isDebug = true
+	Debug(CAKC001D)
+}
+
+func writeLog(logger *log.Logger, logLevel string, message string, args ...interface{}) {
+	// -7 format ensures logs alignment, by padding spaces to log level to ensure 7 characters length.
+	// 5 for longest log level, 1 for ':', and a space separator.
+	logger.SetPrefix(fmt.Sprintf("%-7s", logLevel+":"))
+	if len(args) > 0 {
+		message = fmt.Sprintf(message, args...)
+	}
+	logger.Output(3, message)
 }

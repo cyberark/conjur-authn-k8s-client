@@ -59,7 +59,7 @@ func New(config authnConfig.Config) (*Authenticator, error) {
 func NewWithAccessToken(config authnConfig.Config, accessToken access_token.AccessToken) (*Authenticator, error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
-		return nil, log.RecordedError(log.CAKC030E, err.Error())
+		return nil, log.RecordedError(log.CAKC030E, err)
 	}
 
 	client, err := newHTTPSClient(config.SSLCertificate, nil, nil)
@@ -113,7 +113,7 @@ func (auth *Authenticator) GenerateCSR(commonName string) ([]byte, error) {
 // successfully retrieved
 func (auth *Authenticator) Login() error {
 
-	log.InfoLogger.Printf(log.CAKC007I, auth.Config.Username)
+	log.Info(log.CAKC007I, auth.Config.Username)
 
 	csrRawBytes, err := auth.GenerateCSR(auth.Config.Username.Suffix)
 
@@ -128,12 +128,12 @@ func (auth *Authenticator) Login() error {
 
 	resp, err := auth.client.Do(req)
 	if err != nil {
-		return log.RecordedError(log.CAKC028E, err.Error())
+		return log.RecordedError(log.CAKC028E, err)
 	}
 
 	err = EmptyResponse(resp)
 	if err != nil {
-		return log.RecordedError(log.CAKC029E, err.Error())
+		return log.RecordedError(log.CAKC029E, err)
 	}
 
 	// Ensure client certificate exists before attempting to read it, with a tolerance
@@ -154,21 +154,21 @@ func (auth *Authenticator) Login() error {
 			return log.RecordedError(log.CAKC011E, auth.Config.ClientCertPath)
 		}
 
-		return log.RecordedError(log.CAKC012E, err.Error())
+		return log.RecordedError(log.CAKC012E, err)
 	}
-	log.InfoLogger.Printf(log.CAKC015I, auth.Config.ClientCertPath)
+	log.Info(log.CAKC015I, auth.Config.ClientCertPath)
 
 	certDERBlock, certPEMBlock := pem.Decode(certPEMBlock)
 	cert, err := x509.ParseCertificate(certDERBlock.Bytes)
 	if err != nil {
-		return log.RecordedError(log.CAKC013E, auth.Config.ClientCertPath, err.Error())
+		return log.RecordedError(log.CAKC013E, auth.Config.ClientCertPath, err)
 	}
 
 	auth.PublicCert = cert
 
 	// clean up the client cert so it's only available in memory
 	os.Remove(auth.Config.ClientCertPath)
-	log.InfoLogger.Printf(log.CAKC016I)
+	log.Info(log.CAKC016I)
 
 	return nil
 }
@@ -183,9 +183,9 @@ func (auth *Authenticator) IsCertExpired() bool {
 	certExpiresOn := auth.PublicCert.NotAfter.UTC()
 	currentDate := time.Now().UTC()
 
-	log.InfoLogger.Printf(log.CAKC008I, certExpiresOn)
-	log.InfoLogger.Printf(log.CAKC009I, currentDate)
-	log.InfoLogger.Printf(log.CAKC010I, bufferTime)
+	log.Info(log.CAKC008I, certExpiresOn)
+	log.Info(log.CAKC009I, currentDate)
+	log.Info(log.CAKC010I, bufferTime)
 
 	return currentDate.Add(bufferTime).After(certExpiresOn)
 }
@@ -194,23 +194,23 @@ func (auth *Authenticator) IsCertExpired() bool {
 // the response data. Also manages state of certificates.
 func (auth *Authenticator) Authenticate() ([]byte, error) {
 	if !auth.IsLoggedIn() {
-		log.InfoLogger.Printf(log.CAKC005I)
+		log.Info(log.CAKC005I)
 
 		if err := auth.Login(); err != nil {
 			return nil, log.RecordedError(log.CAKC015E)
 		}
 
-		log.InfoLogger.Printf(log.CAKC002I)
+		log.Info(log.CAKC002I)
 	}
 
 	if auth.IsCertExpired() {
-		log.InfoLogger.Printf(log.CAKC004I)
+		log.Info(log.CAKC004I)
 
 		if err := auth.Login(); err != nil {
 			return nil, err
 		}
 
-		log.InfoLogger.Printf(log.CAKC003I)
+		log.Info(log.CAKC003I)
 	}
 
 	privDer := x509.MarshalPKCS1PrivateKey(auth.privateKey)
@@ -235,7 +235,7 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, log.RecordedError(log.CAKC027E, err.Error())
+		return nil, log.RecordedError(log.CAKC027E, err)
 	}
 
 	return DataResponse(resp)
@@ -263,7 +263,7 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		return err
 	}
 
-	log.InfoLogger.Printf(log.CAKC001I)
+	log.Info(log.CAKC001I)
 
 	return nil
 }
@@ -304,12 +304,12 @@ func decodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey cry
 	tokenDerBlock, _ := pem.Decode(PEMBlock)
 	p7, err := pkcs7.Parse(tokenDerBlock.Bytes)
 	if err != nil {
-		return nil, log.RecordedError(log.CAKC026E, err.Error())
+		return nil, log.RecordedError(log.CAKC026E, err)
 	}
 
 	decodedPEM, err = p7.Decrypt(publicCert, privateKey)
 	if err != nil {
-		return nil, log.RecordedError(log.CAKC025E, err.Error())
+		return nil, log.RecordedError(log.CAKC025E, err)
 	}
 
 	return decodedPEM, nil

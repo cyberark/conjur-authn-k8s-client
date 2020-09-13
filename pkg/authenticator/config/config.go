@@ -71,7 +71,7 @@ func FromEnv(readFileFunc ReadFileFunc) (*Config, error) {
 	// Load CA cert from Environment
 	config.SSLCertificate, err = readSSLCert(readFileFunc)
 	if err != nil {
-		return nil, log.RecordedError(log.CAKC021E, err.Error())
+		return nil, log.RecordedError(log.CAKC021E, err)
 	}
 
 	// Load Username from Environment
