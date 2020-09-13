@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.18.1] - 2020-09-13
 ### Fixed
 - Logs now correctly print only the Conjur identity without the policy branch prefix.
   ([cyberark/conjur-authn-k8s-client#126](https://github.com/cyberark/conjur-authn-k8s-client/issues/126))
@@ -103,7 +104,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.18.1...HEAD
+[0.18.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.18.0...v0.18.1
 [0.18.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.16.1...v0.17.0
 [0.16.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.16.0...v0.16.1
