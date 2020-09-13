@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ### Fixed
-- Username formatting now correctly only prints FullUsername field ([#126](https://github.com/cyberark/conjur-authn-k8s-client/issues/126))
-- Timeout for token retrievals is now correctly reset in consequent failures
+- Logs now correctly print only the Conjur identity without the policy branch prefix.
+  ([cyberark/conjur-authn-k8s-client#126](https://github.com/cyberark/conjur-authn-k8s-client/issues/126))
+- When authentication fails, the exponential backoff retry is correctly reset so 
+  that it will continue to attempt to authenticate until backoff is exhausted.
   ([cyberark/conjur-authn-k8s-client#158](https://github.com/cyberark/conjur-authn-k8s-client/issues/158))
 
 ### Changed
