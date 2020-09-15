@@ -25,7 +25,7 @@ func IntFromEnvOrDefault(
 	value := envVarValueOrDefault(envVarName, defaultValue, getEnv)
 	valueInt, err := strconv.Atoi(value)
 	if err != nil {
-		return 0, log.RecordedError(log.CAKC010E, envVarName, err.Error())
+		return 0, log.RecordedError(log.CAKC010E, envVarName, err)
 	}
 
 	return valueInt, nil
@@ -42,7 +42,7 @@ func DurationFromEnvOrDefault(
 	value := envVarValueOrDefault(envVarName, defaultValue, getEnv)
 	valueDuration, err := time.ParseDuration(value)
 	if err != nil {
-		return 0, log.RecordedError(log.CAKC010E, envVarName, err.Error())
+		return 0, log.RecordedError(log.CAKC010E, envVarName, err)
 	}
 
 	return valueDuration, nil

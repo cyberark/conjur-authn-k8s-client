@@ -12,12 +12,8 @@ import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
-// logging
-var errLogger = log.ErrorLogger
-var infoLogger = log.InfoLogger
-
 func main() {
-	infoLogger.Printf(log.CAKC014I, authenticator.FullVersionName)
+	log.Info(log.CAKC014I, authenticator.FullVersionName)
 
 	var err error
 
@@ -42,7 +38,7 @@ func main() {
 
 	err = backoff.Retry(func() error {
 		for {
-			infoLogger.Printf(log.CAKC006I, authn.Config.Username)
+			log.Info(log.CAKC006I, authn.Config.Username)
 			resp, err := authn.Authenticate()
 			if err != nil {
 				return log.RecordedError(log.CAKC016E)
@@ -57,7 +53,7 @@ func main() {
 				os.Exit(0)
 			}
 
-			infoLogger.Printf(log.CAKC013I, authn.Config.TokenRefreshTimeout)
+			log.Info(log.CAKC013I, authn.Config.TokenRefreshTimeout)
 
 			fmt.Println()
 			time.Sleep(authn.Config.TokenRefreshTimeout)
@@ -73,6 +69,6 @@ func main() {
 }
 
 func printErrorAndExit(errorMessage string) {
-	errLogger.Printf(errorMessage)
+	log.Error(errorMessage)
 	os.Exit(1)
 }

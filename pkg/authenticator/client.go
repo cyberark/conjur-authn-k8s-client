@@ -24,7 +24,7 @@ func newHTTPSClient(CACert []byte, certPEMBlock, keyPEMBlock []byte) (*http.Clie
 	if certPEMBlock != nil && keyPEMBlock != nil {
 		cert, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
 		if err != nil {
-			return nil, log.RecordedError(log.CAKC017E, err.Error())
+			return nil, log.RecordedError(log.CAKC017E, err)
 		}
 
 		tlsConfig.GetClientCertificate = func(info *tls.CertificateRequestInfo) (*tls.Certificate, error) {

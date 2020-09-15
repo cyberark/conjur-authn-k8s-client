@@ -65,3 +65,6 @@ const CAKC014I string = "CAKC014I Kubernetes Authenticator Client v%s starting u
 const CAKC015I string = "CAKC015I Loaded client certificate successfully from %s"
 const CAKC016I string = "CAKC016I Deleted client certificate from memory"
 const CAKC017I string = "CAKC017I Waiting for file %s to become available..."
+
+// DEBUG MESSAGES
+const CAKC001D string = "CAKC001D Debug mode is enabled"
