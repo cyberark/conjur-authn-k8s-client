@@ -47,6 +47,9 @@ const CAKC031E string = "CAKC031E Retransmission backoff exhausted"
 const CAKC032E string = "CAKC032E Username %s is invalid"
 const CAKC033E string = "CAKC033E Timed out after waiting for %d seconds for file to exist: %s"
 
+// WARNING MESSAGES
+const CAKC001W string = "CAKC001W Incorrect value '%s' provided for enabling debug mode. Allowed value: '%s'"
+
 // INFO MESSAGES
 const CAKC001I string = "CAKC001I Successfully authenticated"
 const CAKC002I string = "CAKC002I Logged in"

@@ -113,7 +113,7 @@ func (auth *Authenticator) GenerateCSR(commonName string) ([]byte, error) {
 // successfully retrieved
 func (auth *Authenticator) Login() error {
 
-	log.Info(log.CAKC007I, auth.Config.Username)
+	log.Debug(log.CAKC007I, auth.Config.Username)
 
 	csrRawBytes, err := auth.GenerateCSR(auth.Config.Username.Suffix)
 
@@ -156,7 +156,7 @@ func (auth *Authenticator) Login() error {
 
 		return log.RecordedError(log.CAKC012E, err)
 	}
-	log.Info(log.CAKC015I, auth.Config.ClientCertPath)
+	log.Debug(log.CAKC015I, auth.Config.ClientCertPath)
 
 	certDERBlock, certPEMBlock := pem.Decode(certPEMBlock)
 	cert, err := x509.ParseCertificate(certDERBlock.Bytes)
@@ -168,7 +168,7 @@ func (auth *Authenticator) Login() error {
 
 	// clean up the client cert so it's only available in memory
 	os.Remove(auth.Config.ClientCertPath)
-	log.Info(log.CAKC016I)
+	log.Debug(log.CAKC016I)
 
 	return nil
 }
@@ -183,9 +183,9 @@ func (auth *Authenticator) IsCertExpired() bool {
 	certExpiresOn := auth.PublicCert.NotAfter.UTC()
 	currentDate := time.Now().UTC()
 
-	log.Info(log.CAKC008I, certExpiresOn)
-	log.Info(log.CAKC009I, currentDate)
-	log.Info(log.CAKC010I, bufferTime)
+	log.Debug(log.CAKC008I, certExpiresOn)
+	log.Debug(log.CAKC009I, currentDate)
+	log.Debug(log.CAKC010I, bufferTime)
 
 	return currentDate.Add(bufferTime).After(certExpiresOn)
 }
@@ -194,23 +194,23 @@ func (auth *Authenticator) IsCertExpired() bool {
 // the response data. Also manages state of certificates.
 func (auth *Authenticator) Authenticate() ([]byte, error) {
 	if !auth.IsLoggedIn() {
-		log.Info(log.CAKC005I)
+		log.Debug(log.CAKC005I)
 
 		if err := auth.Login(); err != nil {
 			return nil, log.RecordedError(log.CAKC015E)
 		}
 
-		log.Info(log.CAKC002I)
+		log.Debug(log.CAKC002I)
 	}
 
 	if auth.IsCertExpired() {
-		log.Info(log.CAKC004I)
+		log.Debug(log.CAKC004I)
 
 		if err := auth.Login(); err != nil {
 			return nil, err
 		}
 
-		log.Info(log.CAKC003I)
+		log.Debug(log.CAKC003I)
 	}
 
 	privDer := x509.MarshalPKCS1PrivateKey(auth.privateKey)
@@ -262,8 +262,6 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 	if err != nil {
 		return err
 	}
-
-	log.Info(log.CAKC001I)
 
 	return nil
 }

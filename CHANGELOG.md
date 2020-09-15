@@ -5,17 +5,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Users can set the `DEBUG` environment variable to run the client in debug mode and view more log messages.
+  [cyberark/conjur-authn-k8s-client#134](https://github.com/cyberark/conjur-authn-k8s-client/issues/134)
+
 ### Changed
+- Detailed logs moved from Info to Debug log level to decrease verbosity of log messages.
+  [cyberark/conjur-authn-k8s-client#134](https://github.com/cyberark/conjur-authn-k8s-client/issues/134)
 - Log messages now show microseconds, for clarity and easier troubleshooting.
-  ([cyberark/conjur-authn-k8s-client#164](https://github.com/cyberark/conjur-authn-k8s-client/issues/164))
+  [cyberark/conjur-authn-k8s-client#164](https://github.com/cyberark/conjur-authn-k8s-client/issues/164)
 
 ## [0.18.1] - 2020-09-13
 ### Fixed
 - Logs now correctly print only the Conjur identity without the policy branch prefix.
-  ([cyberark/conjur-authn-k8s-client#126](https://github.com/cyberark/conjur-authn-k8s-client/issues/126))
+  [cyberark/conjur-authn-k8s-client#126](https://github.com/cyberark/conjur-authn-k8s-client/issues/126)
 - When authentication fails, the exponential backoff retry is correctly reset so 
   that it will continue to attempt to authenticate until backoff is exhausted.
-  ([cyberark/conjur-authn-k8s-client#158](https://github.com/cyberark/conjur-authn-k8s-client/issues/158))
+  [cyberark/conjur-authn-k8s-client#158](https://github.com/cyberark/conjur-authn-k8s-client/issues/158)
 
 ### Changed
 - Wait slightly for the client certificate file to exist after login before
@@ -33,7 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - The authenticator-client now runs as a limited user in the Docker image
   instead of as root, which is best practice and better follows the principle of
   least privilege 
-  ([cyberark/conjur-authn-k8s-client#111](https://github.com/cyberark/conjur-authn-k8s-client/pull/111))
+  [cyberark/conjur-authn-k8s-client#111](https://github.com/cyberark/conjur-authn-k8s-client/pull/111)
 
 ## [0.17.0] - 2020-04-07
 ### Added
@@ -41,8 +47,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.16.1] - 2020-02-18
 ### Fixed
-- Only publish to DockerHub / RH registry when there is a new version (#72, #74,
-  #79, #83)
+- Only publish to DockerHub / RH registry when there is a new version
+  (#72, #74, #79, #83)
 
 ### Changed
 - Clean up implementation of default CONJUR_VERSION and add unit tests (#80)

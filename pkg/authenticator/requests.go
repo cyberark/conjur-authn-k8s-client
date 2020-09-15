@@ -20,7 +20,7 @@ func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte, userna
 		authenticateURL = fmt.Sprintf("%s/inject_client_cert", authnURL)
 	}
 
-	log.Info(log.CAKC011I, authenticateURL)
+	log.Debug(log.CAKC011I, authenticateURL)
 
 	req, err := http.NewRequest("POST", authenticateURL, bytes.NewBuffer(csrBytes))
 	if err != nil {
@@ -44,7 +44,7 @@ func AuthenticateRequest(authnURL string, conjurVersion string, account string, 
 		authenticateURL = fmt.Sprintf("%s/%s/%s/authenticate", authnURL, account, url.QueryEscape(username))
 	}
 
-	log.Info(log.CAKC012I, authenticateURL)
+	log.Debug(log.CAKC012I, authenticateURL)
 
 	if req, err = http.NewRequest("POST", authenticateURL, nil); err != nil {
 		return nil, log.RecordedError(log.CAKC023E, err)
