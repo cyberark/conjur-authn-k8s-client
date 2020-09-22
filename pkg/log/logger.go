@@ -57,7 +57,7 @@ func Debug(infoMessage string, args ...interface{}) {
 
 func EnableDebugMode() {
 	isDebug = true
-	Debug(CAKC001D)
+	Debug(CAKC052)
 }
 
 func writeLog(logger *log.Logger, logLevel string, message string, args ...interface{}) {

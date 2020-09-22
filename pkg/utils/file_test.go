@@ -40,7 +40,7 @@ func TestFile(t *testing.T) {
 			path := "path/to/non-existing/file"
 
 			expectedOutput := fmt.Errorf(
-				"CAKC033E Timed out after waiting for %d seconds for file to exist: %s",
+				"CAKC033 Timed out after waiting for %d seconds for file to exist: %s",
 				retryCountLimit,
 				path,
 			)

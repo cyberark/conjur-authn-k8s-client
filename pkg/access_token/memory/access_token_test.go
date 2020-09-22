@@ -48,7 +48,7 @@ func TestAccessTokenMemory(t *testing.T) {
 				_, err := accessToken.Read()
 
 				Convey("Raises an error that the data is empty", func() {
-					So(err.Error(), ShouldEqual, log.CAKC006E)
+					So(err.Error(), ShouldEqual, log.CAKC006)
 				})
 			})
 		})
@@ -79,7 +79,7 @@ func TestAccessTokenMemory(t *testing.T) {
 			err := accessToken.Write(nil)
 
 			Convey("Raises an error that the data is empty", func() {
-				So(err.Error(), ShouldEqual, log.CAKC005E)
+				So(err.Error(), ShouldEqual, log.CAKC005)
 			})
 		})
 	})
@@ -153,7 +153,7 @@ func TestAccessTokenMemory(t *testing.T) {
 						})
 
 						Convey("Raises the proper error", func() {
-							So(err.Error(), ShouldEqual, log.CAKC006E)
+							So(err.Error(), ShouldEqual, log.CAKC006)
 						})
 					})
 				})

@@ -49,7 +49,7 @@ func TestAccessTokenFile(t *testing.T) {
 				_, err := accessToken.Read()
 
 				Convey("Raises an error that the data is empty", func() {
-					So(err.Error(), ShouldEqual, log.CAKC006E)
+					So(err.Error(), ShouldEqual, log.CAKC006)
 				})
 			})
 		})
@@ -108,7 +108,7 @@ func TestAccessTokenFile(t *testing.T) {
 				err := accessToken.Write(nil)
 
 				Convey("Raises an error that the access token data is empty", func() {
-					So(err.Error(), ShouldEqual, log.CAKC005E)
+					So(err.Error(), ShouldEqual, log.CAKC005)
 				})
 			})
 		})
@@ -177,7 +177,7 @@ func TestAccessTokenFile(t *testing.T) {
 					err = accessToken.Delete()
 
 					Convey("Finishes with proper error", func() {
-						So(err.Error(), ShouldContainSubstring, log.CAKC002E)
+						So(err.Error(), ShouldContainSubstring, log.CAKC002)
 					})
 				})
 			})
@@ -209,7 +209,7 @@ func TestAccessTokenFile(t *testing.T) {
 						})
 
 						Convey("Raises the proper error", func() {
-							So(err.Error(), ShouldEqual, log.CAKC006E)
+							So(err.Error(), ShouldEqual, log.CAKC006)
 						})
 					})
 				})

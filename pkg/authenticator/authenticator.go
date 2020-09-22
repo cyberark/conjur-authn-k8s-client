@@ -49,7 +49,7 @@ const (
 func New(config authnConfig.Config) (*Authenticator, error) {
 	accessToken, err := file.NewAccessToken(config.TokenFilePath)
 	if err != nil {
-		return nil, log.RecordedError(log.CAKC001E)
+		return nil, log.RecordedError(log.CAKC001)
 	}
 
 	return NewWithAccessToken(config, accessToken)
@@ -59,7 +59,7 @@ func New(config authnConfig.Config) (*Authenticator, error) {
 func NewWithAccessToken(config authnConfig.Config, accessToken access_token.AccessToken) (*Authenticator, error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
-		return nil, log.RecordedError(log.CAKC030E, err)
+		return nil, log.RecordedError(log.CAKC030, err)
 	}
 
 	client, err := newHTTPSClient(config.SSLCertificate, nil, nil)
@@ -113,7 +113,7 @@ func (auth *Authenticator) GenerateCSR(commonName string) ([]byte, error) {
 // successfully retrieved
 func (auth *Authenticator) Login() error {
 
-	log.Debug(log.CAKC007I, auth.Config.Username)
+	log.Debug(log.CAKC041, auth.Config.Username)
 
 	csrRawBytes, err := auth.GenerateCSR(auth.Config.Username.Suffix)
 
@@ -128,12 +128,12 @@ func (auth *Authenticator) Login() error {
 
 	resp, err := auth.client.Do(req)
 	if err != nil {
-		return log.RecordedError(log.CAKC028E, err)
+		return log.RecordedError(log.CAKC028, err)
 	}
 
 	err = EmptyResponse(resp)
 	if err != nil {
-		return log.RecordedError(log.CAKC029E, err)
+		return log.RecordedError(log.CAKC029, err)
 	}
 
 	// Ensure client certificate exists before attempting to read it, with a tolerance
@@ -151,24 +151,24 @@ func (auth *Authenticator) Login() error {
 	certPEMBlock, err := ioutil.ReadFile(auth.Config.ClientCertPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return log.RecordedError(log.CAKC011E, auth.Config.ClientCertPath)
+			return log.RecordedError(log.CAKC011, auth.Config.ClientCertPath)
 		}
 
-		return log.RecordedError(log.CAKC012E, err)
+		return log.RecordedError(log.CAKC012, err)
 	}
-	log.Debug(log.CAKC015I, auth.Config.ClientCertPath)
+	log.Debug(log.CAKC049, auth.Config.ClientCertPath)
 
 	certDERBlock, certPEMBlock := pem.Decode(certPEMBlock)
 	cert, err := x509.ParseCertificate(certDERBlock.Bytes)
 	if err != nil {
-		return log.RecordedError(log.CAKC013E, auth.Config.ClientCertPath, err)
+		return log.RecordedError(log.CAKC013, auth.Config.ClientCertPath, err)
 	}
 
 	auth.PublicCert = cert
 
 	// clean up the client cert so it's only available in memory
 	os.Remove(auth.Config.ClientCertPath)
-	log.Debug(log.CAKC016I)
+	log.Debug(log.CAKC050)
 
 	return nil
 }
@@ -183,9 +183,9 @@ func (auth *Authenticator) IsCertExpired() bool {
 	certExpiresOn := auth.PublicCert.NotAfter.UTC()
 	currentDate := time.Now().UTC()
 
-	log.Debug(log.CAKC008I, certExpiresOn)
-	log.Debug(log.CAKC009I, currentDate)
-	log.Debug(log.CAKC010I, bufferTime)
+	log.Debug(log.CAKC042, certExpiresOn)
+	log.Debug(log.CAKC043, currentDate)
+	log.Debug(log.CAKC044, bufferTime)
 
 	return currentDate.Add(bufferTime).After(certExpiresOn)
 }
@@ -194,23 +194,23 @@ func (auth *Authenticator) IsCertExpired() bool {
 // the response data. Also manages state of certificates.
 func (auth *Authenticator) Authenticate() ([]byte, error) {
 	if !auth.IsLoggedIn() {
-		log.Debug(log.CAKC005I)
+		log.Debug(log.CAKC039)
 
 		if err := auth.Login(); err != nil {
-			return nil, log.RecordedError(log.CAKC015E)
+			return nil, log.RecordedError(log.CAKC015)
 		}
 
-		log.Debug(log.CAKC002I)
+		log.Debug(log.CAKC036)
 	}
 
 	if auth.IsCertExpired() {
-		log.Debug(log.CAKC004I)
+		log.Debug(log.CAKC038)
 
 		if err := auth.Login(); err != nil {
 			return nil, err
 		}
 
-		log.Debug(log.CAKC003I)
+		log.Debug(log.CAKC037)
 	}
 
 	privDer := x509.MarshalPKCS1PrivateKey(auth.privateKey)
@@ -235,7 +235,7 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, log.RecordedError(log.CAKC027E, err)
+		return nil, log.RecordedError(log.CAKC027, err)
 	}
 
 	return DataResponse(resp)
@@ -269,7 +269,7 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 // generateSANURI returns the formatted uri(SPIFFEE format for now) for the certificate.
 func generateSANURI(namespace, podname string) (string, error) {
 	if namespace == "" || podname == "" {
-		return "", log.RecordedError(log.CAKC008E, namespace, podname)
+		return "", log.RecordedError(log.CAKC008, namespace, podname)
 	}
 	return fmt.Sprintf("spiffe://cluster.local/namespace/%s/podname/%s", namespace, podname), nil
 }
@@ -302,12 +302,12 @@ func decodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey cry
 	tokenDerBlock, _ := pem.Decode(PEMBlock)
 	p7, err := pkcs7.Parse(tokenDerBlock.Bytes)
 	if err != nil {
-		return nil, log.RecordedError(log.CAKC026E, err)
+		return nil, log.RecordedError(log.CAKC026, err)
 	}
 
 	decodedPEM, err = p7.Decrypt(publicCert, privateKey)
 	if err != nil {
-		return nil, log.RecordedError(log.CAKC025E, err)
+		return nil, log.RecordedError(log.CAKC025, err)
 	}
 
 	return decodedPEM, nil

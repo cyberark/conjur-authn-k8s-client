@@ -215,7 +215,7 @@ We will not implement the tests in bash scripts like we do in the `secrets-provi
 Regardless of how we will run our tests, it is not optimal that we have only
  a vanilla flow. We should add another test where in case the authenticator-client 
  fails to authenticate with Conjur we don't provide an access token
-  and the log shows `CAKC015E Login failed`.
+  and the log shows `CAKC015 Login failed`.
   
 We do not need to test different permutations of error flows (e.g host does
 not exist, host is not permitted on the `authn-k8s/prod` authenticator) as
@@ -225,7 +225,7 @@ these test run in the `conjur` repository. As far as the authenticator-client
 | **Scenario**            | **Given**                                                    | **When**                                                 | **Then**                                                                                               |
 |-------------------------|--------------------------------------------------------------|----------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
 | Authentication succeeds | A Running Conjur cluster with a configured K8s Authenticator | I run the authenticator client with a valid k8s host     | An access token is provided to the application container and it can retrieve a secret with it          |
-| Authentication fails    | A Running Conjur cluster with a configured K8s Authenticator | I run the authenticator client with a non-valid k8s host | An access token is not provided to the application container and the log shows `CAKC015E Login failed` |
+| Authentication fails    | A Running Conjur cluster with a configured K8s Authenticator | I run the authenticator client with a non-valid k8s host | An access token is not provided to the application container and the log shows `CAKC015 Login failed` |
 
 ## Docs
 

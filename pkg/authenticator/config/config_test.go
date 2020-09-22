@@ -67,7 +67,7 @@ func TestAuthenticator(t *testing.T) {
 			description: "Returns error if version is invalid",
 			envVersion:  "3",
 			expVersion:  "",
-			expErrStr:   fmt.Sprintf(log.CAKC021E, "invalid conjur version"),
+			expErrStr:   fmt.Sprintf(log.CAKC021, "invalid conjur version"),
 		},
 	}
 
