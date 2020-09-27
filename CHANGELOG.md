@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Users can set the `DEBUG` environment variable to run the client in debug mode and view more log messages.
   [cyberark/conjur-authn-k8s-client#134](https://github.com/cyberark/conjur-authn-k8s-client/issues/134)
+- Errors in the certificate injection process on login are now printed to the client logs.
+  [cyberark/conjur-authn-k8s-client#/170](https://github.com/cyberark/conjur-authn-k8s-client/issues/170)
 
 ### Changed
 - Detailed logs moved from Info to Debug log level to decrease verbosity of log messages.

@@ -9,7 +9,7 @@ import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
-var defaultVerifyFileExistsFunc = verifyFileExists
+var defaultVerifyFileExistsFunc = VerifyFileExists
 
 type VerifyFileExistsFunc func(path string) error
 
@@ -45,10 +45,10 @@ func WaitForFile(
 	return nil
 }
 
-func verifyFileExists(path string) error {
+func VerifyFileExists(path string) error {
 	info, err := os.Stat(path)
 	if !os.IsNotExist(err) && info.Mode().IsRegular() {
-		// No error, the certificate exists
+		// No error, the file exists
 		return nil
 	}
 

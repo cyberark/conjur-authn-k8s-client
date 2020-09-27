@@ -18,6 +18,7 @@ type Config struct {
 	ClientCertRetryCountLimit int
 	ContainerMode             string
 	ConjurVersion             string
+	InjectCertLogPath         string
 	PodName                   string
 	PodNamespace              string
 	SSLCertificate            []byte
@@ -29,8 +30,9 @@ type Config struct {
 
 // Default settings (this comment added to satisfy linter)
 const (
-	DefaultClientCertPath = "/etc/conjur/ssl/client.pem"
-	DefaultTokenFilePath  = "/run/conjur/access-token"
+	DefaultClientCertPath    = "/etc/conjur/ssl/client.pem"
+	DefaultInjectCertLogPath = "/tmp/conjur_set_file_content.log"
+	DefaultTokenFilePath     = "/run/conjur/access-token"
 
 	DefaultConjurVersion = "5"
 
@@ -160,6 +162,8 @@ func populateConfig() (*Config, error) {
 	if envVal := os.Getenv("CONJUR_CLIENT_CERT_PATH"); envVal != "" {
 		config.ClientCertPath = envVal
 	}
+
+	config.InjectCertLogPath = DefaultInjectCertLogPath
 
 	// Parse client cert retry count limit if one is provided from env
 	clientCertRetryCountLimit, err := utils.IntFromEnvOrDefault(
