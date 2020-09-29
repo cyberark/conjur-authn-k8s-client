@@ -7,8 +7,8 @@ import (
 	"os"
 )
 
-var infoLogger = log.New(os.Stdout, "INFO:  ", log.LUTC|log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
-var errorLogger = log.New(os.Stderr, "ERROR: ", log.LUTC|log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
+var InfoLogger = log.New(os.Stdout, "INFO:  ", log.LUTC|log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
+var ErrorLogger = log.New(os.Stderr, "ERROR: ", log.LUTC|log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
 var isDebug = false
 
 /*
@@ -33,25 +33,25 @@ var isDebug = false
 */
 func RecordedError(errorMessage string, args ...interface{}) error {
 	message := fmt.Sprintf(errorMessage, args...)
-	writeLog(errorLogger, "ERROR", message)
+	writeLog(ErrorLogger, "ERROR", message)
 	return errors.New(message)
 }
 
 func Error(message string, args ...interface{}) {
-	writeLog(errorLogger, "ERROR", message, args...)
+	writeLog(ErrorLogger, "ERROR", message, args...)
 }
 
 func Warn(message string, args ...interface{}) {
-	writeLog(infoLogger, "WARN", message, args...)
+	writeLog(InfoLogger, "WARN", message, args...)
 }
 
 func Info(message string, args ...interface{}) {
-	writeLog(infoLogger, "INFO", message, args...)
+	writeLog(InfoLogger, "INFO", message, args...)
 }
 
 func Debug(infoMessage string, args ...interface{}) {
 	if isDebug {
-		writeLog(infoLogger, "DEBUG", infoMessage, args...)
+		writeLog(InfoLogger, "DEBUG", infoMessage, args...)
 	}
 }
 

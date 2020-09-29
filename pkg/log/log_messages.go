@@ -13,7 +13,7 @@ package log
 */
 
 // ERROR MESSAGES
-const CAKC001 string = "CAKC001 Error creating the access token object"
+const CAKC001 string = "CAKC001 Error opening the access token file"
 const CAKC002 string = "CAKC002 Error deleting access token"
 const CAKC003 string = "CAKC003 Error writing access token, reason: failed to write file"
 const CAKC004 string = "CAKC004 Error writing access token, reason: failed to create directory"
@@ -51,7 +51,7 @@ const CAKC035 string = "CAKC035 Successfully authenticated"
 const CAKC036 string = "CAKC036 Logged in"
 const CAKC037 string = "CAKC037 Logged in. Continuing authentication"
 const CAKC038 string = "CAKC038 Certificate expired. Re-logging in..."
-const CAKC039 string = "CAKC039 Trying to login Conjur..."
+const CAKC039 string = "CAKC039 Trying to log in to Conjur..."
 const CAKC040 string = "CAKC040 Authenticating as user '%s'"
 const CAKC041 string = "CAKC041 Logging in as user '%s'"
 const CAKC042 string = "CAKC042 Cert expires: %v"

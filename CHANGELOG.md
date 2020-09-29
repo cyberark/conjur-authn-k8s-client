@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Detailed logs moved from Info to Debug log level to decrease verbosity of log messages.
   [cyberark/conjur-authn-k8s-client#134](https://github.com/cyberark/conjur-authn-k8s-client/issues/134)
+- Log level suffix was removed from log identifiers (e.g. CAKC001**E** -> CAKC001).
+  See [log_messages.go](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/pkg/log/log_messages.go).
+  [cyberark/conjur-authn-k8s-client#134](https://github.com/cyberark/conjur-authn-k8s-client/issues/134)
 - Log messages now show microseconds, for clarity and easier troubleshooting.
   [cyberark/conjur-authn-k8s-client#164](https://github.com/cyberark/conjur-authn-k8s-client/issues/164)
 
