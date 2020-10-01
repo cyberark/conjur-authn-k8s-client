@@ -144,6 +144,10 @@ func (auth *Authenticator) Login() error {
 		nil,
 	)
 	if err != nil {
+		injectClientCertError := consumeInjectClientCertError(auth.Config.InjectCertLogPath)
+		if injectClientCertError != "" {
+			log.Error(log.CAKC055, injectClientCertError)
+		}
 		return err
 	}
 
@@ -311,4 +315,27 @@ func decodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey cry
 	}
 
 	return decodedPEM, nil
+}
+
+func consumeInjectClientCertError(path string) string {
+	// The log file will not exist in old Conjur versions
+	err := utils.VerifyFileExists(path)
+	if err != nil {
+		log.Warn(log.CAKC056, path)
+		return ""
+	}
+
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Error(log.CAKC053, path)
+		return ""
+	}
+
+	log.Debug(log.CAKC057, path)
+	err = os.Remove(path)
+	if err != nil {
+		log.Error(log.CAKC054, path)
+	}
+
+	return string(content)
 }

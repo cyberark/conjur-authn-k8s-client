@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"io/ioutil"
+	"os"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -78,6 +79,26 @@ func TestAuthenticator(t *testing.T) {
 			Convey("Inserts the common-name in the subject", func() {
 				So(csrDecrypted.Subject.CommonName, ShouldEqual, commonName)
 			})
+		})
+	})
+
+	Convey("consumeInjectClientCertError", t, func() {
+		path := "/tmp/test_file"
+		dataStr := "some\ntext\n"
+		err := ioutil.WriteFile(path, []byte(dataStr), 0644)
+		if err != nil {
+			t.FailNow()
+		}
+
+		content := consumeInjectClientCertError(path)
+
+		Convey("Gets the content from the file", func() {
+			So(content, ShouldResemble, dataStr)
+		})
+
+		Convey("Deletes the file", func() {
+			_, err := os.Stat(path)
+			So(os.IsNotExist(err), ShouldBeTrue)
 		})
 	})
 }
