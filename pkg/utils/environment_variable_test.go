@@ -92,7 +92,7 @@ func TestEnvironmentVariable(t *testing.T) {
 			)
 
 			expectedError := fmt.Errorf(
-				"CAKC010E Failed to parse %s. Reason: %s",
+				"CAKC010 Failed to parse %s. Reason: %s",
 				envVarName,
 				"strconv.Atoi: parsing \"SOME_ENV_VAR_VALUE\": invalid syntax",
 			)
@@ -157,7 +157,7 @@ func TestEnvironmentVariable(t *testing.T) {
 			)
 
 			expectedError := fmt.Errorf(
-				"CAKC010E Failed to parse %s. Reason: %s",
+				"CAKC010 Failed to parse %s. Reason: %s",
 				envVarName,
 				"time: invalid duration SOME_ENV_VAR_VALUE",
 			)

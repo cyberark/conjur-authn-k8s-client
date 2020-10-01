@@ -32,14 +32,14 @@ func WaitForFile(
 
 	err := backoff.Retry(func() error {
 		if limitedBackOff.RetryCount() > 0 {
-			log.Info(log.CAKC017I, path)
+			log.Debug(log.CAKC051, path)
 		}
 
 		return verifyFileExistsFunc(path)
 	}, limitedBackOff)
 
 	if err != nil {
-		return log.RecordedError(log.CAKC033E, retryCountLimit, path)
+		return log.RecordedError(log.CAKC033, retryCountLimit, path)
 	}
 
 	return nil

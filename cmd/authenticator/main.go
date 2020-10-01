@@ -13,19 +13,19 @@ import (
 )
 
 func main() {
-	log.Info(log.CAKC014I, authenticator.FullVersionName)
+	log.Info(log.CAKC048, authenticator.FullVersionName)
 
 	var err error
 
 	config, err := authnConfig.NewFromEnv()
 	if err != nil {
-		printErrorAndExit(log.CAKC018E)
+		printErrorAndExit(log.CAKC018)
 	}
 
 	// Create new Authenticator
 	authn, err := authenticator.New(*config)
 	if err != nil {
-		printErrorAndExit(log.CAKC019E)
+		printErrorAndExit(log.CAKC019)
 	}
 
 	// Configure exponential backoff
@@ -38,22 +38,25 @@ func main() {
 
 	err = backoff.Retry(func() error {
 		for {
-			log.Info(log.CAKC006I, authn.Config.Username)
+			log.Info(log.CAKC040, authn.Config.Username)
+
 			resp, err := authn.Authenticate()
 			if err != nil {
-				return log.RecordedError(log.CAKC016E)
+				return log.RecordedError(log.CAKC016)
 			}
 
 			err = authn.ParseAuthenticationResponse(resp)
 			if err != nil {
-				return log.RecordedError(log.CAKC020E)
+				return log.RecordedError(log.CAKC020)
 			}
+
+			log.Info(log.CAKC035)
 
 			if authn.Config.ContainerMode == "init" {
 				os.Exit(0)
 			}
 
-			log.Info(log.CAKC013I, authn.Config.TokenRefreshTimeout)
+			log.Info(log.CAKC047, authn.Config.TokenRefreshTimeout)
 
 			fmt.Println()
 			time.Sleep(authn.Config.TokenRefreshTimeout)
@@ -64,7 +67,7 @@ func main() {
 	}, expBackoff)
 
 	if err != nil {
-		printErrorAndExit(log.CAKC031E)
+		printErrorAndExit(log.CAKC031)
 	}
 }
 

@@ -49,7 +49,7 @@ func TestUsername(t *testing.T) {
 
 			_, err := NewUsername(username)
 			Convey("Raises an invalid username error", func() {
-				So(err.Error(), ShouldStartWith, "CAKC032E")
+				So(err.Error(), ShouldStartWith, "CAKC032")
 			})
 		})
 

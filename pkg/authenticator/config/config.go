@@ -62,6 +62,8 @@ func NewFromEnv() (*Config, error) {
 func FromEnv(readFileFunc ReadFileFunc) (*Config, error) {
 	var err error
 
+	configureLogLevel()
+
 	// Fill config with 'simple' values from environment
 	config, err := populateConfig()
 	if err != nil {
@@ -71,7 +73,7 @@ func FromEnv(readFileFunc ReadFileFunc) (*Config, error) {
 	// Load CA cert from Environment
 	config.SSLCertificate, err = readSSLCert(readFileFunc)
 	if err != nil {
-		return nil, log.RecordedError(log.CAKC021E, err)
+		return nil, log.RecordedError(log.CAKC021, err)
 	}
 
 	// Load Username from Environment
@@ -83,11 +85,22 @@ func FromEnv(readFileFunc ReadFileFunc) (*Config, error) {
 	return config, nil
 }
 
+func configureLogLevel() {
+	validVal := "true"
+	val := os.Getenv("DEBUG")
+	if val == validVal {
+		log.EnableDebugMode()
+	} else if val != "" {
+		// In case "DEBUG" is configured with incorrect value
+		log.Warn(log.CAKC034, val, validVal)
+	}
+}
+
 func readSSLCert(readFile ReadFileFunc) ([]byte, error) {
 	SSLCert := os.Getenv("CONJUR_SSL_CERTIFICATE")
 	SSLCertPath := os.Getenv("CONJUR_CERT_FILE")
 	if SSLCert == "" && SSLCertPath == "" {
-		return nil, log.RecordedError(log.CAKC007E)
+		return nil, log.RecordedError(log.CAKC007)
 	}
 
 	if SSLCert != "" {
@@ -100,7 +113,7 @@ func populateConfig() (*Config, error) {
 	// Check that required environment variables are set
 	for _, envvar := range requiredEnvVariables {
 		if os.Getenv(envvar) == "" {
-			return nil, log.RecordedError(log.CAKC009E, envvar)
+			return nil, log.RecordedError(log.CAKC009, envvar)
 		}
 	}
 
@@ -122,7 +135,7 @@ func populateConfig() (*Config, error) {
 	case "":
 		break // Stick with default
 	default:
-		return nil, log.RecordedError(log.CAKC021E, fmt.Errorf("invalid conjur version"))
+		return nil, log.RecordedError(log.CAKC021, fmt.Errorf("invalid conjur version"))
 	}
 
 	// Parse token refresh rate if one is provided from env

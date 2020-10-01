@@ -34,7 +34,7 @@ func NewUsername(username string) (*Username, error) {
 	usernameSplit := strings.Split(username, "/")
 	// Verify that the host-id starts with 'host/'
 	if usernameSplit[0] != "host" {
-		return nil, log.RecordedError(log.CAKC032E, username)
+		return nil, log.RecordedError(log.CAKC032, username)
 	}
 
 	separator := getIdSeparator(len(usernameSplit))
