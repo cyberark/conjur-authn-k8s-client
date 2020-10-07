@@ -144,9 +144,15 @@ func (auth *Authenticator) Login() error {
 		nil,
 	)
 	if err != nil {
-		injectClientCertError := consumeInjectClientCertError(auth.Config.InjectCertLogPath)
-		if injectClientCertError != "" {
-			log.Error(log.CAKC055, injectClientCertError)
+		// The response code was changed from 200 to 202 in the same Conjur version
+		// that started writing the cert injection logs to the client. Verifying that
+		// the response code is 202 will verify that we look for the log file only
+		// if we expect it to be there
+		if resp.StatusCode == 202 {
+			injectClientCertError := consumeInjectClientCertError(auth.Config.InjectCertLogPath)
+			if injectClientCertError != "" {
+				log.Error(log.CAKC055, injectClientCertError)
+			}
 		}
 		return err
 	}

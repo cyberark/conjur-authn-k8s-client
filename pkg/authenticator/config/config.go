@@ -31,7 +31,7 @@ type Config struct {
 // Default settings (this comment added to satisfy linter)
 const (
 	DefaultClientCertPath    = "/etc/conjur/ssl/client.pem"
-	DefaultInjectCertLogPath = "/tmp/conjur_set_file_content.log"
+	DefaultInjectCertLogPath = "/tmp/conjur_copy_text_output.log"
 	DefaultTokenFilePath     = "/run/conjur/access-token"
 
 	DefaultConjurVersion = "5"
