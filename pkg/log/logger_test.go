@@ -6,8 +6,6 @@ import (
 	"log"
 	"testing"
 
-	"github.com/smartystreets/assertions/should"
-
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -38,7 +36,7 @@ func TestAuthenticator(t *testing.T) {
 
 			Debug("message")
 
-			So(logBuffer.Len(), should.Equal, 0)
+			So(logBuffer.Len(), ShouldEqual, 0)
 		})
 
 		Convey("Calling Debug logs the message after Calling EnableDebugMode", func() {
