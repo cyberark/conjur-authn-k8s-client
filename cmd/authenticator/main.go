@@ -38,8 +38,6 @@ func main() {
 
 	err = backoff.Retry(func() error {
 		for {
-			log.Info(log.CAKC040, authn.Config.Username)
-
 			resp, err := authn.Authenticate()
 			if err != nil {
 				return log.RecordedError(log.CAKC016)
@@ -49,8 +47,6 @@ func main() {
 			if err != nil {
 				return log.RecordedError(log.CAKC020)
 			}
-
-			log.Info(log.CAKC035)
 
 			if authn.Config.ContainerMode == "init" {
 				os.Exit(0)
