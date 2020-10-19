@@ -203,6 +203,8 @@ func (auth *Authenticator) IsCertExpired() bool {
 // Authenticate sends Conjur an authenticate request and returns
 // the response data. Also manages state of certificates.
 func (auth *Authenticator) Authenticate() ([]byte, error) {
+	log.Info(log.CAKC040, auth.Config.Username)
+
 	if !auth.IsLoggedIn() {
 		log.Debug(log.CAKC039)
 
@@ -254,7 +256,6 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 // ParseAuthenticationResponse takes the response from the Authenticate
 // request, decrypts if needed, and writes to the token file
 func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
-
 	var content []byte
 	var err error
 
@@ -273,6 +274,7 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 		return err
 	}
 
+	log.Info(log.CAKC035)
 	return nil
 }
 
