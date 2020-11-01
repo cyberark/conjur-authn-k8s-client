@@ -3,7 +3,6 @@ package authenticator
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -53,26 +52,4 @@ func AuthenticateRequest(authnURL string, conjurVersion string, account string, 
 	req.Header.Set("Content-Type", "text/plain")
 
 	return req, nil
-}
-
-// readBody returns the response body
-func readBody(resp *http.Response) ([]byte, error) {
-	defer resp.Body.Close()
-
-	responseBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, log.RecordedError(log.CAKC022, err)
-	}
-
-	return responseBytes, err
-}
-
-// validateResponse checks the HTTP status of the response. If it's less than
-// 300, it returns the response body as a byte array. Otherwise it returns
-// a NewError.
-func validateResponse(resp *http.Response) error {
-	if resp.StatusCode < 300 {
-		return nil
-	}
-	return NewError(resp)
 }
