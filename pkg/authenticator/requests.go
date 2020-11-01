@@ -55,6 +55,7 @@ func AuthenticateRequest(authnURL string, conjurVersion string, account string, 
 	return req, nil
 }
 
+// readBody returns the response body
 func readBody(resp *http.Response) ([]byte, error) {
 	defer resp.Body.Close()
 
@@ -66,20 +67,10 @@ func readBody(resp *http.Response) ([]byte, error) {
 	return responseBytes, err
 }
 
-// DataResponse checks the HTTP status of the response. If it's less than
+// validateResponse checks the HTTP status of the response. If it's less than
 // 300, it returns the response body as a byte array. Otherwise it returns
 // a NewError.
-func DataResponse(resp *http.Response) ([]byte, error) {
-	if resp.StatusCode < 300 {
-		return readBody(resp)
-	}
-	return nil, NewError(resp)
-}
-
-// EmptyResponse checks the HTTP status of the response. If it's less than
-// 300, it returns without an error. Otherwise it returns
-// a NewError.
-func EmptyResponse(resp *http.Response) error {
+func validateResponse(resp *http.Response) error {
 	if resp.StatusCode < 300 {
 		return nil
 	}

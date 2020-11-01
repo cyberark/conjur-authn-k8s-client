@@ -38,14 +38,9 @@ func main() {
 
 	err = backoff.Retry(func() error {
 		for {
-			resp, err := authn.Authenticate()
+			err := authn.Authenticate()
 			if err != nil {
 				return log.RecordedError(log.CAKC016)
-			}
-
-			err = authn.ParseAuthenticationResponse(resp)
-			if err != nil {
-				return log.RecordedError(log.CAKC020)
 			}
 
 			if authn.Config.ContainerMode == "init" {

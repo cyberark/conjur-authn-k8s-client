@@ -131,7 +131,7 @@ func (auth *Authenticator) Login() error {
 		return log.RecordedError(log.CAKC028, err)
 	}
 
-	err = EmptyResponse(resp)
+	err = validateResponse(resp)
 	if err != nil {
 		return log.RecordedError(log.CAKC029, err)
 	}
@@ -200,16 +200,44 @@ func (auth *Authenticator) IsCertExpired() bool {
 	return currentDate.Add(bufferTime).After(certExpiresOn)
 }
 
-// Authenticate sends Conjur an authenticate request and returns
-// the response data. Also manages state of certificates.
-func (auth *Authenticator) Authenticate() ([]byte, error) {
+// Authenticate sends Conjur an authenticate request and writes the response
+// to the token file (after decrypting it if needed). It also manages state of
+// certificates.
+func (auth *Authenticator) Authenticate() error {
 	log.Info(log.CAKC040, auth.Config.Username)
 
+	err := auth.loginIfNeeded()
+	if err != nil {
+		return err
+	}
+
+	authenticationResponse, err := auth.sendAuthenticationRequest()
+	if err != nil {
+		return err
+	}
+
+	parsedResponse, err := auth.parseAuthenticationResponse(authenticationResponse)
+	if err != nil {
+		return err
+	}
+
+	err = auth.AccessToken.Write(parsedResponse)
+	if err != nil {
+		return err
+	}
+
+	log.Info(log.CAKC035)
+	return nil
+}
+
+// loginIfNeeded checks if we need to send a login request to Conjur and sends
+// one if needed
+func (auth *Authenticator) loginIfNeeded() error {
 	if !auth.IsLoggedIn() {
 		log.Debug(log.CAKC039)
 
 		if err := auth.Login(); err != nil {
-			return nil, log.RecordedError(log.CAKC015)
+			return log.RecordedError(log.CAKC015)
 		}
 
 		log.Debug(log.CAKC036)
@@ -219,12 +247,19 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 		log.Debug(log.CAKC038)
 
 		if err := auth.Login(); err != nil {
-			return nil, err
+			return err
 		}
 
 		log.Debug(log.CAKC037)
 	}
 
+	return nil
+}
+
+// sendAuthenticationRequest reads the cert from memory and uses it to send
+// an authentication request to the Conjur server. It also validates the response
+// code before returning its body
+func (auth *Authenticator) sendAuthenticationRequest() ([]byte, error) {
 	privDer := x509.MarshalPKCS1PrivateKey(auth.privateKey)
 	keyPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privDer})
 
@@ -250,12 +285,17 @@ func (auth *Authenticator) Authenticate() ([]byte, error) {
 		return nil, log.RecordedError(log.CAKC027, err)
 	}
 
-	return DataResponse(resp)
+	err = validateResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return readBody(resp)
 }
 
-// ParseAuthenticationResponse takes the response from the Authenticate
-// request, decrypts if needed, and writes to the token file
-func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
+// parseAuthenticationResponse takes the response from the Authenticate
+// request, decrypts if needed, and returns it
+func (auth *Authenticator) parseAuthenticationResponse(response []byte) ([]byte, error) {
 	var content []byte
 	var err error
 
@@ -263,19 +303,13 @@ func (auth *Authenticator) ParseAuthenticationResponse(response []byte) error {
 	if auth.Config.ConjurVersion == "4" {
 		content, err = decodeFromPEM(response, auth.PublicCert, auth.privateKey)
 		if err != nil {
-			return err
+			return nil, log.RecordedError(log.CAKC020)
 		}
 	} else if auth.Config.ConjurVersion == "5" {
 		content = response
 	}
 
-	err = auth.AccessToken.Write(content)
-	if err != nil {
-		return err
-	}
-
-	log.Info(log.CAKC035)
-	return nil
+	return content, nil
 }
 
 // generateSANURI returns the formatted uri(SPIFFEE format for now) for the certificate.
