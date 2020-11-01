@@ -131,7 +131,7 @@ func (auth *Authenticator) Login() error {
 		return log.RecordedError(log.CAKC028, err)
 	}
 
-	err = validateResponse(resp)
+	err = utils.ValidateResponse(resp)
 	if err != nil {
 		return log.RecordedError(log.CAKC029, err)
 	}
@@ -285,12 +285,12 @@ func (auth *Authenticator) sendAuthenticationRequest() ([]byte, error) {
 		return nil, log.RecordedError(log.CAKC027, err)
 	}
 
-	err = validateResponse(resp)
+	err = utils.ValidateResponse(resp)
 	if err != nil {
 		return nil, err
 	}
 
-	return readBody(resp)
+	return utils.ReadResponseBody(resp)
 }
 
 // parseAuthenticationResponse takes the response from the Authenticate
