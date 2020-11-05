@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
@@ -17,7 +16,6 @@ type Config struct {
 	ClientCertPath            string
 	ClientCertRetryCountLimit int
 	ContainerMode             string
-	ConjurVersion             string
 	InjectCertLogPath         string
 	PodName                   string
 	PodNamespace              string
@@ -33,8 +31,6 @@ const (
 	DefaultClientCertPath    = "/etc/conjur/ssl/client.pem"
 	DefaultInjectCertLogPath = "/tmp/conjur_copy_text_output.log"
 	DefaultTokenFilePath     = "/run/conjur/access-token"
-
-	DefaultConjurVersion = "5"
 
 	// DefaultTokenRefreshTimeout is the default time the system waits to reauthenticate on error
 	DefaultTokenRefreshTimeout = "6m0s"
@@ -125,19 +121,6 @@ func populateConfig() (*Config, error) {
 		PodName:       os.Getenv("MY_POD_NAME"),
 		PodNamespace:  os.Getenv("MY_POD_NAMESPACE"),
 		URL:           os.Getenv("CONJUR_AUTHN_URL"),
-	}
-
-	// Only versions '4' & '5' are allowed, with '5' being used as the default
-	config.ConjurVersion = DefaultConjurVersion
-	switch os.Getenv("CONJUR_VERSION") {
-	case "4":
-		config.ConjurVersion = "4"
-	case "5":
-		break // Stick with default
-	case "":
-		break // Stick with default
-	default:
-		return nil, log.RecordedError(log.CAKC021, fmt.Errorf("invalid conjur version"))
 	}
 
 	// Parse token refresh rate if one is provided from env

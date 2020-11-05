@@ -121,7 +121,7 @@ func (auth *Authenticator) Login() error {
 		Type: "CERTIFICATE REQUEST", Bytes: csrRawBytes,
 	})
 
-	req, err := LoginRequest(auth.Config.URL, auth.Config.ConjurVersion, csrBytes, auth.Config.Username.Prefix)
+	req, err := LoginRequest(auth.Config.URL, csrBytes, auth.Config.Username.Prefix)
 	if err != nil {
 		return err
 	}
@@ -216,12 +216,7 @@ func (auth *Authenticator) Authenticate() error {
 		return err
 	}
 
-	parsedResponse, err := auth.parseAuthenticationResponse(authenticationResponse)
-	if err != nil {
-		return err
-	}
-
-	err = auth.AccessToken.Write(parsedResponse)
+	err = auth.AccessToken.Write(authenticationResponse)
 	if err != nil {
 		return err
 	}
@@ -272,7 +267,6 @@ func (auth *Authenticator) sendAuthenticationRequest() ([]byte, error) {
 
 	req, err := AuthenticateRequest(
 		auth.Config.URL,
-		auth.Config.ConjurVersion,
 		auth.Config.Account,
 		auth.Config.Username.FullUsername,
 	)
@@ -291,25 +285,6 @@ func (auth *Authenticator) sendAuthenticationRequest() ([]byte, error) {
 	}
 
 	return utils.ReadResponseBody(resp)
-}
-
-// parseAuthenticationResponse takes the response from the Authenticate
-// request, decrypts if needed, and returns it
-func (auth *Authenticator) parseAuthenticationResponse(response []byte) ([]byte, error) {
-	var content []byte
-	var err error
-
-	// Token is only encrypted in Conjur v4
-	if auth.Config.ConjurVersion == "4" {
-		content, err = decodeFromPEM(response, auth.PublicCert, auth.privateKey)
-		if err != nil {
-			return nil, log.RecordedError(log.CAKC020)
-		}
-	} else if auth.Config.ConjurVersion == "5" {
-		content = response
-	}
-
-	return content, nil
 }
 
 // generateSANURI returns the formatted uri(SPIFFEE format for now) for the certificate.

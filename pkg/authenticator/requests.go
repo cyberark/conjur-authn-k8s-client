@@ -10,14 +10,8 @@ import (
 )
 
 // LoginRequest sends a login request
-func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte, usernamePrefix string) (*http.Request, error) {
-	var authenticateURL string
-
-	if conjurVersion == "4" {
-		authenticateURL = fmt.Sprintf("%s/users/login", authnURL)
-	} else if conjurVersion == "5" {
-		authenticateURL = fmt.Sprintf("%s/inject_client_cert", authnURL)
-	}
+func LoginRequest(authnURL string, csrBytes []byte, usernamePrefix string) (*http.Request, error) {
+	authenticateURL := fmt.Sprintf("%s/inject_client_cert", authnURL)
 
 	log.Debug(log.CAKC045, authenticateURL)
 
@@ -32,16 +26,11 @@ func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte, userna
 }
 
 // AuthenticateRequest sends an authenticate request
-func AuthenticateRequest(authnURL string, conjurVersion string, account string, username string) (*http.Request, error) {
-	var authenticateURL string
+func AuthenticateRequest(authnURL string, account string, username string) (*http.Request, error) {
 	var err error
 	var req *http.Request
 
-	if conjurVersion == "4" {
-		authenticateURL = fmt.Sprintf("%s/users/%s/authenticate", authnURL, url.QueryEscape(username))
-	} else if conjurVersion == "5" {
-		authenticateURL = fmt.Sprintf("%s/%s/%s/authenticate", authnURL, account, url.QueryEscape(username))
-	}
+	authenticateURL := fmt.Sprintf("%s/%s/%s/authenticate", authnURL, account, url.QueryEscape(username))
 
 	log.Debug(log.CAKC046, authenticateURL)
 
