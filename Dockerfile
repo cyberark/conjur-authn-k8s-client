@@ -5,8 +5,8 @@ ENV GOOS=linux \
     GOARCH=amd64 \
     CGO_ENABLED=1
 
-# this value changes in ./bin/build
-ARG TAG="dev"
+# this value is set in ./bin/build
+ARG TAG
 
 WORKDIR /opt/conjur-authn-k8s-client
 COPY . /opt/conjur-authn-k8s-client
