@@ -1,4 +1,4 @@
-FROM golang:1.12.0-alpine3.9
+FROM golang:1.15-alpine
 MAINTAINER CyberArk Software Ltd.
 LABEL id="conjur-authn-k8s-client-junit-processor"
 

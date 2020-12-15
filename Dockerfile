@@ -1,4 +1,4 @@
-FROM goboring/golang:1.12.17b4 as authenticator-client-builder
+FROM goboring/golang:1.15.6b5 as authenticator-client-builder
 MAINTAINER CyberArk Software Ltd.
 
 ENV GOOS=linux \

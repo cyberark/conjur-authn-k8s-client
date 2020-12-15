@@ -159,7 +159,7 @@ func TestEnvironmentVariable(t *testing.T) {
 			expectedError := fmt.Errorf(
 				"CAKC010 Failed to parse %s. Reason: %s",
 				envVarName,
-				"time: invalid duration SOME_ENV_VAR_VALUE",
+				"time: invalid duration \"SOME_ENV_VAR_VALUE\"",
 			)
 
 			Convey("Raises a proper error", func() {

@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   to the token file, without the need to call `ParseAuthenticationResponse`.
   This change breaks the API.
   [cyberark/conjur-authn-k8s-client#180](https://github.com/cyberark/conjur-authn-k8s-client/issues/180)
+- The project Golang version is updated from the end-of-life v1.12 to the latest
+  version v1.15.
+  [cyberark/conjur-authn-k8s-client#206](https://github.com/cyberark/conjur-authn-k8s-client/issues/206)
 
 ## [0.19.0] - 2020-10-08
 ### Added
