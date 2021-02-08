@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.19.1] - 2021-02-08
 ### Changed
 - The `Authenticate` method now parses the authentication response and writes it
   to the token file, without the need to call `ParseAuthenticationResponse`.
@@ -131,7 +133,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.0...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.1...HEAD
+[0.19.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.18.1...v0.19.0
 [0.18.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.18.0...v0.18.1
 [0.18.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.17.0...v0.18.0
