@@ -64,8 +64,6 @@ func NewFromEnv() (*Config, error) {
 func FromEnv(readFileFunc ReadFileFunc) (*Config, error) {
 	var err error
 
-	configureLogLevel()
-
 	// Fill config with 'simple' values from environment
 	config, err := populateConfig()
 	if err != nil {
@@ -85,17 +83,6 @@ func FromEnv(readFileFunc ReadFileFunc) (*Config, error) {
 	}
 
 	return config, nil
-}
-
-func configureLogLevel() {
-	validVal := "true"
-	val := os.Getenv("DEBUG")
-	if val == validVal {
-		log.EnableDebugMode()
-	} else if val != "" {
-		// In case "DEBUG" is configured with incorrect value
-		log.Warn(log.CAKC034, val, validVal)
-	}
 }
 
 func readSSLCert(readFile ReadFileFunc) ([]byte, error) {

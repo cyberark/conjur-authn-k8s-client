@@ -1,4 +1,4 @@
-package authenticator
+package k8s
 
 import (
 	"crypto"
@@ -20,7 +20,8 @@ import (
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/file"
-	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
+	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/k8s/config"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
 )
@@ -380,4 +381,12 @@ func consumeInjectClientCertError(path string) string {
 	}
 
 	return string(content)
+}
+
+// GlobalConfig returns config used in the cmd package
+func (auth *Authenticator) GlobalConfig() config.Config {
+	return config.Config{
+		TokenRefreshTimeout: auth.Config.TokenRefreshTimeout,
+		ContainerMode:       auth.Config.ContainerMode,
+	}
 }
