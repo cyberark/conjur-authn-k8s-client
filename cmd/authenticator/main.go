@@ -8,7 +8,6 @@ import (
 	"github.com/cenkalti/backoff"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
-	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
@@ -17,15 +16,9 @@ func main() {
 
 	var err error
 
-	config, err := authnConfig.NewFromEnv()
-	if err != nil {
-		printErrorAndExit(log.CAKC018)
-	}
-
-	// Create new Authenticator
-	authn, err := authenticator.New(*config)
-	if err != nil {
-		printErrorAndExit(log.CAKC019)
+	authn, errMsg := authenticator.NewAuthenticatorFromEnv()
+	if errMsg != "" {
+		printErrorAndExit(errMsg)
 	}
 
 	// Configure exponential backoff
@@ -43,14 +36,14 @@ func main() {
 				return log.RecordedError(log.CAKC016)
 			}
 
-			if authn.Config.ContainerMode == "init" {
+			if authn.GlobalConfig().ContainerMode == "init" {
 				os.Exit(0)
 			}
 
-			log.Info(log.CAKC047, authn.Config.TokenRefreshTimeout)
+			log.Info(log.CAKC047, authn.GlobalConfig().TokenRefreshTimeout)
 
 			fmt.Println()
-			time.Sleep(authn.Config.TokenRefreshTimeout)
+			time.Sleep(authn.GlobalConfig().TokenRefreshTimeout)
 
 			// Reset exponential backoff
 			expBackoff.Reset()

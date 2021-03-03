@@ -1,4 +1,4 @@
-package authenticator
+package k8s
 
 import (
 	"crypto/rand"
@@ -11,7 +11,7 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/k8s/config"
 )
 
 func parseCert(filename string) (*x509.Certificate, error) {
