@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   [cyberark/conjur-authn-k8s-client#206](https://github.com/cyberark/conjur-authn-k8s-client/issues/206)
 - Improve the error message raised when the username doesn't include the `host/` prefix
   [cyberark/conjur-authn-k8s-client#212](https://github.com/cyberark/conjur-authn-k8s-client/pull/212)
+- Doesn't include git commit hash in printed version for fixed versions
+  [cyberark/conjur-authn-k8s-client#196](https://github.com/cyberark/conjur-authn-k8s-client/pull/196)
 
 ## [0.19.0] - 2020-10-08
 ### Added

@@ -6,7 +6,7 @@ ENV GOOS=linux \
     CGO_ENABLED=1
 
 # this value changes in ./bin/build
-ARG TAG="dev"
+ARG TAG_SUFFIX="-dev"
 
 WORKDIR /opt/conjur-authn-k8s-client
 COPY . /opt/conjur-authn-k8s-client
@@ -21,7 +21,7 @@ RUN go get -u github.com/jstemmer/go-junit-report && \
     go get github.com/smartystreets/goconvey
 
 RUN go build -a -installsuffix cgo \
-    -ldflags="-X github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.Tag=$TAG" \
+    -ldflags="-X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.TagSuffix=$TAG_SUFFIX'" \
     -o authenticator ./cmd/authenticator
 
 # Verify the binary is using BoringCrypto.

@@ -25,3 +25,25 @@ function gen_versions() {
     echo $version
   done
 }
+function git_tag_suffix() {
+  if  is_tagged_commit
+  then
+    echo "-$(git_tag)"
+  else
+    echo ""
+  fi
+}
+function is_tagged_commit() {
+
+  # fetching tags is required for git_description to work
+  git fetch --tags
+  git_description=$(git describe)
+
+  if [ "$git_description" != "v${VERSION}" ]
+  then
+    true
+  else
+    false
+  fi
+}
+

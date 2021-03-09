@@ -19,14 +19,10 @@ readonly TAGS=(
   "latest"
 )
 
-# fetching tags is required for git_description to work
-git fetch --tags
-git_description=$(git describe)
-
 # if it’s not a tagged commit, VERSION will have extra characters (i.e. -g666c4b2), so that commit won't be published
 # only when tag matches the VERSION, push VERSION and latest releases
 # and x and x.y releases
-if [ "$git_description" = "v${VERSION}" ]; then
+if is_tagged_commit then
   echo "Revision $git_description matches version $VERSION exactly"
 
   echo "Pushing to Dockerhub..."
