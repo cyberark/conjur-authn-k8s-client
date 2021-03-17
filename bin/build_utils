@@ -8,6 +8,10 @@ set -euo pipefail
 
 readonly VERSION_GO_FILE="pkg/authenticator/version.go"
 
+function short_version_tag() {
+  grep -v '^//' "${VERSION_GO_FILE}" | grep 'var Version =' | awk -F'= ' '{print $2}' | tr -d '"'
+}
+
 # generate less specific versions, eg. given 1.2.3 will print 1.2 and 1
 # (note: the argument itself is not printed, append it explicitly if needed)
 function gen_versions() {

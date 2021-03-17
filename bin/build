@@ -8,7 +8,7 @@ set -euo pipefail
 # (env GOOS=darwin GOARCH=amd64 go build) of project binaries
 IMAGE_NAME=conjur-authn-k8s-client
 TAG=dev
-VERSION="${TAG_NAME//"v"}"
+VERSION="$(short_version_tag)"
 
 echo "---"
 echo "Building ${IMAGE_NAME} with tag ${TAG} <<"
