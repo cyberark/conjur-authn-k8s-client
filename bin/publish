@@ -19,10 +19,10 @@ readonly TAGS=(
   "latest"
 )
 
-# if it’s not a tagged commit, VERSION will have extra characters (i.e. -g666c4b2), so that commit won't be published
-# only when tag matches the VERSION, push VERSION and latest releases
-# and x and x.y releases
-if is_tagged_commit then
+# The push should run only on fixed versions, identified by the existence of the TAG_NAME environment variable
+# which happens automatically in tag-triggered builds. 
+# push VERSION and latest releases and x and x.y releases
+if [[ ! -z "${TAG_NAME:-}" ]]; then
   echo "Revision $git_description matches version $VERSION exactly"
 
   echo "Pushing to Dockerhub..."

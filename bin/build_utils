@@ -12,7 +12,7 @@ function short_version_tag() {
   grep -v '^//' "${VERSION_GO_FILE}" | grep 'var Version =' | awk -F'= ' '{print $2}' | tr -d '"'
 }
 
-function git_tag() {
+function git_commit_short() {
   git rev-parse --short HEAD
 }
 
@@ -26,23 +26,12 @@ function gen_versions() {
   done
 }
 
+# returns the git commit's hash only for non-fixed versions, empty otherwise.
+# which can be identified by the TAG_NAME variable, which is being set automatically on tag-triggered builds
 function git_tag_suffix() {
-  if [ $(is_tagged_commit) ]; then
-    echo "-$(git_tag)"
+  if [[ -z "${TAG_NAME:-}" ]]; then
+    echo "-$(git_commit_short)"
   else
     echo ""
   fi
 }
-
-function is_tagged_commit() {
-  # fetching tags is required for git_description to work
-  git fetch --tags
-  git_description=$(git describe)
-
-  if [ "$git_description" != "v${VERSION}" ]; then
-    true
-  else
-    false
-  fi
-}
-
