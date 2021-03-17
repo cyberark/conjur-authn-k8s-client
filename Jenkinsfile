@@ -62,7 +62,10 @@ pipeline {
 
     stage('Publish client Docker image') {
       when {
-        branch 'master'
+        allOf {
+          branch 'master'
+          tag "v*"
+        }
       }
       steps {
         sh 'summon ./bin/publish'
