@@ -19,7 +19,10 @@ readonly TAGS=(
   "latest"
 )
 
-echo "This script should not run in a tag-triggered build. controlled by the JenkinsFile"
+if [[ -z "${TAG_NAME:-}" ]]; then
+  echo "This script should only run in a tag-triggered build controlled by the JenkinsFile"
+  exit 1
+fi
 
 echo "Pushing to Dockerhub..."
 source_image=conjur-authn-k8s-client:dev
