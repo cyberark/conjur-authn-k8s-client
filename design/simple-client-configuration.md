@@ -1122,7 +1122,6 @@ Conjur URL, Conjur SSL certificate, ServiceAccount name, etc.) are invalid.
 <li><p>Followed by a valid DNS domain, or ‘&lt;IP address&gt;:&lt;port&gt;’</p></li>
 </ul></th>
 </tr>
-</thead>
 <tr class="odd">
 <td><strong>NOTE 2:</strong></td>
 <td><p>A valid SSL certificate must:</p>
