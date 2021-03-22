@@ -1115,12 +1115,12 @@ Conjur URL, Conjur SSL certificate, ServiceAccount name, etc.) are invalid.
 </thead>
 <tbody>
 <tr class="even">
-<th><strong>NOTE 1:</strong></th>
-<th><p>A valid Conjur URL:</p>
+<td><strong>NOTE 1:</strong></td>
+<td><p>A valid Conjur URL:</p>
 <ul>
 <li><p>Begins with ‘https://’ or ‘HTTPS://’</p></li>
 <li><p>Followed by a valid DNS domain, or ‘&lt;IP address&gt;:&lt;port&gt;’</p></li>
-</ul></th>
+</ul></td>
 </tr>
 <tr class="odd">
 <td><strong>NOTE 2:</strong></td>
