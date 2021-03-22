@@ -6,11 +6,12 @@ import "fmt"
 // of the authn-k8s-client
 var Version = "0.19.1"
 
-// Tag field denotes the specific build type for the client. It may
+// TagSuffix field denotes the specific build type for the client. It may
 // be replaced by compile-time variables if needed to provide the git
-// commit information in the final binary
-var Tag = "dev"
+// commit information in the final binary.
+// In fixed versions, we don't want the tag to be present
+var TagSuffix = "-dev"
 
 // FullVersionName is the user-visible aggregation of version and tag
 // of this codebase
-var FullVersionName = fmt.Sprintf("%s-%s", Version, Tag)
+var FullVersionName = fmt.Sprintf("%s%s", Version, TagSuffix)

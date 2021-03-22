@@ -14,12 +14,12 @@ echo "---"
 echo "Building ${IMAGE_NAME} with tag ${TAG} <<"
 
 docker build --tag "${IMAGE_NAME}:${TAG}" \
-             --build-arg TAG=$(git_tag) \
+             --build-arg TAG_SUFFIX="$(git_tag_suffix)" \
              --target "authenticator-client" \
              .
 
 docker build --tag "${IMAGE_NAME}-redhat:${TAG}" \
-             --build-arg TAG=$(git_tag) \
+             --build-arg TAG_SUFFIX="$(git_tag_suffix)" \
              --build-arg VERSION="$VERSION" \
              --target "authenticator-client-redhat" \
              .

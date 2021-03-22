@@ -12,10 +12,6 @@ function short_version_tag() {
   grep -v '^//' "${VERSION_GO_FILE}" | grep 'var Version =' | awk -F'= ' '{print $2}' | tr -d '"'
 }
 
-function git_tag() {
-  git rev-parse --short HEAD
-}
-
 # generate less specific versions, eg. given 1.2.3 will print 1.2 and 1
 # (note: the argument itself is not printed, append it explicitly if needed)
 function gen_versions() {
@@ -24,4 +20,19 @@ function gen_versions() {
     version=${version%.*}
     echo $version
   done
+}
+
+# returns the git commit's hash only for non-fixed versions, empty otherwise.
+# which can be identified by the TAG_NAME variable.
+# The TAG_NAME variable is set automatically on tag-triggered builds for fixed versions.
+function git_tag_suffix() {
+  if [[ -z "${TAG_NAME:-}" ]]; then
+    echo "-$(git_commit_short)"
+  else
+    echo ""
+  fi
+}
+
+function git_commit_short() {
+  git rev-parse --short HEAD
 }
