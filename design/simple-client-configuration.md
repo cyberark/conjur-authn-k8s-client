@@ -1109,6 +1109,12 @@ Conjur URL, Conjur SSL certificate, ServiceAccount name, etc.) are invalid.
 <table>
 <thead>
 <tr class="header">
+<th>Note</th>
+<th>Text</th>
+</tr>
+</thead>
+<tbody>
+<tr class="even">
 <th><strong>NOTE 1:</strong></th>
 <th><p>A valid Conjur URL:</p>
 <ul>
@@ -1117,7 +1123,6 @@ Conjur URL, Conjur SSL certificate, ServiceAccount name, etc.) are invalid.
 </ul></th>
 </tr>
 </thead>
-<tbody>
 <tr class="odd">
 <td><strong>NOTE 2:</strong></td>
 <td><p>A valid SSL certificate must:</p>
