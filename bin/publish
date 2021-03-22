@@ -5,6 +5,7 @@
 REDHAT_IMAGE='scan.connect.redhat.com/ospid-1c46a2de-1d88-40e6-a433-7114ad0099cb/conjur-openshift-authenticator-client'
 
 readonly REGISTRY="cyberark"
+# We take the version from the TAG_NAME variable - removing the "v" prefix
 readonly VERSION="${TAG_NAME//"v"}"
 
 # we changed the name to `conjur-authn-k8s-client`. Leaving `conjur-kubernetes-authenticator`

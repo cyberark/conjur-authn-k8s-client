@@ -23,7 +23,8 @@ function gen_versions() {
 }
 
 # returns the git commit's hash only for non-fixed versions, empty otherwise.
-# which can be identified by the TAG_NAME variable, which is being set automatically on tag-triggered builds
+# which can be identified by the TAG_NAME variable.
+# The TAG_NAME variable is set automatically on tag-triggered builds for fixed versions.
 function git_tag_suffix() {
   if [[ -z "${TAG_NAME:-}" ]]; then
     echo "-$(git_commit_short)"
