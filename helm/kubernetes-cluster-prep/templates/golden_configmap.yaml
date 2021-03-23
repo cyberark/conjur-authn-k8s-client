@@ -1,0 +1,42 @@
+{{- if .Values.authnK8s.configMap.create -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: {{ .Values.authnK8s.configMap.name }}
+    labels:
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      app.kubernetes.io/name: golden-configmap
+      app.kubernetes.io/component: "conjur-config"
+      app.kubernetes.io/instance: {{ .Release.Namespace }}
+      app.kubernetes.io/part-of: "authn-k8s-cluster-config"
+      helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+data:
+    # authn-k8s Configuration 
+    authnK8sAuthenticatorID: {{ required "A valid authnK8s.authenticatorID is required!" .Values.authnK8s.authenticatorID }}
+    {{- if eq .Values.authnK8s.clusterRole.create true }}
+    authnK8sClusterRole: {{ .Values.authnK8s.clusterRole.name | default "authn-k8s-clusterrole" }}
+    {{- else }}
+    authnK8sClusterRole: {{ required "A valid authnK8s.clusterRole.name is required!" .Values.authnK8s.clusterRole.name }}
+    {{- end }}
+    authnK8sNamespace: {{ .Release.Namespace }}
+    {{- if eq .Values.authnK8s.serviceAccount.create true }}
+    authnK8sServiceAccount: {{ .Values.authnK8s.serviceAccount.name | default "authn-k8s-serviceaccount" }}
+    {{- else }}
+    authnK8sServiceAccount: {{ required "A valid authnK8s.serviceAccount.name is required!" .Values.authnK8s.serviceAccount.name }}
+    {{- end }}
+
+    # Conjur Configuration 
+    conjurAccount: {{ .Values.conjur.account }}
+    conjurApplianceUrl: {{ required "A valid conjur.applianceUrl is required!" .Values.conjur.applianceUrl }}
+    {{- if .Values.conjur.certificateFilePath }}
+    {{- if .Values.conjur.certificateBase64 }}
+    {{- fail "Only one of 'certificateFilePath' or 'certificateBase64' may be set!" }}
+    {{- end }}
+    conjurSslCertificate: {{ .Files.Get .Values.conjur.certificateFilePath | quote }}
+    conjurSslCertificateBase64: {{ .Files.Get .Values.conjur.certificateFilePath | b64enc | quote }}
+    {{- else }}
+    conjurSslCertificateBase64: {{ required "Either conjur.certificateFilePath or conjur.certificateBase64 are required!" .Values.conjur.certificateBase64 | quote }}
+    conjurSslCertificate: {{ .Values.conjur.certificateBase64 | b64dec | quote }}
+    {{- end }}
+{{- end }}

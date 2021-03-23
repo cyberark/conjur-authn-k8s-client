@@ -1,0 +1,22 @@
+@startuml
+title Preparing Kubernetes Cluster
+hide footbox
+actor "Kubernetes\nAdministrator" as kube_admin #blue
+actor "Conjur\nAdministrator" as conjur_admin #green
+participant "Conjur\nInstance" as conjur
+participant "Helm" as helm
+
+kube_admin -> conjur_admin : Request Conjur conn info
+conjur_admin -> kube_admin : Conjur conn info
+kube_admin -> conjur : Retrieve Conjur SSL Certificate
+conjur -> kube_admin : Conjur SSL Certificate
+create entity "Authenticator\nNamespace" as authn_namespace
+kube_admin -> authn_namespace : Create Authenticator Namespace
+kube_admin -> helm : Helm install Kubernetes Cluster Prep Helm chart
+helm --> authn_namespace : Create ConfigMap
+note over authn_namespace : Golden\nConfigMap
+helm --> authn_namespace : Create ServiceAccount
+note over authn_namespace : Authenticator\nServiceAccount
+helm --> authn_namespace : Create ClusterRole
+note over authn_namespace : Authenticator\nClusterRole
+@enduml
