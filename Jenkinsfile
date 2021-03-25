@@ -18,6 +18,10 @@ pipeline {
         stage('Changelog') {
           steps { sh './bin/parse-changelog.sh' }
         }
+
+        stage('Schema') {
+          steps { sh './bin/validate-schema ./helm/kubernetes-cluster-prep/values.schema.json'}
+        }
       }
     }
 
