@@ -73,12 +73,30 @@ func TestFile(t *testing.T) {
 			So(err, ShouldBeNil)
 		})
 
-		Convey("A non-existing file returns the error", func() {
+		Convey("A folder at the path returns an error", func() {
+			path := "/"
+			expectedOutput := fmt.Errorf(
+				"CAKC058 Path exists but does not contain regular file: %s",
+				path,
+			)
+
+			err := VerifyFileExists(path)
+
+			So(err, ShouldResemble, expectedOutput)
+		})
+
+		Convey("A non-existing file returns an error", func() {
 			path := "non/existing/path"
 
 			err := VerifyFileExists(path)
 
 			So(os.IsNotExist(err), ShouldBeTrue)
+		})
+
+		Convey("A non-ErrNotExist error is returned", func() {
+			err := VerifyFileExists("\000invalid")
+
+			So(err.Error(), ShouldResemble, "stat \x00invalid: invalid argument")
 		})
 	})
 }

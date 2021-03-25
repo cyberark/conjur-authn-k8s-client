@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Fixes bug in error handling within the `VerifyFileExists` method that resulted in a
+  panic when the error from `os.Stat` was not `ErrNotExist`. The fix includes introducing
+  the `CAKC058` error and log message for when the path to a file exists but is not a
+  regular file.
+  [cyberark/conjur-authn-k8s-client#252](https://github.com/cyberark/conjur-authn-k8s-client/issues/252)
 
 ## [0.19.1] - 2021-02-08
 ### Changed

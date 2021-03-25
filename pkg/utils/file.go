@@ -47,10 +47,9 @@ func WaitForFile(
 
 func VerifyFileExists(path string) error {
 	info, err := os.Stat(path)
-	if !os.IsNotExist(err) && info.Mode().IsRegular() {
-		// No error, the file exists
-		return nil
+	if err == nil && !info.Mode().IsRegular() {
+		// Path exists but is not a regular file
+		err = log.RecordedError(log.CAKC058, path)
 	}
-
 	return err
 }
