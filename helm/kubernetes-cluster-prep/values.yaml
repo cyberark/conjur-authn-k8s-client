@@ -34,7 +34,7 @@ authnK8s:
     # "authn-k8s-clusterrole". If 'authnK8s.clusterRole.create` is set to `false`,
     # then this is a required value. Example:
     # name: authn-k8s-clusterrole
-    name:
+    # name:
 
   serviceAccount:
     create: true
@@ -44,6 +44,6 @@ authnK8s:
     # to "authn-k8s-serviceaccount". If 'authnK8s.serviceAccount.create` is set
     # to `false`, then this is a required value. Example:
     # name: authn-k8s-serviceaccount
-    name:
+    # name:
 
 displaySamplePolicy: false

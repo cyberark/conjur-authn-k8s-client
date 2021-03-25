@@ -1,0 +1,8 @@
+The Application Namespace preparation is complete.
+The following have been deployed:
+{{- if .Values.conjurConfigMap.create }}
+A Conjur Connection Configmap
+{{- end }}
+{{- if .Values.authnRoleBinding.create }}
+An authenticator Rolebinding
+{{- end }}

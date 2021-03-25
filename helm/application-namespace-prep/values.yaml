@@ -1,0 +1,12 @@
+authnK8s:
+  # These are required values
+  # goldenConfigMap: 
+  # namespace: 
+
+authnRoleBinding:
+  create: true
+  name: conjur-rolebinding
+
+conjurConfigMap:
+  create: true
+  name: conjur-configmap

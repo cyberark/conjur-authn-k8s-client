@@ -22,7 +22,7 @@
                 }
             }
         },
-        "authnk8s": {
+        "authnK8s": {
             "properties": {
                 "authenticatorId": {
                     "type": "string"
@@ -33,8 +33,7 @@
                             "type": "boolean"
                         },
                         "name": {
-                            "type": "string",
-                            "maxLength": 252
+                            "type": "string"
                         }
                     }
                 },
@@ -44,9 +43,7 @@
                             "type": "boolean"
                         },
                         "name": {
-                            "type": "string",
-                            "maxLength": 252,
-                            "pattern": "[a-z0-9]([-a-z0-9]*[a-z0-9])?"
+                            "type": "string"
                         }
                     }
                 },
@@ -56,9 +53,7 @@
                             "type": "boolean"
                         },
                         "name": {
-                            "type": "string",
-                            "maxLength": 252,
-                            "pattern": "[a-z0-9]([-a-z0-9]*[a-z0-9])?"
+                            "type": "string"
                         }
                     }
                 }
