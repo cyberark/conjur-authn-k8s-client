@@ -361,7 +361,7 @@ func decodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey cry
 
 func consumeInjectClientCertError(path string) string {
 	// The log file will not exist in old Conjur versions
-	err := utils.VerifyFileExists(path)
+	err := utils.VerifyFileExists(path, nil)
 	if err != nil {
 		log.Warn(log.CAKC056, path)
 		return ""
