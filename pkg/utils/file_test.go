@@ -51,39 +51,31 @@ var testConfigMap = map[string]testConfig{
 }
 
 func testCaseFileUtils(path string) *fileUtils {
-	if testConfigMap[path].useOSUtils {
+	config := testConfigMap[path]
+
+	if config.useOSUtils {
 		return osFileUtils
 	}
-	return mockFileUtils
-}
 
-func mockStat(path string) (interface{}, error) {
-	config := testConfigMap[path]
-	// For simplicity, this function returns a simple "is regular" boolean
-	// for the first return argument, rather then returning a complex
-	// os.FileInfo interface as is done for os.Stat().
-	return config.isRegular, config.statError
-}
-
-func mockIsRegular(fileInfo interface{}) bool {
-	isRegular := fileInfo.(bool)
-	return isRegular
-}
-
-var mockFileUtils = &fileUtils{
-	mockStat,
-	mockIsRegular,
+	return &fileUtils{
+		func(s string) (os.FileInfo, error) {
+			return nil, config.statError
+		},
+		func(info os.FileInfo) bool {
+			return config.isRegular
+		},
+	}
 }
 
 func TestFile(t *testing.T) {
-	Convey("WaitForFile", t, func() {
+	Convey("waitForFile", t, func() {
 		retryCountLimit := 10
 		Convey("Returns nil if file exists", func() {
 			path := existingFilePath
 			utilities := testCaseFileUtils(path)
 
 			So(
-				WaitForFile(
+				waitForFile(
 					path,
 					retryCountLimit,
 					utilities,
@@ -102,7 +94,7 @@ func TestFile(t *testing.T) {
 			)
 
 			So(
-				WaitForFile(
+				waitForFile(
 					path,
 					retryCountLimit,
 					utilities,
@@ -113,12 +105,12 @@ func TestFile(t *testing.T) {
 		})
 	})
 
-	Convey("VerifyFileExists", t, func() {
+	Convey("verifyFileExists", t, func() {
 		Convey("An existing file returns nil error", func() {
 			path := existingFilePath
 			utilities := testCaseFileUtils(path)
 
-			err := VerifyFileExists(path, utilities)
+			err := verifyFileExists(path, utilities)
 
 			So(err, ShouldBeNil)
 		})
@@ -131,7 +123,7 @@ func TestFile(t *testing.T) {
 				path,
 			)
 
-			err := VerifyFileExists(path, utilities)
+			err := verifyFileExists(path, utilities)
 
 			So(err, ShouldResemble, expectedOutput)
 		})
@@ -144,7 +136,7 @@ func TestFile(t *testing.T) {
 				path,
 			)
 
-			err := VerifyFileExists(path, utilities)
+			err := verifyFileExists(path, utilities)
 
 			So(err, ShouldResemble, expectedOutput)
 		})
@@ -153,7 +145,7 @@ func TestFile(t *testing.T) {
 			path := nonexistentFilePath
 			utilities := testCaseFileUtils(path)
 
-			err := VerifyFileExists(path, utilities)
+			err := verifyFileExists(path, utilities)
 
 			So(os.IsNotExist(err), ShouldBeTrue)
 		})
@@ -162,7 +154,7 @@ func TestFile(t *testing.T) {
 			path := invalidArgsFilePath
 			utilities := testCaseFileUtils(path)
 
-			err := VerifyFileExists(path, utilities)
+			err := verifyFileExists(path, utilities)
 
 			So(err.Error(), ShouldResemble, "invalid argument")
 		})

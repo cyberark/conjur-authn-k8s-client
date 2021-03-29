@@ -141,7 +141,6 @@ func (auth *Authenticator) Login() error {
 	err = utils.WaitForFile(
 		auth.Config.ClientCertPath,
 		auth.Config.ClientCertRetryCountLimit,
-		nil,
 	)
 	if err != nil {
 		// The response code was changed from 200 to 202 in the same Conjur version
@@ -361,7 +360,7 @@ func decodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey cry
 
 func consumeInjectClientCertError(path string) string {
 	// The log file will not exist in old Conjur versions
-	err := utils.VerifyFileExists(path, nil)
+	err := utils.VerifyFileExists(path)
 	if err != nil {
 		log.Warn(log.CAKC056, path)
 		return ""
