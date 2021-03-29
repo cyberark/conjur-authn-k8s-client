@@ -11,20 +11,11 @@ import (
 
 // statFunc type is defined so that the dependency 'os.Stat()'
 // can be mocked for testing.
-type statFunc func(string) (interface{}, error)
-
-func osStat(path string) (interface{}, error) {
-	return os.Stat(path)
-}
+type statFunc func(string) (os.FileInfo, error)
 
 // isRegularFunc type is defined so that the dependency
 // 'os.FileInfo.Mode().IsRegular()' can be mocked for testing.
-type isRegularFunc func(interface{}) bool
-
-func osIsRegular(fileInfo interface{}) bool {
-	osFileInfo := fileInfo.(os.FileInfo)
-	return osFileInfo.Mode().IsRegular()
-}
+type isRegularFunc func(info os.FileInfo) bool
 
 type fileUtils struct {
 	stat      statFunc
@@ -32,14 +23,23 @@ type fileUtils struct {
 }
 
 var osFileUtils = &fileUtils{
-	osStat,
-	osIsRegular,
+	os.Stat,
+	func(info os.FileInfo) bool {
+		return info.Mode().IsRegular()
+	},
 }
 
 // WaitForFile waits for retryCountLimit seconds to see if the file
 // exists in the given path. If it's not there by the end of the retry
 // count limit, it returns an error.
 func WaitForFile(
+	path string,
+	retryCountLimit int,
+) error {
+	return waitForFile(path, retryCountLimit, osFileUtils)
+}
+
+func waitForFile(
 	path string,
 	retryCountLimit int,
 	utilities *fileUtils,
@@ -54,7 +54,7 @@ func WaitForFile(
 			log.Debug(log.CAKC051, path)
 		}
 
-		return VerifyFileExists(path, utilities)
+		return verifyFileExists(path, utilities)
 	}, limitedBackOff)
 
 	if err != nil {
@@ -66,10 +66,11 @@ func WaitForFile(
 
 // VerifyFileExists verifies that a file exists at a given path and is a
 // regular file.
-func VerifyFileExists(path string, utilities *fileUtils) error {
-	if utilities == nil {
-		utilities = osFileUtils
-	}
+func VerifyFileExists(path string) error {
+	return verifyFileExists(path, osFileUtils)
+}
+
+func verifyFileExists(path string, utilities *fileUtils) error {
 	info, err := utilities.stat(path)
 	if os.IsPermission(err) {
 		// Permissions error when checking if file exists
