@@ -1,0 +1,50 @@
+# Default values for conjur-cluster-prep.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+conjur:
+  account: "default"
+
+  # Conjur Appliance URL. (This is a required value).
+  # applianceUrl:
+
+  # Path to a Conjur certificate file. Either this value or
+  # 'certificateBase64' must be provided, but not both. Example:
+  # certificateFilePath: "files/conjur-cert.pem"
+  # certificateFilePath:
+
+  # Base64-encoded Conjur certificate file
+  # certificateBase64:
+
+authnK8s:
+  # Conjur authn-k8s authenticator ID to use for authentication.
+  # (This is a required value).
+  authenticatorID:
+
+  configMap:
+    create: true
+    name: "authn-k8s-configmap"
+
+  clusterRole:
+    create: true
+
+    # The name of the authenticator ClusterRole to use or create.
+    #
+    # If 'authnK8s.clusterRole.create` is set to `true`, then this defaults to
+    # "authn-k8s-clusterrole". If 'authnK8s.clusterRole.create` is set to `false`,
+    # then this is a required value. Example:
+    # name: authn-k8s-clusterrole
+    name:
+
+  serviceAccount:
+    create: true
+    # The name of the authenticator ServiceAccount to use or create.
+    #
+    # If 'authnK8s.serviceAccount.create` is set to `true`, then this defaults
+    # to "authn-k8s-serviceaccount". If 'authnK8s.serviceAccount.create` is set
+    # to `false`, then this is a required value. Example:
+    # name: authn-k8s-serviceaccount
+    name:
+
+displaySamplePolicy: false
+
