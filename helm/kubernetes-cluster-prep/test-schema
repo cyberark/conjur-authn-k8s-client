@@ -1,0 +1,199 @@
+#!/bin/bash
+
+# This script tests the restrictions on chart values
+# as defined in the 'values.schema.json' file.
+#
+# Requirements:
+#   - Helm v3.5.3 or later
+
+cd "$(dirname "$0")"
+
+source ../common/utils.sh
+
+readonly MIN_HELM_VERSION="3.5.3"
+
+# Default required settings
+readonly DEFAULT_URL_SETTING="conjur.applianceUrl=https://conjur.example.com"
+readonly DEFAULT_CERT_FILE_SETTING="conjur.certificateFilePath=files/test-cert.pem"
+readonly DEFAULT_AUTHN_ID_SETTING="authnK8s.authenticatorID=my-authenticator-id"
+
+readonly EXPECT_FAILURE=true
+
+# Global test state
+num_passed=0
+num_failed=0
+test_failed=false
+
+function conjur_url_test() {
+    helm lint . --strict \
+        --set "conjur.applianceUrl=$1" \
+        --set "$DEFAULT_CERT_FILE_SETTING" \
+        --set "$DEFAULT_AUTHN_ID_SETTING"
+}
+
+function cert_file_test() {
+    helm lint . --strict \
+        --set "$DEFAULT_URL_SETTING" \
+        --set "conjur.certificateFilePath=$1" \
+        --set "$DEFAULT_AUTHN_ID_SETTING"
+}
+
+function cert_base64_test() {
+    helm lint . --strict \
+        --set "$DEFAULT_URL_SETTING" \
+        --set "conjur.certificateBase64=$1" \
+        --set "$DEFAULT_AUTHN_ID_SETTING"
+}
+
+function serviceaccount_name_test() {
+    helm lint . --strict \
+        --set "$DEFAULT_URL_SETTING" \
+        --set "$DEFAULT_CERT_FILE_SETTING" \
+        --set "$DEFAULT_AUTHN_ID_SETTING" \
+        --set "authnK8s.serviceAccount.name=$1"
+}
+
+function clusterrole_name_test() {
+    helm lint . --strict \
+        --set "$DEFAULT_URL_SETTING" \
+        --set "$DEFAULT_CERT_FILE_SETTING" \
+        --set "$DEFAULT_AUTHN_ID_SETTING" \
+        --set "authnK8s.clusterrole.name=$1"
+}
+
+function invert_exit_status() {
+    exit_status="$1"
+    if [ "$exit_status" -ne 0 ]; then
+        echo 0
+    else
+        echo 1
+    fi
+}
+
+function update_results() {
+    exit_status="$1"
+    failure_expected="${2:-false}"
+    if [ "$failure_expected" = true ]; then
+        echo "FAILURE EXPECTED"
+        exit_status="$(invert_exit_status $exit_status)"
+    fi
+    if [ "$exit_status" -eq 0 ]; then
+        color_text "$GREEN" "Test Case PASSED!"
+        let "num_passed=num_passed+1"
+    else
+        color_text "$RED" "Test Case FAILED!"
+        let "num_failed=num_failed+1"
+        test_failed=true
+    fi
+}
+
+function display_final_results() {
+    if [ "$num_failed" -eq 0 ]; then
+        result_text="Test PASSED!"
+        result_color="$GREEN"
+    else
+        result_text="Test FAILED!"
+        result_color="$RED"
+    fi
+    banner "$result_color" \
+        "$result_text\n" \
+        "   Passed test cases: $num_passed" \
+        "   Failed test cases: $num_failed"
+}
+
+function check_helm_version() {
+    helm_version="$(helm version --template {{.Version}} | sed 's/^v//')"
+    if ! meets_min_version $helm_version $MIN_HELM_VERSION; then
+        echo "helm version $helm_version is invalid. Version must be $MIN_HELM_VERSION or newer"
+        exit 1
+    fi
+}
+
+function main() {
+
+    check_helm_version
+
+    announce "Appliance URL that begins with 'https://' is accepted"
+    conjur_url_test "https://"
+    update_results "$?" 
+
+    announce "Appliance URL that begins with "HTTPS://" is accepted"
+    conjur_url_test "https://"
+    update_results "$?" 
+
+    announce "Appliance URL that is an internal Kubernetes address is accepted"
+    conjur_url_test "https://conjur.conjur-namespace.svc.cluster.local"
+    update_results "$?" 
+
+    announce "Appliance URL that is an IPv4 address is accepted"
+    conjur_url_test "https://192.0.2.1:443"
+    update_results "$?" 
+
+    announce "Appliance URL that is an IPv6 address is accepted"
+    conjur_url_test "https://[2001:DB8::1]:443"
+    update_results "$?" 
+
+    announce "Appliance URL that has an endpoint is accepted"
+    conjur_url_test "https://conjur.example.com/som-endpoint"
+    update_results "$?" 
+
+    announce "Appliance URL that uses HTTP is rejected"
+    conjur_url_test "http://conjur.example.com"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    announce "Appliance URL that contains underscores is rejected"
+    conjur_url_test "http://hostname_with_userscores"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    announce "Conjur cert file beginning with 'files/' is accepted"
+    cert_file_test "files/conjur-cert.pem"
+    update_results "$?"
+
+    announce "Conjur cert file beginning with 'tests/' is accepted"
+    cert_file_test "tests/test-cert.pem"
+    update_results "$?"
+
+    announce "Conjur cert file beginning with 'foo/' is rejected"
+    cert_file_test "foo/foobar.pem"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    announce "Base64-encoded Conjur cert with all valid characters is accepted"
+    cert_base64_test "LS0abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/=="
+    update_results "$?"
+
+    announce "Base64-encoded Conjur cert containing a comma is rejected"
+    cert_base64_test "LS0abcd,ABCD0123/=="
+    update_results "$?" "$EXPECT_FAILURE"
+
+    announce "Base64-encoded Conjur cert containing a space is rejected"
+    cert_base64_test "LS0abcd ABCD0123/=="
+    update_results "$?" "$EXPECT_FAILURE"
+
+    announce "ConfigMap name with dashes is accepted"
+    clusterrole_name_test "name-with-dashes"
+    update_results "$?"
+
+    announce "ConfigMap name with underscores is rejected"
+    serviceaccount_name_test "name_with_underscores"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    announce "ServiceAccount name with dotted name is accepted"
+    serviceaccount_name_test "dotted.serviceaccount.name"
+    update_results "$?"
+
+    announce "ServiceAccount name with upper case characters is rejected"
+    serviceaccount_name_test "NameWithUpperCase"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    announce "ServiceAccount name with less than 253 characters is accepted"
+    serviceaccount_name_test "name-with-253-chars----------30--------40--------50--------60--------70--------80--------90--------100-------110-------120--------130-------140-------150-------160-------170-------180-------190-------200-------210-------220-------230-------240-------250"
+    update_results "$?"
+
+    announce "ServiceAccount name with 253 characters is rejected"
+    serviceaccount_name_test "name-with-more-than-253-chars----------40--------50--------60--------70--------80--------90--------100-------110-------120--------130-------140-------150-------160-------170-------180-------190-------200-------210-------220-------230-------240-------2503"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    display_final_results
+}
+
+main "$@"
