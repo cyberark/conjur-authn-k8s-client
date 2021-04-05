@@ -1,0 +1,251 @@
+suite: test golden_configmap
+
+templates:
+  - golden_configmap.yaml
+
+defaults: &defaultRequired
+  conjur.applianceUrl: "https://conjur.example.com"
+  conjur.certificateFilePath: "tests/test-cert.pem"
+  authnK8s.authenticatorID: "my-authenticator-id"
+
+tests:
+  #=======================================================================
+  - it: should not create a ConfigMap if ConfigMap creation is disabled
+  #=======================================================================
+    set:
+      authnK8s.configMap.create: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  #=======================================================================
+  - it: should use default values when those values are not set explicitly
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+
+    asserts:
+      # Confirm that a ConfigMap has been created
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ConfigMap
+
+      # Confirm that configured required values have been used
+      - equal:
+          path: data.authnK8sAuthenticatorID
+          value: "my-authenticator-id"
+      - equal:
+          path: data.conjurApplianceUrl
+          value: "https://conjur.example.com"
+      - matchRegex:
+          path: data.conjurSslCertificate
+          pattern: "^-----BEGIN CERTIFICATE-----[[:space:]]MIIDhDCC"
+      - matchRegex:
+          path: data.conjurSslCertificate
+          pattern: "[[:space:]]gw==[[:space:]]-----END CERTIFICATE-----[[:space:]]$"
+      - matchRegex:
+          path: data.conjurSslCertificateBase64
+          pattern: "^LS[0-9a-zA-Z=]*JUSUZJQ0FURS0tLS0tCg==$"
+
+      # Confirm that default values have been used
+      - equal:
+          path: metadata.name
+          value: authn-k8s-configmap
+      - equal:
+          path: data.authnK8sClusterRole
+          value: authn-k8s-clusterrole
+      - equal:
+         path: data.authnK8sNamespace
+         value: NAMESPACE
+      - equal:
+          path: data.authnK8sServiceAccount
+          value: authn-k8s-serviceaccount
+      - equal:
+          path: data.conjurAccount
+          value: default
+
+  #=======================================================================
+  - it: should fail if Conjur Appliance URL is not set
+  #=======================================================================
+    set:
+      # Set required values except conjur.applianceUrl
+      conjur.certificateFilePath: "tests/test-cert.pem"
+      authnK8s.authenticatorID: "my-authenticator-id"
+
+    asserts:
+      - failedTemplate:
+          errorMessage: "A valid conjur.applianceUrl is required!"
+
+  #=======================================================================
+  - it: should allow Conjur account to be set explicitly
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+
+      # Set explicit Conjur account
+      conjur.account: "my-conjur-account"
+
+    asserts:
+      - equal:
+          path: data.conjurAccount
+          value: "my-conjur-account"
+
+  #=======================================================================
+  - it: should fail if neither Conjur certificate file path nor
+        base64-encoded Conjur certificate are set
+  #=======================================================================
+    set:
+      # Set required values except Conjur certificate values
+      conjur.applianceUrl: "https://conjur.example.com"
+      authnK8s.authenticatorID: "my-authenticator-id"
+
+    asserts:
+      - failedTemplate:
+          errorMessage: "Either conjur.certificateFilePath or conjur.certificateBase64 are required!"
+
+  #=======================================================================
+  - it: should fail if both Conjur certificate file path and
+        base64-encoded Conjur certificate are set
+  #=======================================================================
+    set:
+      # Set required values, including mutually exclusive certificate settings
+      <<: *defaultRequired
+      conjur.certificateBase64: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvVENDQWVXZ0F3SUJBZ0lSQUpOMk11Vmx0alpMWmVyRk50YklZend3RFFZSktvWklodmNOQVFFTEJRQXcKR0RFV01CUUdBMVVFQXhNTlkyOXVhblZ5TFc5emN5MWpZVEFlRncweU1UQXpNakF4TlRRNU1UTmFGdzB5TWpBegpNakF4TlRRNU1UTmFNQmd4RmpBVUJnTlZCQU1URFdOdmJtcDFjaTF2YzNNdFkyRXdnZ0VpTUEwR0NTcUdTSWIzCkRRRUJBUVVBQTRJQkR3QXdnZ0VLQW9JQkFRQ3Z6cWVMTmZSRUM1OEdwcEZYNmtlbWUzYUNSdDlJRlRPOGhZR0IKVU5xQVJTb3hrNlJobC9nQ1ZZSVdRMHF3bEFzR0lOR2x3Wmw1ZS9YSlRGU2lQRUZqd05wZStDTHdCUThuWi9CRwpscVVvYnozb1ZiUkdaTEV0L3ZlYkVJTVNYTklhSGRyWThWY0pnR2VoazBGczhaQ1RodC9UcGc5My96MHkydnJqCnpXR2hLek9lK3NrRFFISU5IbGk2YWo2MUdQa1VIVFljYlVDcnZua2JnYXRON0w2VjJrbVFaejMzOFp5aUVsSHgKU3o0VkdmdnhBYXJkY2U0eTF0a1FzRThDNERFMjNVSFEyNVVtU0dnWCtjL0grNkludklvZzZoY25hOWFzRytOUQorL1NRenRDUFRidEx4YjFzd3ZjYnN0WnV2VXlwNUlha3hKZnpSV25YTkJYUk9WdlJBZ01CQUFHalFqQkFNQTRHCkExVWREd0VCL3dRRUF3SUNwREFkQmdOVkhTVUVGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFHRGFaRHpkaVZCMi82Unluc2NRUQpsanRkQmJwV1BFYlNwT1dNWGRndmVUSHhzU0pLQk5yR3YzQnpPZjViSkxVdVp1eGJ2ZjFJZjJvam91c2JIR3VJCkJHdTBZc2lCcGYrNUx4Vjd4dTJ3NWdiSXpWZnJZUUtDU3lKU052d0NwKzBHNXFocTlqRlFFY2xsd05yK1lrUkkKY212WUN6b2lNRFlZNkNzblM3SHc4OGZSOTZhaWFndnRRVXB5YXNMdWVscnpUc05VTlU1b2I3SktMeE1oMExwego1WnRyZWw1M0kxQzFXeEtIZTN0UlRBU2UxVEdzZW9aazhHS1A3OC96L0JwS05SUllGVmJkVkJldk5uYlJjZFlICncxYzFvdEN4UEF6ZXNrRitYR0JCem9yNWdkVyt3KzB4SG9aejVVSTJpQ1B4aGp6d1BjQXJWQ1F3V0xLd3NDK04KZ3c9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="
+
+    asserts:
+      - failedTemplate:
+          errorMessage: "Only one of 'certificateFilePath' or 'certificateBase64' may be set!"
+
+  #=======================================================================
+  - it: should allow certificate file beginning with 'tests/'
+  #=======================================================================
+    set:
+      # Set required values except Conjur certificate values
+      conjur.applianceUrl: "https://conjur.example.com"
+      authnK8s.authenticatorID: "my-authenticator-id"
+
+      # Set certificate as a base-64 encoded value
+      conjur.certificateFilePath: "tests/test-cert.pem"
+
+    asserts:
+      - matchRegex:
+          path: data.conjurSslCertificate
+          pattern: "^-----BEGIN CERTIFICATE-----[[:space:]]MIIDhDCC"
+      - matchRegex:
+          path: data.conjurSslCertificate
+          pattern: "[[:space:]]gw==[[:space:]]-----END CERTIFICATE-----[[:space:]]$"
+      - matchRegex:
+          path: data.conjurSslCertificateBase64
+          pattern: "^LS[0-9a-zA-Z=]*JUSUZJQ0FURS0tLS0tCg==$"
+
+  #=======================================================================
+  - it: should allow Conjur certificate to be set as Base-64 encoded value
+  #=======================================================================
+    set:
+      # Set required values except Conjur certificate values
+      conjur.applianceUrl: "https://conjur.example.com"
+      authnK8s.authenticatorID: "my-authenticator-id"
+
+      # Set certificate as a base-64 encoded value
+      conjur.certificateBase64: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvVENDQWVXZ0F3SUJBZ0lSQUpOMk11Vmx0alpMWmVyRk50YklZend3RFFZSktvWklodmNOQVFFTEJRQXcKR0RFV01CUUdBMVVFQXhNTlkyOXVhblZ5TFc5emN5MWpZVEFlRncweU1UQXpNakF4TlRRNU1UTmFGdzB5TWpBegpNakF4TlRRNU1UTmFNQmd4RmpBVUJnTlZCQU1URFdOdmJtcDFjaTF2YzNNdFkyRXdnZ0VpTUEwR0NTcUdTSWIzCkRRRUJBUVVBQTRJQkR3QXdnZ0VLQW9JQkFRQ3Z6cWVMTmZSRUM1OEdwcEZYNmtlbWUzYUNSdDlJRlRPOGhZR0IKVU5xQVJTb3hrNlJobC9nQ1ZZSVdRMHF3bEFzR0lOR2x3Wmw1ZS9YSlRGU2lQRUZqd05wZStDTHdCUThuWi9CRwpscVVvYnozb1ZiUkdaTEV0L3ZlYkVJTVNYTklhSGRyWThWY0pnR2VoazBGczhaQ1RodC9UcGc5My96MHkydnJqCnpXR2hLek9lK3NrRFFISU5IbGk2YWo2MUdQa1VIVFljYlVDcnZua2JnYXRON0w2VjJrbVFaejMzOFp5aUVsSHgKU3o0VkdmdnhBYXJkY2U0eTF0a1FzRThDNERFMjNVSFEyNVVtU0dnWCtjL0grNkludklvZzZoY25hOWFzRytOUQorL1NRenRDUFRidEx4YjFzd3ZjYnN0WnV2VXlwNUlha3hKZnpSV25YTkJYUk9WdlJBZ01CQUFHalFqQkFNQTRHCkExVWREd0VCL3dRRUF3SUNwREFkQmdOVkhTVUVGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFHRGFaRHpkaVZCMi82Unluc2NRUQpsanRkQmJwV1BFYlNwT1dNWGRndmVUSHhzU0pLQk5yR3YzQnpPZjViSkxVdVp1eGJ2ZjFJZjJvam91c2JIR3VJCkJHdTBZc2lCcGYrNUx4Vjd4dTJ3NWdiSXpWZnJZUUtDU3lKU052d0NwKzBHNXFocTlqRlFFY2xsd05yK1lrUkkKY212WUN6b2lNRFlZNkNzblM3SHc4OGZSOTZhaWFndnRRVXB5YXNMdWVscnpUc05VTlU1b2I3SktMeE1oMExwego1WnRyZWw1M0kxQzFXeEtIZTN0UlRBU2UxVEdzZW9aazhHS1A3OC96L0JwS05SUllGVmJkVkJldk5uYlJjZFlICncxYzFvdEN4UEF6ZXNrRitYR0JCem9yNWdkVyt3KzB4SG9aejVVSTJpQ1B4aGp6d1BjQXJWQ1F3V0xLd3NDK04KZ3c9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="
+
+    asserts:
+      - matchRegex:
+          path: data.conjurSslCertificate
+          pattern: "^-----BEGIN CERTIFICATE-----[[:space:]]MIIC/TCC"
+      - matchRegex:
+          path: data.conjurSslCertificate
+          pattern: "[[:space:]]gw==[[:space:]]-----END CERTIFICATE-----[[:space:]]$"
+      - matchRegex:
+          path: data.conjurSslCertificateBase64
+          pattern: "^LS0tLS1.*LS0tCg==$"
+
+  #=======================================================================
+  - it: should fail if authenticator ID is not set
+  #=======================================================================
+    set:
+      # Set required values except conjur.authenticatorID
+      conjur.applianceUrl: "https://conjur.example.com"
+      conjur.certificateFilePath: "tests/test-cert.pem"
+
+    asserts:
+      - failedTemplate:
+          errorMessage: "A valid authnK8s.authenticatorID is required!"
+
+  #=======================================================================
+  - it: should allow ConfigMap name to be set explicitly
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+
+      # Set explicit Conjur account
+      authnK8s.configMap.name: "my-awesome-configmap"
+
+    asserts:
+      - equal:
+          path: metadata.name
+          value: "my-awesome-configmap"
+
+  #=======================================================================
+  - it: should allow ClusterRole name to be set explicitly
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+
+      # Set explicit Conjur account
+      authnK8s.clusterRole.name: "my-awesome-clusterrole"
+
+    asserts:
+      - equal:
+          path: data.authnK8sClusterRole
+          value: "my-awesome-clusterrole"
+
+  #=======================================================================
+  - it: should fail if ClusterRole creation is disabled and ClusterRole
+        name is not set
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+
+      # Disable ClusterRole creation, but don't set ClusterRole name
+      authnK8s.clusterRole.create: false
+
+    asserts:
+      - failedTemplate:
+          errorMessage: "A valid authnK8s.clusterRole.name is required!"
+
+  #=======================================================================
+  - it: should allow ServiceAccount name to be set explicitly
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+
+      # Set explicit Conjur account
+      authnK8s.serviceAccount.name: "my-awesome-serviceaccount"
+
+    asserts:
+      - equal:
+          path: data.authnK8sServiceAccount
+          value: "my-awesome-serviceaccount"
+
+  #=======================================================================
+  - it: should fail if ServiceAccount creation is disabled and
+        ServiceAccount name is not set
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+
+      # Disable ClusterRole creation, but don't set ClusterRole name
+      authnK8s.serviceAccount.create: false
+
+    asserts:
+      - failedTemplate:
+          errorMessage: "A valid authnK8s.serviceAccount.name is required!"
