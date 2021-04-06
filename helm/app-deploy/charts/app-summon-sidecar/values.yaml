@@ -1,0 +1,20 @@
+# Default values for the Application Namespace Prep Helm chart
+# This is a YAML-formatted file.
+
+app:
+  image:
+    repository: "cyberark/test-app-summon-sidecar"
+    tag: "latest"
+    pullPolicy: "always"
+ 
+authnClient:
+  image:
+    repository: "cyberark/authn-k8s-client"
+    tag: "latest"
+    pullPolicy: "always"
+
+conjur:
+  authnConfigMap:
+    create: true
+    name: "conjur-authn-configmap"
+  authnLogin:
