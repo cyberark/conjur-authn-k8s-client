@@ -19,8 +19,12 @@ pipeline {
           steps { sh './bin/parse-changelog.sh' }
         }
 
-        stage('Schema') {
+        stage('Cluster-Prep Schema') {
           steps { sh './bin/validate-schema ./helm/kubernetes-cluster-prep/values.schema.json'}
+        }
+
+        stage('Application Namespace-Prep Schema') {
+          steps { sh './bin/validate-schema ./helm/application-namespace-prep/values.schema.json'}
         }
       }
     }
