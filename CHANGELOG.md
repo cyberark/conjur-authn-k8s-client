@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+- The `CAKC048` log message now shows the release version for release builds
+  and no longer includes the git commit hash in the log output.
+  [cyberark/conjur-authn-k8s-client#196](https://github.com/cyberark/conjur-authn-k8s-client/issues/196)
+
 ## [0.19.1] - 2021-02-08
 ### Changed
 - The `Authenticate` method now parses the authentication response and writes it
@@ -18,11 +23,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - The project Golang version is updated from the end-of-life v1.12 to the latest
   version v1.15.
   [cyberark/conjur-authn-k8s-client#206](https://github.com/cyberark/conjur-authn-k8s-client/issues/206)
-- Improve the error message raised when the username doesn't include the `host/` prefix
-  [cyberark/conjur-authn-k8s-client#212](https://github.com/cyberark/conjur-authn-k8s-client/pull/212)
-- The `CAKC048` log message now shows the release version for release builds
-  and no longer includes the git commit hash in the log output.
-  [cyberark/conjur-authn-k8s-client#196](https://github.com/cyberark/conjur-authn-k8s-client/issues/196)
+- The error message raised when the username doesn't include the `host/` prefix
+  now suggests that the user check this. Previously the error message did not
+  include any information about what was wrong with the username.
+  [PR cyberark/conjur-authn-k8s-client#212](https://github.com/cyberark/conjur-authn-k8s-client/pull/212)
+
+### Added
+- Support for OpenShift 4.6 was certified as of this release.
 
 ## [0.19.0] - 2020-10-08
 ### Added
