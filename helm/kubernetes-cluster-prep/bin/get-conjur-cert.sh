@@ -17,7 +17,8 @@ set -euo pipefail
 # instance that is internal to the Kubernetes cluster:
 #     get-conjur-cert.sh -v -i -u https://conjur.conjur-ns.svc.cluster.local
  
-# Execute from the directory in which this script exists
+# Save the users directory and execute from the directory in which this script exists
+user_dir=$(pwd)
 cd "$(dirname "$0")"
 
 # Default destination filepath for certificate file and default test
@@ -89,17 +90,17 @@ function main() {
 
   # Process destination filepath argument
   if [[ -n "$filepath" ]]; then
-    if [[ "$filepath" = "/*" ]]; then
+    if [[ "${filepath:0:1}" = "/" ]]; then
       # Absolute filepath
       cert_filepath="$filepath"
     else
       # Relative filepath
-      cert_filepath="$(pwd)/$filepath"
+      cert_filepath="$user_dir/$filepath"
     fi
     echo "Saving certificate to $cert_filepath"
   else
     # User's perspective file path
-    echo "Saving certificate to $(pwd)/$cert_filepath"
+    echo "Saving certificate to default path of $(pwd)/$cert_filepath"
   fi
 
   domain_name="$(get_domain_name $conjur_url)"
@@ -109,6 +110,14 @@ function main() {
   # Read the certificate from either internal or external Conjur instance
   if [[ "$internal_addr" = false ]]; then
     echo "Assuming Conjur instance is outside of the Kubernetes cluster."
+
+    status=0
+    openssl_ver="$(openssl version)" || status="$?"
+    if [ "$status" != 0 ] ; then
+      echo "OpenSSL is required to gather the SSL certificate"
+      exit 1
+    fi
+    echo "Using " "$openssl_ver"
 
     # Retrieve certificate
     cert="$(sh -c "$ssl_cmd")"
@@ -134,7 +143,7 @@ function main() {
 
     # Verify if desired
     if [ "$verify" = true ] ; then
-      k8s_verify_certificate "$openssl_pod" "$cert_filepath" "$conjur_url"
+      k8s_verify_certificate "$openssl_pod" "$cert_filepath" "$domain_name"
     fi
 
     # Delete the openssl test deployment
@@ -181,9 +190,9 @@ function ensure_openssl_pod_created() {
     # Create a test deployment if it hasn't been created already
     openssl_pod="$(get_openssl_pod $openssl_deployment)"
     if [ -z "$openssl_pod" ]; then
-        kubectl run "$openssl_deployment" \
+        kubectl create deployment "$openssl_deployment" \
            --image cyberark/conjur-cli:5 \
-           --command sleep infinity
+           -- sleep infinity
         # Remember that we need to clean up the deployment that we just created
         deployment_was_created=true
         # Wait for Pod to be ready
@@ -203,7 +212,7 @@ function k8s_retrieve_certificate() {
 function k8s_verify_certificate() {
   ssl_pod="$1"
   cert_filepath="$2"
-  conjur_url="$3"
+  domain_name="$3"
 
   echo "File path to copy: $cert_filepath"
   echo "Copying Conjur certificate to openssl pod"
@@ -212,7 +221,7 @@ function k8s_verify_certificate() {
 
   # Test CA certificate with curl
   echo "Testing CA certificate with curl"
-  curl_cmd="curl --cacert $cert_filename $conjur_url"
+  curl_cmd="curl --cacert $cert_filename https://$domain_name"
   status=0
   (kubectl exec "$ssl_pod" -- sh -c "$curl_cmd" > /dev/null) || status="$?"
   [ "$status" -eq 0 ] && echo "certificate is verified!" || echo "certificate failed verification"
@@ -223,7 +232,7 @@ function k8s_verify_certificate() {
 
 function delete_openssl_deployment() {
     openssl_deployment="$1"
-    kubectl delete pod "$openssl_deployment"
+    kubectl delete deployment "$openssl_deployment"
 }
 
 main "$@"
