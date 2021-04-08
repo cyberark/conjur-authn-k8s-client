@@ -16,10 +16,10 @@ The Conjur Kubernetes authenticator client is designed to have a light footprint
 
 The client is configured entirely through environment variables. These are listed below.
 
-### Using conjur-authn-k8s-client with Conjur OSS 
+### Using conjur-authn-k8s-client with Conjur Open Source 
 
-Are you using this project with [Conjur OSS](https://github.com/cyberark/conjur)? Then we 
-**strongly** recommend choosing the version of this project to use from the latest [Conjur OSS 
+Are you using this project with [Conjur Open Source](https://github.com/cyberark/conjur)? Then we 
+**strongly** recommend choosing the version of this project to use from the latest [Conjur Open Source 
 suite release](https://docs.conjur.org/Latest/en/Content/Overview/Conjur-OSS-Suite-Overview.html). 
 Conjur maintainers perform additional testing on the suite release versions to ensure 
 compatibility. When possible, upgrade your Conjur version to match the 
@@ -48,7 +48,7 @@ The client's process logs its flow to `stdout` and `stderr`.
 + Exponential backoff is exercised when an error occurs
 + Client will re-login when certificate has expired
 
-1. Client goes through login by presenting certificate signing request (CSR) -> Server (authn-k8s running inside the appliance) injects signed client certificate out of band into requesting pod
+1. Client goes through login by presenting certificate signing request (CSR) -> Server (authn-k8s running inside the Conjur Enterprise) injects signed client certificate out of band into requesting pod
 1. Client picks up signed client certificate, deletes it from disk and uses to authenticator via mutual TLS -> Server responds with auth token (retrieved via authn-local) encrypted with the public key of the client.
 1. Client decrypts the auth token and writes it to to the shared memory volume (`/run/conjur/access-token`)
 1. Client proceeds to authenticate time and time again
