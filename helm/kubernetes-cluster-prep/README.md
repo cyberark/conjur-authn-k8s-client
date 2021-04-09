@@ -106,7 +106,8 @@ The steps are as follows:
    instance.
 
    This script can be used for Conjur instances that are either internal
-   or external to the Kubernetes cluster.
+   or external to the Kubernetes cluster. For external Conjur instances
+   there is a requirement to have OpenSSL installed.
 
    The  syntax for this command is as follows:
 
