@@ -1,7 +1,6 @@
 {{- if .Values.conjurConfigMap.create }}
 ---
-{{- $config := required "Both authnK8s.namespace and authnK8s.configMap are required" .Values.authnK8s.name }}
-{{- $config := required "Both authnK8s.namespace and authnK8s.configMap are required" .Values.authnK8s.goldenConfigMap }}
+{{- $config := required "Both authnK8s.namespace and authnK8s.configMap are required" .Values.authnK8s }}
 {{- $g := (lookup "v1" "ConfigMap" .Values.authnK8s.namespace .Values.authnK8s.goldenConfigMap).data }}
 apiVersion: v1
 kind: ConfigMap
