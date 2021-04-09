@@ -1,0 +1,6 @@
+#!/bin/bash
+
+helm lint . \
+    --set authnK8s.goldenConfigMap="authn-k8s-configmap" \
+    --set authnK8s.namespace="app-test" \
+    --set test.mock.enable=true

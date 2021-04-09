@@ -1,7 +1,12 @@
 {{- if .Values.authnRoleBinding.create -}}
 ---
-{{- $config := required "Both authnK8s.namespace and authnK8s.configMap are required" .Values.authnK8s }}
-{{- $g := (lookup "v1" "ConfigMap" .Values.authnK8s.namespace .Values.authnK8s.goldenConfigMap).data }}
+{{ $config := required "Both authnK8s.namespace and authnK8s.configMap are required" .Values.authnK8s -}}
+
+{{ $g := .Values.test.mock -}}
+{{ if not .Values.test.mock.enable -}}
+{{ $g = (lookup "v1" "ConfigMap" .Values.authnK8s.namespace .Values.authnK8s.goldenConfigMap).data -}}
+{{ end -}}
+
 apiVersion: {{ include "conjur-prep.rbac-api" . }}
 kind: RoleBinding
 metadata:
