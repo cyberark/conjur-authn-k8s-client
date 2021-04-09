@@ -1,0 +1,23 @@
+{{- if .Values.authnRoleBinding.create -}}
+---
+{{- $config := required "Both authnK8s.namespace and authnK8s.configMap are required" .Values.authnK8s.name }}
+{{- $config := required "Both authnK8s.namespace and authnK8s.configMap are required" .Values.authnK8s.goldenConfigMap }}
+{{- $g := (lookup "v1" "ConfigMap" .Values.authnK8s.namespace .Values.authnK8s.goldenConfigMap).data }}
+apiVersion: {{ include "conjur-prep.rbac-api" . }}
+kind: RoleBinding
+metadata:
+  name: {{ .Values.authnK8s.namespace }}-conjur-authenticator-role-binding
+  labels: 
+    app.kubernetes.io/name: "rolebinding"
+    app.kubernetes.io/component: "authn-k8s-access-permissions"
+    app.kubernetes.io/instance: {{ .Release.Namespace }}
+    app.kubernetes.io/part-of: "authn-k8s-namespace-config"
+subjects:
+- kind: ServiceAccount
+  name: {{ get $g "authnK8sServiceAccount" }}
+  namespace: {{ .Values.authnK8s.namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ get $g "authnK8sClusterRole" }}
+{{- end }}

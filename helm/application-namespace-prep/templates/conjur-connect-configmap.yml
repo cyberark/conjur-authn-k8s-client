@@ -1,0 +1,21 @@
+{{- if .Values.conjurConfigMap.create }}
+---
+{{- $config := required "Both authnK8s.namespace and authnK8s.configMap are required" .Values.authnK8s.name }}
+{{- $config := required "Both authnK8s.namespace and authnK8s.configMap are required" .Values.authnK8s.goldenConfigMap }}
+{{- $g := (lookup "v1" "ConfigMap" .Values.authnK8s.namespace .Values.authnK8s.goldenConfigMap).data }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: conjur-connect-configmap 
+  labels:
+    app.kubernetes.io/name: "rolebinding"
+    app.kubernetes.io/component: "authn-k8s-access-permissions"
+    app.kubernetes.io/instance: {{ .Release.Namespace }}
+    app.kubernetes.io/part-of: "authn-k8s-namespace-config"
+data:
+  CONJUR_ACCOUNT: {{ get $g "conjurAccount" }}
+  CONJUR_APPLIANCE_URL: {{ get $g "conjurApplianceUrl" }}
+  CONJUR_AUTHN_URL: {{ printf "%s/authn-k8s/%s" (get $g "conjurApplianceUrl") (get $g "authnK8sAuthenticatorID") }}
+  CONJUR_SSL_CERTIFICATE: |- 
+{{ get $g "conjurSslCertificate" | indent 4 }}
+{{- end }}
