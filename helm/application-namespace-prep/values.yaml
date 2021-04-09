@@ -10,3 +10,15 @@ authnRoleBinding:
 conjurConfigMap:
   create: true
   name: conjur-configmap
+
+test:
+  mock:
+    enable: false
+    conjurAccount: "mock-conjur-account"
+    conjurApplianceUrl: "https://mock.example.com"
+    conjurSslCertificate: "-----BEGIN CERTIFICATE-----\n
+MIIC/ThisIsAMockThisIsOnlyAMock==\n
+-----END CERTIFICATE-----\n"
+    authnK8sAuthenticatorID: "mock-authenticator-id"
+    authnK8sClusterRole: "mock-clusterrole"
+    authnK8sServiceAccount: "mock-serviceaccount"
