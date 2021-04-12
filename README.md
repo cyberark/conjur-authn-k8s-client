@@ -53,6 +53,59 @@ The client's process logs its flow to `stdout` and `stderr`.
 1. Client decrypts the auth token and writes it to to the shared memory volume (`/run/conjur/access-token`)
 1. Client proceeds to authenticate time and time again
 
+## Running Authenticator Client with a Non-Default User ID in Kubernetes
+
+By default, the Conjur Kubernetes authenticator client container runs using
+a default username `authenticator`, user ID `777`, and group ID `777`.
+
+If you would like to run the authenticator client on a *non-OpenShift*
+Kubernetes platform, using a non-default user and/or group ID in a Pod that
+includes the authenticator client as a sidecar or init container, then you
+can configure your Pod manifest as follows:
+
+_**NOTE:** This technique is not supported on OpenShift platforms. For
+   OpenShift platforms, the authenticator container should be run
+   with the container's default user and group._
+
+- Configure the
+  [Pod's Security Context](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.21/#podsecuritypolicy-v1beta1-policy)
+  for the desired user ID / group ID. Setting the `fsGroup` to the desired
+  user group will cause Kubernetes to set that group as the owner of
+  any files that are created in volumes of type `emptyDir`, including the
+  authenticator client's SSL certificate and the application's Conjur access
+  token.
+
+  For example, to run with a user ID of `65534` (the `nobody` user) and a
+  group ID of `65534` (the `nobody` group):
+
+  ```
+        securityContext:
+          fsGroup: 65534
+          runAsGroup: 65534
+          runAsNonRoot: true
+          runAsUser: 65534
+  ```
+
+- Include a `volumeMount` for the authenticator client certificate directory:
+
+  ```
+          volumeMounts:
+          - name: client-ssl
+            mountPath: /etc/conjur/ssl
+  ```
+
+- Include an `emptyDir` volume for the authenticator client certificate
+  directory. Using a volume of type `emptyDir` allows the client certificate
+  file to be created with its group owner set to the value of `fsGroup` as
+  configured in the above PodSecurityContext:
+
+  ```
+          volumes:
+          - name: client-ssl
+            emptyDir:
+              medium: Memory
+  ```
+
 ## Contributing
 
 We welcome contributions of all kinds to this repository. For instructions on how to get started and descriptions of our development workflows, please see our [contributing
