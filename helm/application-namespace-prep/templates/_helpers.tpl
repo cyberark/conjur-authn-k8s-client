@@ -12,8 +12,8 @@ Create chart name and version as used by the chart label.
 Return the most recent RBAC API available
 */}}
 {{- define "conjur-prep.rbac-api" -}}
-{{- if .Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1beta1" }}
-{{- printf "rbac.authorization.k8s.io/v1beta1" -}}
+{{- if .Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1" }}
+{{- printf "rbac.authorization.k8s.io/v1" -}}
 {{- else if .Capabilities.APIVersions.Has "rbac.authorization.k8s.io/v1alpha1" }}
 {{- printf "rbac.authorization.k8s.io/v1alpha1" -}}
 {{- else }}

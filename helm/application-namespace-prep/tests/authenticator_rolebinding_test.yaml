@@ -1,0 +1,60 @@
+suite: test authenticator_rolebinding
+
+templates:
+  - authenticator_rolebinding.yaml
+
+defaults: &defaultRequired
+  authnK8s.goldenConfigMap: authn-k8s-configmap
+  authnK8s.namespace: golden
+  
+tests:
+  #=======================================================================
+  - it: should not create a ConfigMap if ConfigMap creation is disabled
+  #=======================================================================
+    set:
+      authnRoleBinding.create: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  #=======================================================================
+  - it: should use default values when those values are not set explicitly
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+      test.mock.enable: true
+
+    asserts:
+      # Confirm that a Rolebinding has been created
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: RoleBinding
+
+      # Confirm that default values have been used
+      - equal:
+          path: metadata.name
+          value: "golden-conjur-authenticator-role-binding"
+
+     # Confirm that values are read from lookup()
+      - equal:
+          path: subjects[0].name
+          value: "mock-serviceaccount"
+
+      - equal:
+          path: roleRef.name 
+          value: "mock-clusterrole"
+
+  #=======================================================================
+  - it: should fail if both Golden ConfigMap and NameSpace are not set
+  #=======================================================================
+    set:
+      # Doon't set required values
+      #authnK8s.goldenConfigMap: authn-k8s-configmap
+      #authnK8s.namespace: golden
+
+    asserts:
+      - failedTemplate:
+          errorMessage: "Both authnK8s.namespace and authnK8s.configMap are required"
+
