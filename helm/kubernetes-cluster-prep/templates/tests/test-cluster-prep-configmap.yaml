@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-tests-configmap
+
+data:
+  helm-test.bats: |-
+    {{- include "kube-cluster-prep.helm-test.bats" . | indent 4 }}
+
+  utils.sh: |-
+    {{- include "kube-cluster-prep.utils.sh" . | indent 4 }}
