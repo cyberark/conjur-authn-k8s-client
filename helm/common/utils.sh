@@ -72,3 +72,17 @@ function meets_min_version() {
     false
   fi
 }
+
+# Runs a Helm unit test using the 'helm-unittest' Helm plugin.
+# Reference: https://github.com/quintush/helm-unittest/blob/master/DOCUMENT.md
+
+# Install the 'helm-unittest' plugin if it hasn't been install already
+function run_helm_unittest() {
+    if [[ ! "$(helm plugin list | awk '/^unittest\t/{print $1}')" ]]; then
+        echo "Installing 'helm-unittest' Helm plugin"
+        helm plugin install https://github.com/quintush/helm-unittest
+    fi
+
+    # Run a Helm unit test
+    helm unittest . --helm3
+}

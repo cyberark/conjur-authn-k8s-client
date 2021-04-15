@@ -5,4 +5,4 @@
 
 source ../common/utils.sh
 
-run_helm-unittest
+run_helm_unittest
