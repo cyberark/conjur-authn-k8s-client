@@ -7,6 +7,8 @@ readonly GREEN='\033[0;32m'
 readonly BLUE='\033[0;34m'
 readonly NOCOLOR='\033[0m'
 readonly ANNOUNCE_COLOR="$BLUE"
+readonly MIN_HELM_VERSION="3.5.3"
+readonly EXPECT_FAILURE=true
 
 # Set the current text color if colorizing is enabled.
 function set_color() {
@@ -85,4 +87,52 @@ function run_helm_unittest() {
 
     # Run a Helm unit test
     helm unittest . --helm3
+}
+
+function invert_exit_status() {
+    exit_status="$1"
+    if [ "$exit_status" -ne 0 ]; then
+        echo 0
+    else
+        echo 1
+    fi
+}
+
+function update_results() {
+    exit_status="$1"
+    failure_expected="${2:-false}"
+    if [ "$failure_expected" = true ]; then
+        echo "FAILURE EXPECTED"
+        exit_status="$(invert_exit_status $exit_status)"
+    fi
+    if [ "$exit_status" -eq 0 ]; then
+        color_text "$GREEN" "Test Case PASSED!"
+        let "num_passed=num_passed+1"
+    else
+        color_text "$RED" "Test Case FAILED!"
+        let "num_failed=num_failed+1"
+        test_failed=true
+    fi
+}
+
+function display_final_results() {
+    if [ "$num_failed" -eq 0 ]; then
+        result_text="Test PASSED!"
+        result_color="$GREEN"
+    else
+        result_text="Test FAILED!"
+        result_color="$RED"
+    fi
+    banner "$result_color" \
+        "$result_text\n" \
+        "   Passed test cases: $num_passed" \
+        "   Failed test cases: $num_failed"
+}
+
+function check_helm_version() {
+    helm_version="$(helm version --template {{.Version}} | sed 's/^v//')"
+    if ! meets_min_version $helm_version $MIN_HELM_VERSION; then
+        echo "helm version $helm_version is invalid. Version must be $MIN_HELM_VERSION or newer"
+        exit 1
+    fi
 }
