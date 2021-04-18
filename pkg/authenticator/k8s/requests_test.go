@@ -1,4 +1,4 @@
-package authenticator
+package k8s
 
 import (
 	"testing"
