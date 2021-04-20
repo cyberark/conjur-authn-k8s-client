@@ -1,4 +1,4 @@
-{{- if has "authn-k8s" .Values.authenticators -}}
+{{- if .Values.create -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -37,7 +37,7 @@ spec:
     spec:
       serviceAccountName: test-app-summon-sidecar
       containers:
-      - image: {{ .Values.app.image.repository }}:{{ .Values.app.image.tag }}
+      - image: {{ printf "%s:%s" .Values.app.image.repository .Values.app.image.tag }}
         imagePullPolicy: {{ .Values.app.image.pullPolicy }}
         name: test-app
         ports:
@@ -53,13 +53,13 @@ spec:
           - name: CONJUR_AUTHN_TOKEN_FILE
             value: /run/conjur/access-token
         envFrom:
-          - configMapRef:
+        - configMapRef:
             name: {{ .Values.global.conjur.conjurConnConfigMap }}
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
             readOnly: true
-      - image: {{ .Values.authnClient.image.repository }}:{{ .Values.authnClient..image.tag }}
+      - image: {{ printf "%s:%s" .Values.authnClient.image.repository .Values.authnClient.image.tag }}
         imagePullPolicy: {{ .Values.authnClient.image.pullPolicy }}
         name: authenticator
         env:
@@ -80,11 +80,11 @@ spec:
           - name: CONJUR_AUTHN_LOGIN
             valueFrom:
               configMapKeyRef:
-                name: {{ .Values.conjur.authnConfigMap }}
+                name: {{ .Values.conjur.authnConfigMap.name }}
                 key: conjurAuthnLogin
         envFrom:
-          - configMapRef:
-            name: {{ .Values.global.conjur.connConfigMap }}
+        - configMapRef:
+            name: {{ .Values.global.conjur.conjurConnConfigMap }}
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token

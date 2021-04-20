@@ -1,12 +1,8 @@
-The Conjur/Authenticator Namespace preparation is complete.
+The Application deployment is complete.
 The following have been deployed:
-{{ if .Values.authnK8s.configMap.create }}
-A Golden ConfigMap
+{{ if .Values.conjur.authnConfigMap.create }}
+- A Conjur authentication configmap
 {{ end }}
-{{ if .Values.authnK8s.clusterRole.create }}
-An authenticator ClusterRole
+{{ if .Values.create }}
+- An authnK8s application with a summon sidecar
 {{ end }}
-{{ if .Values.authnK8s.serviceAccount.create }}
-An authenticator ServiceAccount
-{{ end }}
-

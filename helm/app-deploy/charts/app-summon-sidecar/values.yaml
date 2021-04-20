@@ -3,18 +3,21 @@
 
 app:
   image:
-    repository: "cyberark/test-app-summon-sidecar"
-    tag: "latest"
-    pullPolicy: "always"
+    repository: "localhost:5000/test-sidecar-app"
+    tag: "conjur-oss"
+    # supported values: "Always", "IfNotPresent", "Never"
+    pullPolicy: "Always"
  
 authnClient:
   image:
-    repository: "cyberark/authn-k8s-client"
+    repository: "cyberark/conjur-authn-k8s-client"
     tag: "latest"
-    pullPolicy: "always"
+    # supported values: "Always", "IfNotPresent", "Never"
+    pullPolicy: "Always"
 
 conjur:
   authnConfigMap:
     create: true
     name: "conjur-authn-configmap"
+  # host/conjur/authn-k8s/<authenticator-ID>/<conjur-policy-layer-or-group>/<app-host-id>
   authnLogin:

@@ -3,17 +3,26 @@
 
 global:
   conjur:
-    conjurConnConfigMap: "conjur-conn-configmap"
+    # name of the chart created by the application-namespace-prep chart
+    conjurConnConfigMap: "conjur-connect-configmap"
 
   appServiceType: "NodePort"
 
 # Authenticator types to deploy and test. Multiple authenticator types
 # can be selected. All enabled authenticator types (along with their
 # associated sample application container) will be deployed to the
-# same application Namespace. The default is to enable only an authn-k8s
+# same application Namespace. The default (app-summon-sidecar) is to enable only an authn-k8s
 # sidecar container. Uncomment authenticator types as desired.
-authenticators:
-  - authn-k8s
-  #- secretless-broker
-  #- secrets-provider-init
-  #- secrets-provider-standalone
+app-summon-sidecar:
+  create: true
+  conjur:
+    authnLogin:
+
+# secretless-broker:
+#   create: true
+
+# secrets-provider-init:
+#   create: true
+
+# secrets-provider-standalone:
+#   create: true

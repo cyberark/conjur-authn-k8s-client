@@ -181,7 +181,7 @@ function get_domain_name() {
 function get_openssl_pod() {
     openssl_deployment="$1"
 
-    kubectl get pod -l "run=$openssl_deployment" -o jsonpath='{.items[*].metadata.name}'
+    kubectl get pod -l "app=$openssl_deployment" -o jsonpath='{.items[*].metadata.name}'
 }
 
 function ensure_openssl_pod_created() {
@@ -196,7 +196,7 @@ function ensure_openssl_pod_created() {
         # Remember that we need to clean up the deployment that we just created
         deployment_was_created=true
         # Wait for Pod to be ready
-        kubectl wait --for=condition=ready pod -l "run=$openssl_deployment"
+        kubectl wait --for=condition=ready pod -l "app=$openssl_deployment"
     fi
 }
 

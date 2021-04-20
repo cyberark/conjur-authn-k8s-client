@@ -23,7 +23,15 @@ For general contribution and community guidelines, please see the [community rep
 
 ## Testing
 
+### Test Suites
+
 To run the test suite, run `./bin/build` and `./bin/test`.
+
+### Demo Workflow 
+
+To run a sample deployment of the Helm charts located in `/helm`, run `./bin/test-workflow`. This
+will download and run the `conjur-oss-helm-chart` project example, then consecutively install the 
+`helm/kubernetes-cluster-prep`, `helm/application-namespace-prep`, and `helm/app-deploy` charts, in that order.
 
 ## Releases
 
