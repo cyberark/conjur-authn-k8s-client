@@ -73,7 +73,7 @@ func VerifyFileExists(path string) error {
 func verifyFileExists(path string, utilities *fileUtils) error {
 	info, err := utilities.stat(path)
 	if os.IsPermission(err) {
-		// Permissions error when checking if file exists
+		// Permissions error occured when checking if file exists
 		return log.RecordedError(log.CAKC058, path)
 	}
 	if err == nil && !utilities.isRegular(info) {

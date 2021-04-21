@@ -119,7 +119,7 @@ func TestFile(t *testing.T) {
 			path := unpermittedFilePath
 			utilities := testCaseFileUtils(path)
 			expectedOutput := fmt.Errorf(
-				"CAKC058 Permissions error when checking if file exists: %s",
+				"CAKC058 Permissions error occured when checking if file exists: %s",
 				path,
 			)
 
