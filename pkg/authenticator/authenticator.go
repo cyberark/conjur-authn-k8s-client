@@ -141,7 +141,6 @@ func (auth *Authenticator) Login() error {
 	err = utils.WaitForFile(
 		auth.Config.ClientCertPath,
 		auth.Config.ClientCertRetryCountLimit,
-		nil,
 	)
 	if err != nil {
 		// The response code was changed from 200 to 202 in the same Conjur version
