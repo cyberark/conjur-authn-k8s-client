@@ -1,0 +1,17 @@
+{{- if .Values.conjur.authnConfigMap.create -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: {{ .Values.conjur.authnConfigMap.name }}
+    labels:
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      app.kubernetes.io/name: authn-configmap
+      app.kubernetes.io/component: "app-conjur-authn-config"
+      app.kubernetes.io/instance: {{ .Release.Namespace }}
+      app.kubernetes.io/part-of: "authn-k8s-app-config"
+      helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+data:
+    # authn-k8s Configuration 
+    conjurAuthnLogin: {{ required "A valid conjur.authnLogin is required!" .Values.conjur.authnLogin }}
+{{- end }}

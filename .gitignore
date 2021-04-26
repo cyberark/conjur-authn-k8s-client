@@ -2,3 +2,7 @@
 *.sw[po]
 
 test
+
+temp
+
+helm/kubernetes-cluster-prep/files/conjur-cert.pem

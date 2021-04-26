@@ -1,0 +1,28 @@
+# Default values for Application Deploy Helm chart
+# This is a YAML-formatted file.
+
+global:
+  conjur:
+    # name of the chart created by the application-namespace-prep chart
+    conjurConnConfigMap: "conjur-connect-configmap"
+
+  appServiceType: "NodePort"
+
+# Authenticator types to deploy and test. Multiple authenticator types
+# can be selected. All enabled authenticator types (along with their
+# associated sample application container) will be deployed to the
+# same application Namespace. The default (app-summon-sidecar) is to enable only an authn-k8s
+# sidecar container. Uncomment authenticator types as desired.
+app-summon-sidecar:
+  create: true
+  conjur:
+    authnLogin:
+
+# secretless-broker:
+#   create: true
+
+# secrets-provider-init:
+#   create: true
+
+# secrets-provider-standalone:
+#   create: true

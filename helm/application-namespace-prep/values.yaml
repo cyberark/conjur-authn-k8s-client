@@ -9,7 +9,7 @@ authnRoleBinding:
 
 conjurConfigMap:
   create: true
-  name: conjur-configmap
+  name: conjur-connect-configmap
 
 test:
   mock:
