@@ -21,3 +21,6 @@
 .idea/
 *.tmproj
 .vscode/
+# Helm test image Dockerfile and test utilities
+templates/tests/Dockerfile
+templates/tests/build.sh

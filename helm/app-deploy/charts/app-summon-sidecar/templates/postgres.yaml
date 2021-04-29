@@ -1,0 +1,54 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: test-summon-sidecar-app-backend
+spec:
+  selector:
+    app: test-summon-sidecar-app-backend
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: summon-sidecar-pg
+  labels:
+    app: test-summon-sidecar-app-backend
+spec:
+  serviceName: test-summon-sidecar-app-backend
+  selector:
+    matchLabels:
+      app: test-summon-sidecar-app-backend
+  template:
+    metadata:
+      labels:
+        app: test-summon-sidecar-app-backend
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+      - name: test-summon-sidecar-app-backend
+        image: {{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}
+        imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+        ports:
+          - containerPort: 5432
+        volumeMounts:
+          - name: backend-certs
+            mountPath: "/etc/certs/"
+            readOnly: true
+        args: ["-c", "ssl=on", "-c", "ssl_cert_file=/etc/certs/server.crt", "-c", "ssl_key_file=/etc/certs/server.key"]
+        env:
+          - name: POSTGRES_USER
+            value: test_app
+          - name: POSTGRES_PASSWORD
+            value: {{ .Values.postgres.password }}
+          - name: POSTGRES_DB
+            value: test_app
+      volumes:
+        - name: backend-certs
+          secret:
+            secretName: test-app-backend-certs
+            defaultMode: 384

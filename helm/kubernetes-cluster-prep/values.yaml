@@ -47,3 +47,8 @@ authnK8s:
     # name:
 
 displaySamplePolicy: false
+
+test:
+  colorize: true
+  includeAuthnSidecar: true
+  enableAuthnDebug: true

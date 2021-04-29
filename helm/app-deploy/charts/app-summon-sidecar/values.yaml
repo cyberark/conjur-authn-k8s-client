@@ -8,6 +8,14 @@ app:
     # supported values: "Always", "IfNotPresent", "Never"
     pullPolicy: "Always"
  
+postgres:
+  image:
+    repository: "localhost:5000/test-app-pg"
+    tag: "conjur-oss"
+    # supported values: "Always", "IfNotPresent", "Never"
+    pullPolicy: "Always"
+  password:
+
 authnClient:
   image:
     repository: "cyberark/conjur-authn-k8s-client"
