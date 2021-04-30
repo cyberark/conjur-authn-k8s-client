@@ -20,6 +20,12 @@ readonly TAGS=(
   "latest"
 )
 
+if [[ $1 = "--edge" ]]; then
+    tag=edge
+    push_conjur-k8s-cluster-test
+    exit 0
+fi
+
 if [[ -z "${TAG_NAME:-}" ]]; then
   echo "This script should only run in a tag-triggered build controlled by the JenkinsFile"
   exit 1
@@ -49,3 +55,8 @@ else
   echo 'Failed to log in to scan.connect.redhat.com'
   exit 1
 fi
+
+for tag in "${TAGS[@]}" $(gen_versions "$VERSION"); do
+    push_conjur-k8s-cluster-test
+done
+
