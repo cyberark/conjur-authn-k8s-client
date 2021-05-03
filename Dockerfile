@@ -121,3 +121,36 @@ LABEL version="$VERSION"
 LABEL release="$VERSION"
 LABEL summary="Conjur OpenShift Authentication Client for use with Conjur"
 LABEL description="The authentication client required to expose secrets from a Conjur server to applications running within OpenShift"
+
+# =================== CONTAINER FOR HELM TEST ===================
+
+FROM alpine:3.12 as k8s-cluster-test
+
+# Install packages for testing
+RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl
+
+# Install bats-core in /usr/local
+RUN curl -#L https://github.com/bats-core/bats-core/archive/master.zip | unzip - && \
+    bash bats-core-master/install.sh /usr/local && \
+    rm -rf ./bats-core-master
+
+# Install bats-support, bats-assert, and bats-files libraries
+# These need to be source at run time, e.g.:
+#    source '/bats/bats-support/load.bash'
+#    source '/bats/bats-assert/load.bash'
+#    source '/bats/bats-file/load.bash'
+RUN git clone https://github.com/ztombol/bats-support /bats/bats-support
+RUN git clone https://github.com/ztombol/bats-assert /bats/bats-assert
+RUN git clone https://github.com/ztombol/bats-file /bats/bats-file
+
+RUN mkdir -p /tests
+WORKDIR /tests
+
+LABEL name="conjur-k8s-cluster-test"
+LABEL vendor="CyberArk"
+LABEL version="$VERSION"
+LABEL release="$VERSION"
+LABEL summary="Conjur Kubernetes test client for use with Helm"
+LABEL description="The Conjur test client that is used with Helm test to validate the configuration created by Helm"
+
+ENTRYPOINT ["sleep", "infinity"]

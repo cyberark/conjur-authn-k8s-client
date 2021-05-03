@@ -24,4 +24,10 @@ docker build --tag "${IMAGE_NAME}-redhat:${TAG}" \
              --target "authenticator-client-redhat" \
              .
 
+docker build --tag conjur-k8s-cluster-test:${TAG} \
+             --build-arg TAG_SUFFIX="$(git_tag_suffix)" \
+             --build-arg VERSION="$VERSION" \
+             --target "k8s-cluster-test" \
+             .
+
 echo "---"

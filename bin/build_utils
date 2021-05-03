@@ -36,3 +36,12 @@ function git_tag_suffix() {
 function git_commit_short() {
   git rev-parse --short HEAD
 }
+
+function push_conjur-k8s-cluster-test() {
+    echo "Pushing Helm test image to Dockerhub..."
+    source_image=conjur-k8s-cluster-test:dev
+    destination_image_name=conjur-k8s-cluster-test
+    echo "Tagging and pushing $REGISTRY/$destination_image_name:$tag"
+    docker tag $source_image "$REGISTRY/$destination_image_name:$tag"
+    docker push "$REGISTRY/$destination_image_name:$tag"
+}

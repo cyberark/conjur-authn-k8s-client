@@ -65,18 +65,38 @@ pipeline {
             scanAndReport("conjur-authn-k8s-client-redhat:dev", "NONE", true)
           }
         }
+        stage ("Scan helm test image for fixable vulns") {
+          steps {
+            scanAndReport("conjur-k8s-cluster-test:dev", "HIGH", false)
+          }
+        }
+        stage ("Scan helm test image for total vulns") {
+          steps {
+            scanAndReport("conjur-k8s-cluster-test:dev", "NONE", true)
+          }
+        }
       }
     }
 
-    stage('Publish client Docker image') {
-      when {
-        allOf {
-          branch 'master'
-          tag "v*"
+    stage('Publish client Docker images') {
+      parallel {
+        stage('On a master build') {
+          when { branch 'master' }
+            steps {
+              sh 'summon ./publish.sh --edge'
+            }
         }
-      }
-      steps {
-        sh 'summon ./bin/publish'
+        stage('On a new tag') {
+          when {
+            allOf {
+              branch 'master'
+              tag "v*"
+            }
+          }
+          steps {
+            sh 'summon ./bin/publish'
+          }
+        }
       }
     }
   }
