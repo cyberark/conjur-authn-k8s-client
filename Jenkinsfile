@@ -83,7 +83,7 @@ pipeline {
         stage('On a master build') {
           when { branch 'master' }
             steps {
-              sh 'summon ./publish.sh --edge'
+              sh 'summon ./bin/publish --edge'
             }
         }
         stage('On a new tag') {
