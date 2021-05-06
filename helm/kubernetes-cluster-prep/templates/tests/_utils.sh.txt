@@ -1,0 +1,67 @@
+# Define a Helm named template so that this bash script can be included
+# in a Helm test ConfigMap. This can be left commented out; Helm will
+# still be able to find this template, and this file can be kept as
+# valid bash syntax.
+#
+{{- define "kube-cluster-prep.utils.sh" }}
+#!/bin/bash
+
+# Color codes for ANSI color escape squences
+RESET_COLOR=0
+RED=31
+GREEN=32
+NO_COLOR=33
+BLUE=34
+MAGENTA=35
+CYAN=36
+
+ANNOUNCE_COLOR="$BLUE"
+ERROR_COLOR="$RED"
+INFO_COLOR="$GREEN"
+CODEBLOCK_COLOR="$BLUE"
+
+function text_color() {
+  #{{- if eq .Values.test.colorize true }}
+  color_code="$1"
+  echo -e '\033[0;'"$color_code"'m'
+  #{{- else }}
+  echo
+  #{{- end }}
+}
+
+function banner() {
+  text_color "$1"
+  shift
+  echo =====================================================================
+  echo -e "${@}"
+  echo =====================================================================
+  text_color "$RESET_COLOR"
+}
+
+function indented_banner() {
+  text_color "$1"
+  shift
+  echo "      --------------------------------------------------------------"
+  echo -e "      ${@}"
+  echo "      --------------------------------------------------------------"
+  text_color "$RESET_COLOR"
+}
+
+function announce() {
+  banner "$BLUE" "$@"
+}
+
+function display_error() {
+  banner "$RED" "$@"
+}
+
+function display_info() {
+  text_color "$INFO_COLOR"
+  echo -e "$@"
+  text_color "$RESET_COLOR"
+}
+
+function codeblock() {
+  indented_banner "$CODEBLOCK_COLOR" "$@"
+}
+{{- end }}

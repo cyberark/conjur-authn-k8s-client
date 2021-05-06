@@ -1,0 +1,71 @@
+#!/bin/bash
+#
+# Usage:
+#     ./test-helm [<Helm test release>]
+#
+# Example:
+#     ./test-helm my-test-release
+
+print_usage() {
+  echo "Usage:"
+  echo "    This script will test the Helm release"
+  echo ""
+  echo "Syntax:"
+  echo "    $0 [Options]"
+  echo "    Options:"
+  echo "    -h           Show help"
+  echo "    -i           Install the Helm release"
+  echo "    -u           Uninstall the Helm release"
+  echo "    -r           Specify the Helm release"
+  echo "    -None at this time"
+}
+
+helm_release="helm-test-release"
+install=false
+uninstall=false
+conjur_account="${CONJUR_ACCOUNT:-myConjurAccount}"
+conjur_appliance_url="${CONJUR_APPLIANCE_URL:-https://conjur-oss.conjur-oss.svc.cluster.local}"
+conjur_certificate_file_path="${CONJUR_CERT_FILE_PATH:-files/conjur-cert.pem}"
+authenticator_id="${AUTHENTICATOR_ID:-my-authenticator-id}"
+
+function main() {
+  # Process command line options
+  local OPTIND
+  while getopts ':h:ir:u' flag; do
+    case "${flag}" in
+      #a) conjur_account=${OPTARG} ;;
+      h) print_usage; exit 0 ;;
+      i) install=true ;;
+      r) helm_release=${OPTARG} ;;
+      u) uninstall=true ;;
+      *) echo "Invalid argument -${OPTARG}" >&2; echo; print_usage ; exit 1;;
+    esac
+  done
+  shift $((OPTIND-1))
+
+  if [ "$uninstall" = true ] ; then
+    echo "Cleaning up previous release, if necessary"
+    helm status "$helm_release" &> /dev/null 
+    status="$?"
+    echo "status=" "$status"
+
+    if [ "$status" = 0 ] ; then
+      echo "Deleting"
+      helm delete "$helm_release"
+    fi
+    echo "Done cleaning up previous release"
+    sleep 6
+  fi
+  if [ "$install" = true ] ; then
+    echo "Helm installing a new release" "$conjur_account"
+    helm install "$helm_release" . \
+         --set conjur.account="$conjur_account" \
+         --set conjur.applianceUrl="$conjur_appliance_url" \
+         --set conjur.certificateFilePath="$conjur_certificate_file_path" \
+         --set authnK8s.authenticatorID="$authenticator_id"
+  fi
+  echo "Running Helm test"
+  helm test "$helm_release" --logs
+}
+
+main "$@"

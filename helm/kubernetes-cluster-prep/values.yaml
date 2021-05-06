@@ -1,4 +1,4 @@
-# Default values for conjur-cluster-prep.
+# Default values for kubernetes-cluster-prep.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -47,3 +47,6 @@ authnK8s:
     # name:
 
 displaySamplePolicy: false
+
+test:
+  colorize: true
