@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source ../common/utils.sh
+
+banner $BOLD "Running Helm lint for chart \"application-namespace-prep\""
 helm lint . \
     --set authnK8s.goldenConfigMap="authn-k8s-configmap" \
     --set authnK8s.namespace="app-test" \

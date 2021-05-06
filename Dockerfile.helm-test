@@ -1,0 +1,29 @@
+# =================== CONTAINER FOR HELM TEST ===================
+
+FROM alpine:3.12 as conjur-k8s-helm-test
+
+# Install packages for testing
+RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl
+
+# Install helm
+RUN curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+# Install helm unittest plugin
+RUN mv /etc/os-release /etc/os-release.bak && \
+    touch /etc/os-release && \
+    helm plugin install https://github.com/quintush/helm-unittest && \
+    mv /etc/os-release.bak /etc/os-release
+
+RUN mkdir -p /conjur-authn-k8s-client
+WORKDIR /conjur-authn-k8s-client
+
+LABEL name="conjur-k8s-helm-test"
+LABEL vendor="CyberArk"
+LABEL version="$VERSION"
+LABEL release="$VERSION"
+LABEL summary="Conjur Kubernetes test image for running Helm tests"
+LABEL description="The Conjur test image that is used with Helm test to validate the configuration created by Helm"
+
+COPY . .
+
+ENTRYPOINT ["/conjur-authn-k8s-client/bin/test-helm"]

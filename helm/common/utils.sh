@@ -6,6 +6,7 @@ readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 readonly BLUE='\033[0;34m'
 readonly NOCOLOR='\033[0m'
+readonly BOLD='\e[1m'
 readonly ANNOUNCE_COLOR="$BLUE"
 readonly MIN_HELM_VERSION="3.5.3"
 readonly EXPECT_FAILURE=true

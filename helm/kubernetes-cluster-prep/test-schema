@@ -58,7 +58,7 @@ function clusterrole_name_test() {
 }
 
 function main() {
-
+    banner $BOLD "Running Helm schema tests for chart \"kubernetes-cluster-prep\""
     check_helm_version
 
     announce "Appliance URL that begins with 'https://' is accepted"
@@ -142,6 +142,9 @@ function main() {
     update_results "$?" "$EXPECT_FAILURE"
 
     display_final_results
+    if [ "$num_failed" -ne 0 ]; then
+        exit 1
+    fi
 }
 
 main "$@"
