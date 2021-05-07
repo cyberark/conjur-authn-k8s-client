@@ -1,0 +1,47 @@
+{{- define "kube-cluster-prep.authn-container.yaml" }}
+- name: authenticator
+  image: cyberark/conjur-authn-k8s-client
+  imagePullPolicy: Always
+  command: ["sh", "-c", "/usr/local/bin/authenticator | tee /run/conjur/authn-logs.txt"]
+  env:
+  - name: CONTAINER_MODE
+    value: sidecar
+  - name: MY_POD_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.name
+  - name: MY_POD_NAMESPACE
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.namespace
+  - name: MY_POD_IP
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: status.podIP
+  {{- if eq .Values.test.authentication.debug true }}
+  - name: DEBUG
+    value: "true"
+  {{- end }}
+  - name: CONJUR_AUTHN_URL
+    value: {{ .Values.conjur.applianceUrl }}/authn-k8s/{{ .Values.authnK8s.authenticatorID }}
+  - name: CONJUR_ACCOUNT
+    valueFrom:
+      configMapKeyRef:
+        name: {{ .Values.authnK8s.configMap.name }}
+        key: conjurAccount
+  - name: CONJUR_AUTHN_LOGIN
+    value: host/conjur/authn-k8s/{{ .Values.authnK8s.authenticatorID }}/{{ .Values.test.authentication.validatorID }}
+  - name: CONJUR_SSL_CERTIFICATE
+    valueFrom:
+      configMapKeyRef:
+        name: {{ .Values.authnK8s.configMap.name }}
+        key: conjurSslCertificate
+  - name: CONJUR_TOKEN_TIMEOUT
+    value: 10s
+  volumeMounts:
+  - mountPath: /run/conjur
+    name: conjur-access-token
+{{- end }}

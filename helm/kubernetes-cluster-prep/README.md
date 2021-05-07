@@ -269,6 +269,101 @@ command is run using a local copy of the Helm chart. You can use
   helm install my-conjur-release . -f my-custom-values.yaml 
   ```
 
+## Running Helm Chart Tests
+
+[Helm chart tests](https://helm.sh/docs/topics/chart_tests/) provide a way
+to validate that a chart works as expected when it is installed.
+
+For the Conjur Kubernetes cluster preparation Helm chart, a Helm test is
+provided that can be used to validate that the Kubernetes resources that have
+been deployed using this chart have valid Conjur configuration information.
+
+Tests include:
+
+- Validate that the Conjur appliance URL that has been configured is an
+  address that is reachable via `curl`.
+- (OPTIONAL) Validate that the Kubernetes resources that have been deployed
+  can authenticate with the Conjur instance. See details in the
+  [Optional Conjur Authentication Validation](#optional-conjur-authentication-validation)
+  section below.
+- (OPTIONAL) Search for some common failure codes in authenticator client
+  logs following a Conjur authentication validation test. (This may help with
+  diagnosing authentication failures.)
+
+### Optional Conjur Authentication Validation
+
+The Kubernetes cluster prep Helm chart tests include an optional test
+that will attempt to authenticate with your Conjur instance. The Conjur
+authentication validation testing requires the configuration of a special
+"validator" host ID in Conjur security policy that supports Conjur Kubernetes
+authentication. This "validator" host ID does not require access to Conjur
+secrets for the purposes of this authentication test. An example Conjur
+security policy that includes an "authenticate-only" validator host ID for
+testing authentication can be found
+[here](assets/example-conjur-policy-with-validator.yaml).
+
+When the Conjur authentication validation test is enabled, the Helm test
+Pod that is deployed for the `helm test ...` command will include an
+authn-k8s client sidecar container that uses values from the Golden
+ConfigMap to attempt to authenticate with the Conjur instance. Logs from the
+authn-k8s client sidecar container are copied to a volume that is shared
+with the Helm test's main test container, so that the test container can
+scan the logs for some common error codes.
+
+An example of how to run a Helm test that includes authentication with a
+Conjur instance is provided below in the
+[Example: Running Helm Test with Conjur Authentication Validation](#example-running-helm-test-with-conjur-authentication-validation)
+section below.
+
+### The `test-helm` Test Script
+
+There is a `test-helm` script that can be used to run Helm tests on an
+installed release of this Helm chart. Usage can be displayed by running:
+
+```
+./test-helm -h
+```
+
+You should see the following output:
+
+```
+Usage:
+    This script will test the Helm release
+ 
+Syntax:
+    ./test-helm [Options]
+    Options:
+    -a            Test authentication with Conjur instance
+    -h            Show help
+    -r <release>  Specify the Helm release
+                  (defaults to 'authn-k8s')
+    -v <host-ID>  Specify validator host ID to use for testing
+                  authentication (defaults to 'validator')
+```
+
+#### Example: Running Helm Test without Conjur Authentication Validation
+
+To run the Helm test without testing authentication with a Conjur instance:
+
+```
+./test-helm -r <your-helm-release>
+```
+
+#### Example: Running Helm Test with Conjur Authentication Validation
+
+To run the Helm test including a test to validate authentication with a
+Conjur instance:
+
+```
+./test-helm -r <your-helm-release> -a -v <configured-validator-identity>
+```
+
+Running the Conjur authentication validation test requires the configuration
+of a special "validator" host ID in Conjur security policy that supports
+Conjur Kubernetes authentication. An example Conjur security policy that
+includes an "authenticate-only" validator host ID for testing authentication
+can be found [here](assets/example-Conjur-policy-with-validator.md).
+
 ## Configuration
 
 The following table lists the configurable parameters of the Conjur OSS chart and their default values.
@@ -285,5 +380,8 @@ The following table lists the configurable parameters of the Conjur OSS chart an
 |`authnK8s.clusterRole.create`|Flag to generate the ClusterRole |`true`||
 |`authnK8s.clusterRole.name`|The name of the authenticator ClusterRole to use or create|`Defaults to authn-k8s-clusterrole when 'authnK8s.clusterRole.create' is set to 'true'`|Mandatory if authnK8s.clusterRole.create is set to 'false'|
 |`authnK8s.serviceAccount.create`|Flag to generate the ServiceAccount |`true`||
-|`authnK8s.serviceAccount.name`|The name of the authenticator ServiceAccount to use or create|`Defaults to authn-k8s-serviceaccount when 'authnK8s.ServiceAccount.create`|Mandatory if authnK8s.ServiceAccount.create is set to 'false'|
-
+|`authnK8s.serviceAccount.name`|The name of the authenticator ServiceAccount to use or create|Defaults to authn-k8s-serviceaccount when `authnK8s.ServiceAccount.create` is set to `true`|Mandatory if `authnK8s.ServiceAccount.create` is set to 'false'|
+|`test.colorize`|Determines whether Helm test output should include color escape sequences|Defaults to `true`||
+|`test.authentication.enable`|Indicates whether the Helm test should attempt to authenticate with the Conjur instance|`false`||
+|`test.authentication.validatorID`|Indicates the Conjur Host ID that should be used to authenticate with the Conjur instance|`validator`||
+|`test.authentication.debug`|Enables Helm test authenticator init/sidecar container debug logging when set to `true`|`true`||

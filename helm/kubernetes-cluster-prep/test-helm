@@ -1,10 +1,15 @@
 #!/bin/bash
 #
-# Usage:
-#     ./test-helm [<Helm test release>]
+# Run a Kubernetes cluster prep Helm chart Helm test to validate
+# an installed chart release.
 #
-# Example:
-#     ./test-helm my-test-release
+# Example: Run test without authentication with a Conjur instance:
+#     ./test-helm -r my-test-release
+#
+# Example: Run test including authentication with a Conjur instance:
+#     ./test-helm -r my-test-release -a -v "validator"
+
+source ../common/utils.sh
 
 print_usage() {
   echo "Usage:"
@@ -13,59 +18,53 @@ print_usage() {
   echo "Syntax:"
   echo "    $0 [Options]"
   echo "    Options:"
-  echo "    -h           Show help"
-  echo "    -i           Install the Helm release"
-  echo "    -u           Uninstall the Helm release"
-  echo "    -r           Specify the Helm release"
-  echo "    -None at this time"
+  echo "    -a            Test authentication with Conjur instance"
+  echo "    -h            Show help"
+  echo "    -r <release>  Specify the Helm release"
+  echo "                  (defaults to 'authn-k8s')"
+  echo "    -v <host-ID>  Specify validator host ID to use for testing"
+  echo "                  authentication (defaults to 'validator')"
 }
 
-helm_release="helm-test-release"
-install=false
-uninstall=false
-conjur_account="${CONJUR_ACCOUNT:-myConjurAccount}"
-conjur_appliance_url="${CONJUR_APPLIANCE_URL:-https://conjur-oss.conjur-oss.svc.cluster.local}"
-conjur_certificate_file_path="${CONJUR_CERT_FILE_PATH:-files/conjur-cert.pem}"
-authenticator_id="${AUTHENTICATOR_ID:-my-authenticator-id}"
+helm_release="authn-k8s"
+test_authentication=false
+validator_id="validator"
+test_timeout="10s"
 
 function main() {
   # Process command line options
   local OPTIND
-  while getopts ':h:ir:u' flag; do
+  while getopts ':ahr:v:' flag; do
     case "${flag}" in
-      #a) conjur_account=${OPTARG} ;;
+      a) test_authentication=true ;;
       h) print_usage; exit 0 ;;
-      i) install=true ;;
       r) helm_release=${OPTARG} ;;
-      u) uninstall=true ;;
+      v) validator_id=${OPTARG} ;;
       *) echo "Invalid argument -${OPTARG}" >&2; echo; print_usage ; exit 1;;
     esac
   done
   shift $((OPTIND-1))
 
-  if [ "$uninstall" = true ] ; then
-    echo "Cleaning up previous release, if necessary"
-    helm status "$helm_release" &> /dev/null 
-    status="$?"
-    echo "status=" "$status"
+  kubectl delete pod -l "app=cluster-prep-test" --ignore-not-found
+  helm upgrade "$helm_release" . \
+      --reuse-values \
+      --set test.authentication.enable="$test_authentication" \
+      --set test.authentication.validatorID="$validator_id" \
+      --set test.authentication.debug=true
 
-    if [ "$status" = 0 ] ; then
-      echo "Deleting"
-      helm delete "$helm_release"
-    fi
-    echo "Done cleaning up previous release"
-    sleep 6
+  announce "Running Helm test"
+  if "$test_authentication"; then
+    # Run with a timeout, since authenticator sidecar will run indefinitely.
+    # Also, the Helm test '--logs' option does not work if there are
+    # multiple containers in the test Pod.
+    helm test "$helm_release" --timeout "$test_timeout"
+    announce "Retrieving Conjur authenticator container logs"
+    kubectl logs "$helm_release"-cluster-prep-test authenticator
+    announce "Retrieving BATS tester logs"
+    kubectl logs "$helm_release"-cluster-prep-test tester
+  else
+    helm test "$helm_release" --logs
   fi
-  if [ "$install" = true ] ; then
-    echo "Helm installing a new release" "$conjur_account"
-    helm install "$helm_release" . \
-         --set conjur.account="$conjur_account" \
-         --set conjur.applianceUrl="$conjur_appliance_url" \
-         --set conjur.certificateFilePath="$conjur_certificate_file_path" \
-         --set authnK8s.authenticatorID="$authenticator_id"
-  fi
-  echo "Running Helm test"
-  helm test "$helm_release" --logs
 }
 
 main "$@"

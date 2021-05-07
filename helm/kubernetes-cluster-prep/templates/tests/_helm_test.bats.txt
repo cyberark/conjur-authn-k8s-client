@@ -14,6 +14,10 @@ source "/bats/bats-support/load.bash"
 source "/bats/bats-assert/load.bash"
 source "/bats/bats-file/load.bash"
 
+readonly ACCESS_TOKEN_FILE="/run/conjur/access-token"
+readonly AUTHN_LOG_FILE="/run/conjur/authn-logs.txt"
+readonly AUTHN_TIMEOUT_SECS=5
+
 # Baseline BATS test result color
 text_color "$MAGENTA"
 
@@ -28,4 +32,46 @@ text_color "$MAGENTA"
   assert_success
 }
 
+{{- if .Values.test.authentication.enable }}
+
+@test "Conjur authenticator sidecar has successfully retrieved an API token" {
+  display_info "Checking for existence of access token at '$ACCESS_TOKEN_FILE'"
+  secs=0
+  until [ "$secs" -ge "$AUTHN_TIMEOUT_SECS" ]
+  status=0
+  do
+    echo "Checking for existence of authn token at $ACCESS_TOKEN_FILE"
+    test -f "$ACCESS_TOKEN_FILE" || status="$?"
+    if [ "$status" -eq 0 ]; then
+      break
+    fi
+    secs=$((secs+1))
+    echo "$n"
+    sleep 1
+  done
+  if [ "$status" -ne 0 ]; then
+    display_error "The authenticator sidecar was not able to authenticate\n" \
+                  "with Conjur. Check that your Conjur policy contains the\n" \
+                  "required validator host ID with the command:\n" \
+                  "  conjur list -k host -s conjur/authn-k8s/{{ .Values.authnK8s.authenticatorID }}/{{ .Values.test.authentication.validatorID }}\n"
+  fi
+  assert_success
+}
+
+@test "CAKC028 error code does not appear in authenticator logs" {
+  error_code="CAKC028"
+  display_info "Checking for existence of error code $error_code in authenticator logs"
+  run grep "$error_code" "$AUTHN_LOG_FILE"
+  if [ "$status" -eq 0 ]; then
+    display_error "The authenticator returns the following error:\n" \
+      "$output\n" \
+      "This means that Subject names in the Conjur's SSL certificate\n" \
+      "does not include the domain name in the configured Conjur Appliance\n" \
+      "URL: $conjurApplianceUrl\n" \
+      "Please check that the configured Conjur Appliance URL is correct."
+  fi
+  # Failure of the grep command is success in this case 
+  assert_failure
+}
+{{- end }}
 {{- end }}
