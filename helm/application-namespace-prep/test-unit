@@ -5,4 +5,5 @@
 
 source ../common/utils.sh
 
+banner $BOLD "Running Helm unit tests for chart \"application-namespace-prep\""
 run_helm_unittest

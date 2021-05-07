@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -eo pipefail
+
+cd "$(dirname "$0")/.." || ( echo "cannot cd into parent dir" && exit 1 )
+
+function pushd() {
+    command pushd "$@" > /dev/null
+}
+
+function popd() {
+    command popd "$@" > /dev/null
+}
+
+pushd helm
+    pushd kubernetes-cluster-prep
+        ./test-lint
+        ./test-schema
+        ./test-unit
+    popd
+
+    pushd application-namespace-prep
+        ./test-lint
+        ./test-schema
+        ./test-unit
+    popd
+
+    pushd app-deploy
+        ./test-lint
+    popd
+popd

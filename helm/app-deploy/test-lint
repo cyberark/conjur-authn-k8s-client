@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Helm lint tests for the App Deploy Helm chart and subcharts.
+
+source ../common/utils.sh
+
+function pushd() {
+    command pushd "$@" > /dev/null
+}
+
+function popd() {
+    command popd "$@" > /dev/null
+}
+
+banner $BOLD "Running Helm lint for chart \"app-deploy\""
+helm lint .
+
+pushd charts
+    announce "Running Helm lint for subchart \"app-summon-sidecar\""
+    pushd app-summon-sidecar
+        helm lint . --set conjur.authnLogin="exampleLogin"
+    popd
+popd

@@ -26,6 +26,10 @@ pipeline {
         stage('Application Namespace-Prep Schema') {
           steps { sh './bin/validate-schema ./helm/application-namespace-prep/values.schema.json'}
         }
+
+        stage('Helm Charts') {
+          steps { sh './bin/test-helm-in-docker' }
+        }
       }
     }
 

@@ -32,7 +32,7 @@ function authenticator_missing_namespace_test() {
 }
 
 function main() {
-
+    banner $BOLD "Running Helm schema tests for chart \"application-namespace-prep\""
     check_helm_version
 
     announce "Basic test with both the ConfigMap and Namespace supplied "
@@ -48,6 +48,9 @@ function main() {
     update_results "$?" "$EXPECT_FAILURE"
 
     display_final_results
+    if [ "$num_failed" -ne 0 ]; then
+        exit 1
+    fi
 }
 
 main "$@"

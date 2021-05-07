@@ -2,15 +2,20 @@
 
 # Helm lint tests for the Conjur Kubernetes cluster prep Helm chart.
 
+source ../common/utils.sh
+
+banner $BOLD "Running Helm lint for chart \"kubernetes-cluster-prep\""
+
 # Run Helm lint with a Conjur certificate file
-helm lint \
+announce "With a Conjur certificate file"
+helm lint . \
     --set conjur.applianceUrl="https://conjur.example.com" \
     --set conjur.certificateFilePath="tests/test-cert.pem" \
     --set authnK8s.authenticatorID="my-authenticator-id"
 
 # Run Helm lint with a base64-encoded Conjur certificate
-helm lint \
+announce "With a base64-encoded Conjur certificate"
+helm lint . \
     --set conjur.applianceUrl="https://conjur.example.com" \
     --set conjur.certificateBase64="LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMvVENDQWVXZ0F3SUJBZ0lSQUpOMk11Vmx0alpMWmVyRk50YklZend3RFFZSktvWklodmNOQVFFTEJRQXcKR0RFV01CUUdBMVVFQXhNTlkyOXVhblZ5TFc5emN5MWpZVEFlRncweU1UQXpNakF4TlRRNU1UTmFGdzB5TWpBegpNakF4TlRRNU1UTmFNQmd4RmpBVUJnTlZCQU1URFdOdmJtcDFjaTF2YzNNdFkyRXdnZ0VpTUEwR0NTcUdTSWIzCkRRRUJBUVVBQTRJQkR3QXdnZ0VLQW9JQkFRQ3Z6cWVMTmZSRUM1OEdwcEZYNmtlbWUzYUNSdDlJRlRPOGhZR0IKVU5xQVJTb3hrNlJobC9nQ1ZZSVdRMHF3bEFzR0lOR2x3Wmw1ZS9YSlRGU2lQRUZqd05wZStDTHdCUThuWi9CRwpscVVvYnozb1ZiUkdaTEV0L3ZlYkVJTVNYTklhSGRyWThWY0pnR2VoazBGczhaQ1RodC9UcGc5My96MHkydnJqCnpXR2hLek9lK3NrRFFISU5IbGk2YWo2MUdQa1VIVFljYlVDcnZua2JnYXRON0w2VjJrbVFaejMzOFp5aUVsSHgKU3o0VkdmdnhBYXJkY2U0eTF0a1FzRThDNERFMjNVSFEyNVVtU0dnWCtjL0grNkludklvZzZoY25hOWFzRytOUQorL1NRenRDUFRidEx4YjFzd3ZjYnN0WnV2VXlwNUlha3hKZnpSV25YTkJYUk9WdlJBZ01CQUFHalFqQkFNQTRHCkExVWREd0VCL3dRRUF3SUNwREFkQmdOVkhTVUVGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFHRGFaRHpkaVZCMi82Unluc2NRUQpsanRkQmJwV1BFYlNwT1dNWGRndmVUSHhzU0pLQk5yR3YzQnpPZjViSkxVdVp1eGJ2ZjFJZjJvam91c2JIR3VJCkJHdTBZc2lCcGYrNUx4Vjd4dTJ3NWdiSXpWZnJZUUtDU3lKU052d0NwKzBHNXFocTlqRlFFY2xsd05yK1lrUkkKY212WUN6b2lNRFlZNkNzblM3SHc4OGZSOTZhaWFndnRRVXB5YXNMdWVscnpUc05VTlU1b2I3SktMeE1oMExwego1WnRyZWw1M0kxQzFXeEtIZTN0UlRBU2UxVEdzZW9aazhHS1A3OC96L0JwS05SUllGVmJkVkJldk5uYlJjZFlICncxYzFvdEN4UEF6ZXNrRitYR0JCem9yNWdkVyt3KzB4SG9aejVVSTJpQ1B4aGp6d1BjQXJWQ1F3V0xLd3NDK04KZ3c9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==" \
     --set authnK8s.authenticatorID="my-authenticator-id"
-

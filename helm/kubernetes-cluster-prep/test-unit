@@ -5,4 +5,5 @@
 
 source ../common/utils.sh
 
-run_helm-unittest
+banner $BOLD "Running Helm unit tests for chart \"kubernetes-cluster-prep\""
+run_helm_unittest
