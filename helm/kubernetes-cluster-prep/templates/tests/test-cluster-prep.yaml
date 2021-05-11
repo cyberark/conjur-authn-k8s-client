@@ -3,11 +3,15 @@ kind: Pod
 metadata:
   name: {{ .Release.Name }}-cluster-prep-test
   labels:
+    "app": "cluster-prep-test"
   annotations:
     "helm.sh/hook": test-success
 spec:
   containers:
-  - name: {{ .Release.Name }}-test
+  {{- if .Values.test.authentication.enable }}
+    {{- include "kube-cluster-prep.authn-container.yaml" . | indent 2 }}
+  {{- end }}
+  - name: tester
     image: cyberark/conjur-k8s-cluster-test:edge
     command: ["/usr/local/bin/bats", "-t", "/tests/helm-test.bats"]
     envFrom: 
@@ -17,6 +21,8 @@ spec:
     - mountPath: /tests
       name: tests
       readOnly: true
+    - mountPath: /run/conjur
+      name: conjur-access-token
   serviceAccount: {{ .Values.authnK8s.serviceAccount.name }}
   volumes:
   - name: conjur-access-token
