@@ -24,4 +24,11 @@ check_env_var "TEST_APP_DATABASE"
 check_env_var "CONJUR_AUTHN_LOGIN_RESOURCE"
 check_env_var "PULL_DOCKER_REGISTRY_URL"
 check_env_var "PULL_DOCKER_REGISTRY_PATH"
+
+export CONJUR_APPLIANCE_URL="${CONJUR_APPLIANCE_URL:-https://conjur-oss.$CONJUR_NAMESPACE.svc.cluster.local}"
+
+# For annotation-based Kubernetes authentication, the host ID to be used
+# for authenticating is an application name.
+export CONJUR_AUTHN_LOGIN_PREFIX="host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps"
+
 ensure_env_database

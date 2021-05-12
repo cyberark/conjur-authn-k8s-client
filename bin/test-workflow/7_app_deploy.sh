@@ -72,17 +72,6 @@ init_connection_specs() {
     conjur_appliance_url=https://$conjur_follower_name.$CONJUR_NAMESPACE.svc.cluster.local/api
   fi
   conjur_authenticator_url="$conjur_appliance_url/authn-k8s/$URLENCODED_AUTHN_ID"
-
-  if [[ "$ANNOTATION_BASED_AUTHN" == "true" ]]; then
-    # For annotation-based Kubernetes authentication, the host ID to be used
-    # for authenticating is an application name.
-    conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps
-  else
-    # For host-ID-based Kubernetes authentication, the host ID to be used
-    # for authenticating is in the form:
-    #   <namespace-name>/<kubernetes-resource>/<resource-name>
-    conjur_authn_login_prefix=host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps/$TEST_APP_NAMESPACE_NAME/$CONJUR_AUTHN_LOGIN_RESOURCE
-  fi
 }
 
 ###########################
@@ -134,19 +123,17 @@ deploy_app_backend() {
 
 ###########################
 deploy_sidecar_app() {
-  pushd helm
+  pushd helm/app-deploy
     # Deploy a given app with yet another subset of the subset of our golden configmap, allowing
     # connection to Conjur
-    pushd app-deploy
-        announce "Installing application chart"
-        helm uninstall app -n "$TEST_APP_NAMESPACE_NAME"
+    announce "Installing application chart"
+    helm uninstall app -n "$TEST_APP_NAMESPACE_NAME"
 
-        # TODO(SS): What's conjurConnConfigMap?
-        # TODO(SS): Sidecar subchart needs to be selected?
-        helm install app . -n "$TEST_APP_NAMESPACE_NAME" --wait \
-            --set global.conjur.conjurConnConfigMap="conjur-connect-configmap" \
-            --set app-summon-sidecar.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX"
-    popd
+    # TODO(SS): Is this okay for selecting subchart? See https://github.com/cyberark/conjur-authn-k8s-client/issues/238
+    helm install app . -n "$TEST_APP_NAMESPACE_NAME" --wait \
+        --set authn-k8s.enabled=true \
+        --set global.conjur.conjurConnConfigMap="conjur-connect-configmap" \
+        --set app-summon-sidecar.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar"
   popd
 
   echo "Test app/sidecar deployed."

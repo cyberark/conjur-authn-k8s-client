@@ -13,16 +13,14 @@ global:
 # associated sample application container) will be deployed to the
 # same application Namespace. The default (app-summon-sidecar) is to enable only an authn-k8s
 # sidecar container. Uncomment authenticator types as desired.
-app-summon-sidecar:
-  create: true
-  conjur:
-    authnLogin:
+authn-k8s:
+  enabled: true
 
-# secretless-broker:
-#   create: true
+secretless-broker:
+  enabled: false
 
-# secrets-provider-init:
-#   create: true
+secrets-provider-init:
+  enabled: false
 
-# secrets-provider-standalone:
-#   create: true
+secrets-provider-standalone:
+  enabled: false
