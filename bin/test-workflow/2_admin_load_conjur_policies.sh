@@ -33,6 +33,7 @@ deploy_conjur_cli() {
     sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     $cli create -f -
 
+  # TODO(SS): Flaky
   conjur_cli_pod=$(get_conjur_cli_pod_name)
   wait_for_it 300 "$cli get pod $conjur_cli_pod -o jsonpath='{.status.phase}'| grep -q Running"
 }
@@ -100,6 +101,7 @@ announce "Loading Conjur policy."
 $cli exec $conjur_cli_pod -- rm -rf /policy
 $cli cp ./policy $conjur_cli_pod:/policy
 
+# TODO(SS): Flaky with 500 Internal Server Error
 $cli exec $conjur_cli_pod -- \
   bash -c "
   conjur_appliance_url=${CONJUR_APPLIANCE_URL:-https://conjur-oss.$CONJUR_NAMESPACE.svc.cluster.local}

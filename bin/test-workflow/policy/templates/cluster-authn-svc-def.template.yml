@@ -14,7 +14,7 @@
     id: validator
     annotations:
       description: Validation host used when configuring a cluster
-      authn-k8s/namespace: {{ CONJUR_NAMESPACE_NAME }}
+      authn-k8s/namespace: {{ CONJUR_NAMESPACE }}
 
   - !policy
     id: ca 

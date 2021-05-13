@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eo pipefail
+set -euo pipefail
 
 . utils.sh
 
@@ -19,10 +19,10 @@ main() {
   fi
 
   deploy_app_backend
-  deploy_secretless_app
+  # deploy_secretless_app
   deploy_sidecar_app
-  deploy_init_container_app
-  deploy_init_container_app_with_host_outside_apps
+  # deploy_init_container_app
+  # deploy_init_container_app_with_host_outside_apps
 }
 
 ###########################
@@ -123,18 +123,19 @@ deploy_app_backend() {
 
 ###########################
 deploy_sidecar_app() {
-  pushd helm/app-deploy
+  pushd $(dirname "$0")/../../helm/app-deploy > /dev/null
     # Deploy a given app with yet another subset of the subset of our golden configmap, allowing
     # connection to Conjur
-    announce "Installing application chart"
-    helm uninstall app -n "$TEST_APP_NAMESPACE_NAME"
+    announce "Installing sidecar application chart"
+    if [ "$(helm list -q -n $TEST_APP_NAMESPACE_NAME | grep "^sidecar-app$")" = "sidecar-app" ]; then
+        helm uninstall sidecar-app -n "$TEST_APP_NAMESPACE_NAME"
+    fi
 
-    # TODO(SS): Is this okay for selecting subchart? See https://github.com/cyberark/conjur-authn-k8s-client/issues/238
-    helm install app . -n "$TEST_APP_NAMESPACE_NAME" --wait \
+    helm install sidecar-app . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait \
         --set authn-k8s.enabled=true \
         --set global.conjur.conjurConnConfigMap="conjur-connect-configmap" \
         --set app-summon-sidecar.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar"
-  popd
+  popd > /dev/null
 
   echo "Test app/sidecar deployed."
 }
@@ -159,7 +160,7 @@ deploy_init_container_app() {
     sed "s#{{ AUTHENTICATOR_CLIENT_IMAGE }}#$authenticator_client_image#g" |
     sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
-    sed "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
+    sed "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$CONJUR_AUTHN_LOGIN_PREFIX#g" |
     sed "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
     sed "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
@@ -250,7 +251,7 @@ deploy_secretless_app() {
     sed "s#{{ SECRETLESS_IMAGE }}#$secretless_image#g" |
     sed "s#{{ SECRETLESS_DB_URL }}#$secretless_db_url#g" |
     sed "s#{{ CONJUR_AUTHN_URL }}#$conjur_authenticator_url#g" |
-    sed "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$conjur_authn_login_prefix#g" |
+    sed "s#{{ CONJUR_AUTHN_LOGIN_PREFIX }}#$CONJUR_AUTHN_LOGIN_PREFIX#g" |
     sed "s#{{ CONFIG_MAP_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
     sed "s#{{ CONJUR_ACCOUNT }}#$CONJUR_ACCOUNT#g" |
     sed "s#{{ CONJUR_APPLIANCE_URL }}#$conjur_appliance_url#g" |
