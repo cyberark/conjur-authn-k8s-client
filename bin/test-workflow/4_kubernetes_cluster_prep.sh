@@ -12,7 +12,6 @@ pushd $(dirname "$0")/../../helm/kubernetes-cluster-prep > /dev/null
         helm uninstall cluster-prep -n "$CONJUR_NAMESPACE"
     fi
 
-    # TODO(SS): Flaky
     ./bin/get-conjur-cert.sh -v -i -u "$CONJUR_APPLIANCE_URL"
 
     helm install cluster-prep . -n "$CONJUR_NAMESPACE"  --debug --wait \

@@ -123,6 +123,10 @@ deploy_app_backend() {
 
 ###########################
 deploy_sidecar_app() {
+  # Create new db password and store in Conjur
+  announce "Waiting for backend to be Ready and rotating db password"
+  wait_for_it 300 "./rotate 2>/dev/null"
+
   pushd $(dirname "$0")/../../helm/app-deploy > /dev/null
     # Deploy a given app with yet another subset of the subset of our golden configmap, allowing
     # connection to Conjur

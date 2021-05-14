@@ -195,6 +195,11 @@ function ensure_openssl_pod_created() {
            -- sleep infinity
         # Remember that we need to clean up the deployment that we just created
         deployment_was_created=true
+        
+        # Some flakiness here - wait currently will fail if the resource doesn't exist yet
+        # See https://github.com/kubernetes/kubernetes/issues/83242
+        # TODO: Remove sleep after this is fixed in kubectl
+        sleep 5
         # Wait for Pod to be ready
         kubectl wait --for=condition=ready pod -l "app=$openssl_deployment"
     fi

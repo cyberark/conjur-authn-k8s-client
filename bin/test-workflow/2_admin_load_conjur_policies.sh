@@ -33,7 +33,8 @@ deploy_conjur_cli() {
     sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
     $cli create -f -
 
-  # TODO(SS): Flaky
+  # Wait until pod appears otherwise $conjur_cli_pod could be empty and we would wait forever
+  wait_for_it 300 "(exit \$(echo \$((! \$($cli get pods -n "$CONJUR_NAMESPACE" --selector app=conjur-cli --no-headers 2>/dev/null | wc -l))))) && true"
   conjur_cli_pod=$(get_conjur_cli_pod_name)
   wait_for_it 300 "$cli get pod $conjur_cli_pod -o jsonpath='{.status.phase}'| grep -q Running"
 }
@@ -49,11 +50,12 @@ ensure_conjur_cli_initialized() {
   conjur_url=${CONJUR_APPLIANCE_URL:-https://$conjur_service.$CONJUR_NAMESPACE.svc.cluster.local}
 
   $cli exec $1 -- bash -c "yes yes | conjur init -a $CONJUR_ACCOUNT -u $conjur_url"
-  $cli exec $1 -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
+  # Flaky with 500 Internal Server Error, mitigate with retry
+  wait_for_it 300 "$cli exec $1 -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD"
 }
 
-pushd policy
-  mkdir -p ./generated
+pushd policy > /dev/null
+  mkdir -p ./generated > /dev/null
 
   # NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
 
@@ -79,13 +81,12 @@ pushd policy
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/authn-any-policy-branch.template.yml |
     sed "s#{{ IS_OPENSHIFT }}#$is_openshift#g" |
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.authn-any-policy-branch.yml
-popd
+popd > /dev/null
 
 # Create the random database password
 password=$(openssl rand -hex 12)
 
 set_namespace "$CONJUR_NAMESPACE"
-
 
 announce "Finding or creating a Conjur CLI pod"
 conjur_cli_pod=$(get_conjur_cli_pod_name)
@@ -101,7 +102,6 @@ announce "Loading Conjur policy."
 $cli exec $conjur_cli_pod -- rm -rf /policy
 $cli cp ./policy $conjur_cli_pod:/policy
 
-# TODO(SS): Flaky with 500 Internal Server Error
 $cli exec $conjur_cli_pod -- \
   bash -c "
   conjur_appliance_url=${CONJUR_APPLIANCE_URL:-https://conjur-oss.$CONJUR_NAMESPACE.svc.cluster.local}
