@@ -2,6 +2,9 @@
 
 set -eo pipefail
 
+rm -rf bash-lib
+git clone https://github.com/cyberark/bash-lib.git
+
 # Install Conjur in our cluster
 mkdir -p temp
 pushd temp > /dev/null

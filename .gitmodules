@@ -1,3 +1,0 @@
-[submodule "bin/test-workflow/bash-lib"]
-	path = bin/test-workflow/bash-lib
-	url = https://github.com/cyberark/bash-lib.git
