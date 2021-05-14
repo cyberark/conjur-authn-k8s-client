@@ -16,6 +16,7 @@ source "/bats/bats-file/load.bash"
 
 readonly ACCESS_TOKEN_FILE="/run/conjur/access-token"
 readonly AUTHN_LOG_FILE="/run/conjur/authn-logs.txt"
+readonly TEMP_INFO_FILE="/info.txt"
 readonly AUTHN_TIMEOUT_SECS=5
 
 # Baseline BATS test result color
@@ -74,4 +75,43 @@ text_color "$MAGENTA"
   assert_failure
 }
 {{- end }}
+
+@test "Conjur Account is valid" {
+  display_info "Validating account from the info endpoint for enterprise"
+
+  cmd=( curl -k --connect-timeout 5 "$conjurApplianceUrl"/info -o "$TEMP_INFO_FILE")
+  display_info "Running ${cmd[@]}"
+  "${cmd[@]}"
+  run grep account.*"$conjurAccount" "$TEMP_INFO_FILE"
+
+  if [ "$status" -ne 0 ]; then
+    if (grep account "$TEMP_INFO_FILE"); then
+        display_error "Please check the configured Conjur Account.\n" \
+                      "It does not match with values from the info endpoint."
+    else
+        skip "test due to the info endpoint is not available for OSS"
+    fi
+  fi
+  assert_success
+}
+
+@test "Conjur Authenticator is valid" {
+  display_info "Validating authenticator ID from the info endpoint for enterprise"
+
+  cmd=( curl -k --connect-timeout 5 "$conjurApplianceUrl"/info -o "$TEMP_INFO_FILE")
+  display_info "Running ${cmd[@]}"
+  run "${cmd[@]}"
+  run grep name.*"$authnK8sAuthenticatorID" "$TEMP_INFO_FILE"
+
+  if [ "$status" -ne 0 ]; then
+    if (grep name "$TEMP_INFO_FILE"); then
+        display_error "Please check configured authenticator ID\n" \
+                      "It does not match with values from the info endpoint."
+    else
+        skip "test due to the info endpoint is not available for OSS"
+    fi
+  fi
+  assert_success
+}
+
 {{- end }}
