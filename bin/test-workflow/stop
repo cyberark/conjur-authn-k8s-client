@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+. utils.sh
+
+KUBE_CLI_DELETE_TIMEOUT="10m"
+
+set_namespace "$TEST_APP_NAMESPACE_NAME"
+"$cli" get pods
+
+set_namespace default
+
+if [[ "$PLATFORM" == "openshift" ]]; then
+  oc login -u "$OSHIFT_CLUSTER_ADMIN_USERNAME" -p "$OPENSHIFT_PASSWORD"
+fi
+
+if has_namespace "$TEST_APP_NAMESPACE_NAME"; then
+  "$cli" delete --timeout="$KUBE_CLI_DELETE_TIMEOUT" \
+      namespace "$TEST_APP_NAMESPACE_NAME" || \
+      (echo "ERROR: Delete of namespace $TEST_APP_NAMESPACE_NAME failed" && \
+      echo "Showing residual resources in namespace:" && \
+      "$cli" describe all -n "$TEST_APP_NAMESPACE_NAME")
+
+  printf "Waiting for $TEST_APP_NAMESPACE_NAME namespace deletion to complete"
+
+  while : ; do
+    printf "."
+
+    if has_namespace "$TEST_APP_NAMESPACE_NAME"; then
+      sleep 5
+    else
+      break
+    fi
+  done
+
+  echo ""
+fi
+
+echo "Test app environment purged."
