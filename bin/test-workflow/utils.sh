@@ -49,11 +49,11 @@ platform_image_for_pull() {
   if [[ ${PLATFORM} = "openshift" ]]; then
     echo "${PULL_DOCKER_REGISTRY_PATH}/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
   elif is_minienv; then
-    echo "$1:$CONJUR_NAMESPACE_NAME"
+    echo "$1:$CONJUR_NAMESPACE"
   elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
-    echo "${PULL_DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE_NAME"
+    echo "${PULL_DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE"
   else
-    echo "${PULL_DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE_NAME"
+    echo "${PULL_DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE"
   fi
 }
 
@@ -61,11 +61,11 @@ platform_image_for_push() {
   if [[ ${PLATFORM} = "openshift" ]]; then
     echo "${DOCKER_REGISTRY_PATH}/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
   elif is_minienv; then
-    echo "$1:$CONJUR_NAMESPACE_NAME"
+    echo "$1:$CONJUR_NAMESPACE"
   elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
-    echo "${DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE_NAME"
+    echo "${DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE"
   else
-    echo "${DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE_NAME"
+    echo "${DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE"
   fi
 }
 
@@ -74,6 +74,16 @@ has_namespace() {
     true
   else
     false
+  fi
+}
+
+has_resource() {
+  local selector=$1
+  local num_matching_resources=$($cli get pods -n "$CONJUR_NAMESPACE" --selector $selector --no-headers 2>/dev/null | wc -l)
+  if [ $num_matching_resources -gt 0 ]; then
+    return 0
+  else
+    return 1
   fi
 }
 
@@ -112,7 +122,7 @@ get_master_pod_name() {
 }
 
 get_conjur_cli_pod_name() {
-  pod_list=$($cli get pods -n "$CONJUR_NAMESPACE_NAME" --selector app=conjur-cli --no-headers | awk '{ print $1 }')
+  pod_list=$($cli get pods -n "$CONJUR_NAMESPACE" --selector app=conjur-cli --no-headers | awk '{ print $1 }')
   echo $pod_list | awk '{print $1}'
 }
 

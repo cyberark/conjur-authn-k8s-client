@@ -5,7 +5,7 @@ set -euo pipefail
 
 announce "Initializing Conjur certificate authority."
 
-set_namespace $CONJUR_NAMESPACE_NAME
+set_namespace $CONJUR_NAMESPACE
 
 conjur_master=$(get_master_pod_name)
 

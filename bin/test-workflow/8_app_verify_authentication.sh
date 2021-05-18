@@ -65,10 +65,10 @@ fi
 echo "Waiting for pods to become available"
 
 check_pods(){
-  pods_ready "test-app-summon-init" &&
-  pods_ready "test-app-with-host-outside-apps-branch-summon-init" &&
-  pods_ready "test-app-summon-sidecar" &&
-  pods_ready "test-app-secretless"
+  # pods_ready "test-app-summon-init" &&
+  # pods_ready "test-app-with-host-outside-apps-branch-summon-init" &&
+  pods_ready "test-app-summon-sidecar" # &&
+  # pods_ready "test-app-secretless"
 }
 bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_pods
 
@@ -76,10 +76,10 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   echo "Waiting for deployments to become available"
 
   check_deployment_status(){
-    [[ "$(deployment_status "test-app-summon-init")" == "Complete" ]] &&
-    [[ "$(deployment_status "test-app-with-host-outside-apps-branch-summon-init")" == "Complete" ]] &&
-    [[ "$(deployment_status "test-app-summon-sidecar")" == "Complete" ]] &&
-    [[ "$(deployment_status "test-app-secretless")" == "Complete" ]]
+    # [[ "$(deployment_status "test-app-summon-init")" == "Complete" ]] &&
+    # [[ "$(deployment_status "test-app-with-host-outside-apps-branch-summon-init")" == "Complete" ]] &&
+    [[ "$(deployment_status "test-app-summon-sidecar")" == "Complete" ]] # &&
+    # [[ "$(deployment_status "test-app-secretless")" == "Complete" ]]
   }
   bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_deployment_status
 
@@ -107,10 +107,10 @@ else
   if [[ "$TEST_APP_LOADBALANCER_SVCS" == "true" ]]; then
     echo "Waiting for external IPs to become available"
     check_services(){
-      [[ -n "$(external_ip "test-app-summon-init")" ]] &&
-      [[ -n "$(external_ip "test-app-with-host-outside-apps-branch-summon-init")" ]] &&
-      [[ -n "$(external_ip "test-app-summon-sidecar")" ]] &&
-      [[ -n "$(external_ip "test-app-secretless")" ]]
+      # [[ -n "$(external_ip "test-app-summon-init")" ]] &&
+      # [[ -n "$(external_ip "test-app-with-host-outside-apps-branch-summon-init")" ]] &&
+      [[ -n "$(external_ip "test-app-summon-sidecar")" ]] # &&
+      # [[ -n "$(external_ip "test-app-secretless")" ]]
     }
     bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_services
 
@@ -135,26 +135,26 @@ echo "Waiting for urls to be ready"
 
 check_urls(){
   (
-    $curl_cmd -sS --connect-timeout 3 "$init_url" &&
-    $curl_cmd -sS --connect-timeout 3 "$init_url_with_host_outside_apps" &&
-    $curl_cmd -sS --connect-timeout 3 "$sidecar_url" &&
-    $curl_cmd -sS --connect-timeout 3 "$secretless_url"
+    # $curl_cmd -sS --connect-timeout 3 "$init_url" &&
+    # $curl_cmd -sS --connect-timeout 3 "$init_url_with_host_outside_apps" &&
+    $curl_cmd -sS --connect-timeout 3 "$sidecar_url" # &&
+    # $curl_cmd -sS --connect-timeout 3 "$secretless_url"
   ) > /dev/null
 }
 
 bl_retry_constant "${RETRIES}" "${RETRY_WAIT}" check_urls
 
-echo -e "\nAdding entry to the init app\n"
-$curl_cmd \
-  -d '{"name": "Mr. Init"}' \
-  -H "Content-Type: application/json" \
-  "$init_url"/pet
+# echo -e "\nAdding entry to the init app\n"
+# $curl_cmd \
+#   -d '{"name": "Mr. Init"}' \
+#   -H "Content-Type: application/json" \
+#   "$init_url"/pet
 
-echo -e "Adding entry to the init app with host outside apps\n"
-$curl_cmd \
-  -d '{"name": "Mr. Init"}' \
-  -H "Content-Type: application/json" \
-  "$init_url_with_host_outside_apps"/pet
+# echo -e "Adding entry to the init app with host outside apps\n"
+# $curl_cmd \
+#   -d '{"name": "Mr. Init"}' \
+#   -H "Content-Type: application/json" \
+#   "$init_url_with_host_outside_apps"/pet
 
 echo -e "Adding entry to the sidecar app\n"
 $curl_cmd \
@@ -162,22 +162,22 @@ $curl_cmd \
   -H "Content-Type: application/json" \
   "$sidecar_url"/pet
 
-echo -e "Adding entry to the secretless app\n"
-$curl_cmd \
-  -d '{"name": "Mr. Secretless"}' \
-  -H "Content-Type: application/json" \
-  "$secretless_url"/pet
+# echo -e "Adding entry to the secretless app\n"
+# $curl_cmd \
+#   -d '{"name": "Mr. Secretless"}' \
+#   -H "Content-Type: application/json" \
+#   "$secretless_url"/pet
 
-echo -e "Querying init app\n"
-$curl_cmd "$init_url"/pets
+# echo -e "Querying init app\n"
+# $curl_cmd "$init_url"/pets
 
-echo -e "\n\nQuerying init app with hosts outside apps\n"
-$curl_cmd "$init_url_with_host_outside_apps"/pets
+# echo -e "\n\nQuerying init app with hosts outside apps\n"
+# $curl_cmd "$init_url_with_host_outside_apps"/pets
 
 echo -e "\n\nQuerying sidecar app\n"
 $curl_cmd "$sidecar_url"/pets
 
-echo -e "\n\nQuerying secretless app\n"
-$curl_cmd "$secretless_url"/pets
+# echo -e "\n\nQuerying secretless app\n"
+# $curl_cmd "$secretless_url"/pets
 
 DETAILED_DUMP_ON_EXIT=false
