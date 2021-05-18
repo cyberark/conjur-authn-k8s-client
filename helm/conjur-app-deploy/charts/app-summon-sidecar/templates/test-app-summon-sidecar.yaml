@@ -1,4 +1,3 @@
-{{- if .Values.create -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -94,4 +93,3 @@ spec:
         - name: conjur-access-token
           emptyDir:
             medium: Memory
-{{ end -}}

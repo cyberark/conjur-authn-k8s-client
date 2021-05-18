@@ -208,12 +208,6 @@ function get_domain_name() {
     echo "$1" | sed -e 's|^[^/]*//||' -e 's|/.*$||'
 }
 
-function get_openssl_deployment() {
-    openssl_deployment="$1"
-
-    kubectl get pod -l "app=$openssl_deployment" -o jsonpath='{.items[*].metadata.name}'
-}
-
 function get_openssl_pod() {
     openssl_deployment="$1"
 
@@ -224,15 +218,19 @@ function ensure_openssl_pod_created() {
     openssl_deployment="$1"
 
     # Create a test deployment if it hasn't been created already
-    existing_deployment="$(get_openssl_pod $openssl_deployment)"
-    if [ -z "$existing_deployment" ]; then
-        echo "Creating SSL deployment $openssl_deployment"
+    openssl_pod="$(get_openssl_pod $openssl_deployment)"
+    if [ -z "$openssl_pod" ]; then
         kubectl create deployment "$openssl_deployment" \
-            --image cyberark/conjur-k8s-cluster-test:edge
+           --image cyberark/conjur-cli:5 \
+           -- sleep infinity
         # Remember that we need to clean up the deployment that we just created
         deployment_was_created=true
+        
+        # Some flakiness here - wait currently will fail if the resource doesn't exist yet
+        # See https://github.com/kubernetes/kubernetes/issues/83242
+        # TODO: Remove sleep after this is fixed in kubectl
+        sleep 5
         # Wait for Pod to be ready
-        echo "Waiting for OpenSSL test pod to be ready"
         kubectl wait --for=condition=ready pod -l "app=$openssl_deployment"
     fi
 }
