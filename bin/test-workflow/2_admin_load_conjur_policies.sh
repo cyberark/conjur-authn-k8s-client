@@ -34,7 +34,7 @@ deploy_conjur_cli() {
     $cli create -f -
 
   # Wait until pod appears otherwise $conjur_cli_pod could be empty and we would wait forever
-  wait_for_it 300 "(exit \$(echo \$((! \$($cli get pods -n "$CONJUR_NAMESPACE" --selector app=conjur-cli --no-headers 2>/dev/null | wc -l))))) && true"
+  wait_for_it 300 "has_resource 'app=conjur-cli'"
   conjur_cli_pod=$(get_conjur_cli_pod_name)
   wait_for_it 300 "$cli get pod $conjur_cli_pod -o jsonpath='{.status.phase}'| grep -q Running"
 }
@@ -51,7 +51,7 @@ ensure_conjur_cli_initialized() {
 
   $cli exec $1 -- bash -c "yes yes | conjur init -a $CONJUR_ACCOUNT -u $conjur_url"
   # Flaky with 500 Internal Server Error, mitigate with retry
-  wait_for_it 300 "$cli exec $1 -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD"
+  wait_for_it 300 "$cli exec $1 2>/dev/null -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD"
 }
 
 pushd policy > /dev/null
@@ -83,9 +83,6 @@ pushd policy > /dev/null
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.authn-any-policy-branch.yml
 popd > /dev/null
 
-# Create the random database password
-password=$(openssl rand -hex 12)
-
 set_namespace "$CONJUR_NAMESPACE"
 
 announce "Finding or creating a Conjur CLI pod"
@@ -107,7 +104,7 @@ $cli exec $conjur_cli_pod -- \
   conjur_appliance_url=${CONJUR_APPLIANCE_URL:-https://conjur-oss.$CONJUR_NAMESPACE.svc.cluster.local}
     CONJUR_ACCOUNT=${CONJUR_ACCOUNT} \
     CONJUR_ADMIN_PASSWORD=${CONJUR_ADMIN_PASSWORD} \
-    DB_PASSWORD=${password} \
+    DB_PASSWORD=${SAMPLE_APP_BACKEND_DB_PASSWORD} \
     TEST_APP_NAMESPACE_NAME=${TEST_APP_NAMESPACE_NAME} \
     TEST_APP_DATABASE=${TEST_APP_DATABASE} \
     /policy/load_policies.sh

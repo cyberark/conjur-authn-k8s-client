@@ -31,4 +31,7 @@ export CONJUR_APPLIANCE_URL="${CONJUR_APPLIANCE_URL:-https://conjur-oss.$CONJUR_
 # for authenticating is an application name.
 export CONJUR_AUTHN_LOGIN_PREFIX="host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps"
 
+# Create the random database password
+export SAMPLE_APP_BACKEND_DB_PASSWORD=$(openssl rand -hex 12)
+
 ensure_env_database

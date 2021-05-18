@@ -77,6 +77,16 @@ has_namespace() {
   fi
 }
 
+has_resource() {
+  local selector=$1
+  local num_matching_resources=$($cli get pods -n "$CONJUR_NAMESPACE" --selector $selector --no-headers 2>/dev/null | wc -l)
+  if [ $num_matching_resources -gt 0 ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 get_pod_name() {
   local pod_identifier=$1
 

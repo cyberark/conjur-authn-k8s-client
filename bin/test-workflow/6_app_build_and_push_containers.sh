@@ -52,19 +52,6 @@ pushd test_app_summon
   done
 popd
 
-# If in Kubernetes, build custom pg image
-if [[ "$PLATFORM" != "openshift" ]]; then
-  pushd pg
-    docker build -t test-app-pg:$CONJUR_NAMESPACE .
-    test_app_pg_image=$(platform_image_for_push test-app-pg)
-    docker tag test-app-pg:$CONJUR_NAMESPACE $test_app_pg_image
-
-    if ! is_minienv; then
-      docker push $test_app_pg_image
-    fi
-  popd
-fi
-
 if [[ "$LOCAL_AUTHENTICATOR" == "true" ]]; then
   # Re-tag the locally-built conjur-authn-k8s-client:dev image
   authn_image=$(platform_image_for_push conjur-authn-k8s-client)

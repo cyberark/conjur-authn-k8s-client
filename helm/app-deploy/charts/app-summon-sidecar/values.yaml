@@ -21,5 +21,3 @@ conjur:
     name: "conjur-authn-configmap"
   # host/conjur/authn-k8s/<authenticator-ID>/<conjur-policy-layer-or-group>/<app-host-id>
   authnLogin:
-
-create: true

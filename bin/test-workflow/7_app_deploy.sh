@@ -81,7 +81,7 @@ deploy_app_backend() {
      service/test-summon-sidecar-app-backend \
      service/test-secretless-app-backend \
      statefulset/summon-init-pg \
-     statefulset/summon-sidecar-pg \
+     statefulset/summon-sidecar-postgresql \
      statefulset/secretless-pg \
      statefulset/summon-init-mysql \
      statefulset/summon-sidecar-mysql \
@@ -100,12 +100,30 @@ deploy_app_backend() {
 
     echo "Deploying test app backend"
 
-    test_app_pg_docker_image=$(platform_image_for_pull test-app-pg)
+    # Install postgresql helm chart
+    if [ "$(helm list -q -n $TEST_APP_NAMESPACE_NAME | grep "^summon-sidecar-app-backend-pg$")" = "summon-sidecar-app-backend-pg" ]; then
+        helm uninstall summon-sidecar-app-backend-pg -n "$TEST_APP_NAMESPACE_NAME"
+    fi
 
-    sed "s#{{ TEST_APP_PG_DOCKER_IMAGE }}#$test_app_pg_docker_image#g" ./$PLATFORM/tmp.${TEST_APP_NAMESPACE_NAME}.postgres.yml |
-      sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
-      sed "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
-      $cli create -f -
+    kubectl delete --ignore-not-found pvc -l app.kubernetes.io/instance=summon-sidecar-app-backend-pg
+
+    helm repo add bitnami https://charts.bitnami.com/bitnami
+
+    helm install summon-sidecar-app-backend-pg bitnami/postgresql -n $TEST_APP_NAMESPACE_NAME --debug --wait \
+        --set image.repository="postgres" \
+        --set image.tag="9.6" \
+        --set postgresqlDataDir="/data/pgdata" \
+        --set persistence.mountPath="/data/" \
+        --set fullnameOverride="test-summon-sidecar-app-backend" \
+        --set tls.enabled=true \
+        --set volumePermissions.enabled=true \
+        --set tls.certificatesSecret="test-app-backend-certs" \
+        --set tls.certFilename="server.crt" \
+        --set tls.certKeyFilename="server.key" \
+        --set securityContext.fsGroup="999" \
+        --set postgresqlDatabase="test_app" \
+        --set postgresqlUsername="test_app" \
+        --set postgresqlPassword=$SAMPLE_APP_BACKEND_DB_PASSWORD
     ;;
   mysql)
     echo "Deploying test app backend"
@@ -123,10 +141,6 @@ deploy_app_backend() {
 
 ###########################
 deploy_sidecar_app() {
-  # Create new db password and store in Conjur
-  announce "Waiting for backend to be Ready and rotating db password"
-  wait_for_it 300 "./rotate 2>/dev/null"
-
   pushd $(dirname "$0")/../../helm/app-deploy > /dev/null
     # Deploy a given app with yet another subset of the subset of our golden configmap, allowing
     # connection to Conjur
