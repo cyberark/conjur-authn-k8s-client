@@ -81,7 +81,6 @@ deploy_app_backend() {
      service/test-summon-sidecar-app-backend \
      service/test-secretless-app-backend \
      statefulset/summon-init-pg \
-     statefulset/summon-sidecar-postgresql \
      statefulset/secretless-pg \
      statefulset/summon-init-mysql \
      statefulset/summon-sidecar-mysql \

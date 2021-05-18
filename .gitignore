@@ -8,7 +8,7 @@ temp
 helm/kubernetes-cluster-prep/files/conjur-cert.pem
 
 bin/test-workflow/policy/generated/*
-bin/test-workflow/tmp.*
+tmp.*
 bin/test-workflow/output/
 bin/test-workflow/bash-lib/
-
+bin/test-workflow/openshift/

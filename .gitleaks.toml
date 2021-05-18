@@ -2,8 +2,3 @@
   files = [
     "bin/test-workflow/etc/ca-key.pem" # test ssl certs
   ]
-
-  paths = [
-    "bin/test-workflow/bash-lib/*"
-  ]
-
