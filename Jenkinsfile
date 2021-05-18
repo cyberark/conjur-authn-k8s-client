@@ -20,11 +20,11 @@ pipeline {
         }
 
         stage('Cluster-Prep Schema') {
-          steps { sh './bin/validate-schema ./helm/kubernetes-cluster-prep/values.schema.json'}
+          steps { sh './bin/validate-schema ./helm/conjur-config-cluster-prep/values.schema.json'}
         }
 
         stage('Application Namespace-Prep Schema') {
-          steps { sh './bin/validate-schema ./helm/application-namespace-prep/values.schema.json'}
+          steps { sh './bin/validate-schema ./helm/conjur-config-namespace-prep/values.schema.json'}
         }
 
         stage('Helm Charts') {

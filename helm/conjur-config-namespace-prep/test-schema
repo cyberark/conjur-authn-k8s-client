@@ -32,7 +32,7 @@ function authenticator_missing_namespace_test() {
 }
 
 function main() {
-    banner $BOLD "Running Helm schema tests for chart \"application-namespace-prep\""
+    banner $BOLD "Running Helm schema tests for chart \"conjur-config-namespace-prep\""
     check_helm_version
 
     announce "Basic test with both the ConfigMap and Namespace supplied "

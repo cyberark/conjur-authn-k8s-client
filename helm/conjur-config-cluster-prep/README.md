@@ -1,15 +1,13 @@
-# Helm Chart for Conjur Kubernetes Cluster Preparation
+# Helm Chart for Conjur Config Cluster Preparation
 
 ## Table of Contents
 
-- [Helm Chart for Conjur Kubernetes Cluster Preparation](#helm-chart-for-conjur-kubernetes-cluster-preparation)
-  * [Table of Contents](#table-of-contents)
-  * [Overview](#overview)
-    + [Objects Created](#objects-created)
-  * [Preparing the Kubernetes Cluster for Conjur Authentication](#preparing-the-kubernetes-cluster-for-conjur-authentication)
-  * [Examples: Running Helm Install](#examples-running-helm-install)
-    + [Optional: Creating a Local Copy of This Helm Chart](#optional-creating-a-local-copy-of-this-helm-chart)
-  * [Configuration](#configuration)
+* [Overview](#overview)
+  + [Objects Created](#objects-created)
+* [Preparing the Kubernetes Cluster for Conjur Authentication](#preparing-the-kubernetes-cluster-for-conjur-authentication)
+* [Examples: Running Helm Install](#examples-running-helm-install)
+  + [Optional: Creating a Local Copy of This Helm Chart](#optional-creating-a-local-copy-of-this-helm-chart)
+* [Configuration](#configuration)
 
 ## Overview
 
@@ -210,7 +208,7 @@ command is run using a local copy of the Helm chart. You can use
   ```
   cd
   git clone https://github.com/cyberark/conjur-authn-k8s-client
-  cd conjur-authn-k8s-client/deploy/charts/kubernetes-cluster-prep
+  cd conjur-authn-k8s-client/deploy/charts/conjur-config-cluster-prep
   ```
 
 - Helm Install Using A Conjur Certificate From a File
@@ -274,7 +272,7 @@ command is run using a local copy of the Helm chart. You can use
 [Helm chart tests](https://helm.sh/docs/topics/chart_tests/) provide a way
 to validate that a chart works as expected when it is installed.
 
-For the Conjur Kubernetes cluster preparation Helm chart, a Helm test is
+For the Conjur config cluster preparation Helm chart, a Helm test is
 provided that can be used to validate that the Kubernetes resources that have
 been deployed using this chart have valid Conjur configuration information.
 
@@ -292,7 +290,7 @@ Tests include:
 
 ### Optional Conjur Authentication Validation
 
-The Kubernetes cluster prep Helm chart tests include an optional test
+The Conjur config cluster prep Helm chart tests include an optional test
 that will attempt to authenticate with your Conjur instance. The Conjur
 authentication validation testing requires the configuration of a special
 "validator" host ID in Conjur security policy that supports Conjur Kubernetes

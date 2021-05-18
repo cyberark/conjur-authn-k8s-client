@@ -13,19 +13,19 @@ function popd() {
 }
 
 pushd helm
-    pushd kubernetes-cluster-prep
+    pushd conjur-config-cluster-prep
         ./test-lint
         ./test-schema
         ./test-unit
     popd
 
-    pushd application-namespace-prep
+    pushd conjur-config-namespace-prep
         ./test-lint
         ./test-schema
         ./test-unit
     popd
 
-    pushd app-deploy
+    pushd conjur-app-deploy
         ./test-lint
     popd
 popd
