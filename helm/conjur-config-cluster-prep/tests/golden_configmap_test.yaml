@@ -52,16 +52,16 @@ tests:
       # Confirm that default values have been used
       - equal:
           path: metadata.name
-          value: authn-k8s-configmap
+          value: conjur-configmap
       - equal:
           path: data.authnK8sClusterRole
-          value: authn-k8s-clusterrole
+          value: conjur-clusterrole
       - equal:
          path: data.authnK8sNamespace
          value: NAMESPACE
       - equal:
           path: data.authnK8sServiceAccount
-          value: authn-k8s-serviceaccount
+          value: conjur-serviceaccount
       - equal:
           path: data.conjurAccount
           value: default

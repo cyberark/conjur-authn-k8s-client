@@ -56,7 +56,7 @@ pushd helm
         helm uninstall app -n $namespace
 
         helm install app . -n $namespace --wait \
-            --set global.conjur.conjurConnConfigMap="conjur-connect-configmap" \
+            --set global.conjur.conjurConnConfigMap="conjur-connect" \
             --set app-summon-sidecar.conjur.authnLogin="host/conjur/authn-k8s/my-authenticator-id/apps/test-app-summon-sidecar"
     popd
 popd

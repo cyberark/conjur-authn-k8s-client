@@ -4,7 +4,7 @@ templates:
   - conjur_connect_configmap.yaml
 
 defaults: &defaultRequired
-  authnK8s.goldenConfigMap: authn-k8s-configmap
+  authnK8s.goldenConfigMap: conjur-configmap
   authnK8s.namespace: golden
   
 
@@ -38,7 +38,7 @@ tests:
       # Confirm that default values have been used
       - equal:
           path: metadata.name
-          value: conjur-connect-configmap
+          value: conjur-connect
 
 
      # Confirm that values are read from lookup()
@@ -63,7 +63,7 @@ tests:
 
     set:
       # Do not set the required values
-      #authnK8s.goldenConfigMap: authn-k8s-configmap
+      #authnK8s.goldenConfigMap: conjur-configmap
       #authnK8s.namespace: golden
 
     asserts:
