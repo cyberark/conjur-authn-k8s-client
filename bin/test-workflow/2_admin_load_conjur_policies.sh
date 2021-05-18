@@ -51,7 +51,8 @@ ensure_conjur_cli_initialized() {
 
   $cli exec $1 -- bash -c "yes yes | conjur init -a $CONJUR_ACCOUNT -u $conjur_url"
   # Flaky with 500 Internal Server Error, mitigate with retry
-  wait_for_it 300 "$cli exec $1 2>/dev/null -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD"
+  wait_for_it 300 "$cli exec $1 -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD"
+  sleep 5
 }
 
 pushd policy > /dev/null
