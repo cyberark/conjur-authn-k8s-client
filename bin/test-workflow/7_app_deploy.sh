@@ -149,7 +149,7 @@ deploy_sidecar_app() {
     fi
 
     helm install sidecar-app . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait \
-        --set authn-k8s.enabled=true \
+        --set app-summon-sidecar.enabled=true \
         --set global.conjur.conjurConnConfigMap="conjur-connect-configmap" \
         --set app-summon-sidecar.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar"
   popd > /dev/null
