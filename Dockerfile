@@ -135,13 +135,17 @@ RUN curl -#L https://github.com/bats-core/bats-core/archive/master.zip | unzip -
     rm -rf ./bats-core-master
 
 # Install bats-support, bats-assert, and bats-files libraries
-# These need to be source at run time, e.g.:
+# These need to be sourced at run time, e.g.:
 #    source '/bats/bats-support/load.bash'
 #    source '/bats/bats-assert/load.bash'
 #    source '/bats/bats-file/load.bash'
-RUN git clone https://github.com/ztombol/bats-support /bats/bats-support
-RUN git clone https://github.com/ztombol/bats-assert /bats/bats-assert
-RUN git clone https://github.com/ztombol/bats-file /bats/bats-file
+RUN git clone https://github.com/ztombol/bats-support /bats/bats-support && \
+    git clone https://github.com/ztombol/bats-assert /bats/bats-assert && \
+    git clone https://github.com/ztombol/bats-file /bats/bats-file
+
+# Install yq
+RUN wget https://github.com/mikefarah/yq/releases/download/v4.2.0/yq_linux_amd64 -O /usr/local/bin/yq && \
+    chmod +x /usr/local/bin/yq
 
 RUN mkdir -p /tests
 WORKDIR /tests

@@ -2,7 +2,7 @@
 - name: authenticator
   image: cyberark/conjur-authn-k8s-client
   imagePullPolicy: Always
-  command: ["sh", "-c", "/usr/local/bin/authenticator | tee /run/conjur/authn-logs.txt"]
+  command: ["sh", "-c", "/usr/local/bin/authenticator 2>&1 | tee /run/conjur/authn-logs.txt"]
   env:
   - name: CONTAINER_MODE
     value: sidecar

@@ -1,7 +1,5 @@
 # Define a Helm named template so that this BATS script can be included
-# in a Helm test ConfigMap. This can be left commented out; Helm will
-# still be able to find this template, and this file can be kept as
-# valid BATS syntax.
+# in a Helm test ConfigMap.
 #
 {{- define "kube-cluster-prep.helm-test.bats" }}
 #!/usr/bin/env bats
@@ -22,16 +20,106 @@ readonly AUTHN_TIMEOUT_SECS=5
 # Baseline BATS test result color
 text_color "$MAGENTA"
 
+
+###################################################
+#               Helper Functions                  #
+###################################################
+
+function conjur_is_reachable() {
+  curl -s -k --connect-timeout 5 "$conjurApplianceUrl":443 >&2
+}
+
+function get_conjur_info() {
+  curl -s -k --connect-timeout 5 "$conjurApplianceUrl"/info
+}
+
+function has_authorization_error() {
+  echo $1 | grep -s -q "Authorization missing"
+}
+
+function conjur_access_token_exists() {
+  test -f "$ACCESS_TOKEN_FILE"
+}
+
+###################################################
+#  Validation Tests Not Requiring Authentication  #
+###################################################
+
 @test "Conjur Appliance URL is a reachable address" {
-  cmd=(curl -k --connect-timeout 5 "$conjurApplianceUrl":443)
-  display_info "Running ${cmd[@]}"
-  run "${cmd[@]}"
+  display_info "Attempting to reach Conjur URL with 'curl -k ...'"
+  run conjur_is_reachable
   if [ "$status" -ne 0 ]; then
-    display_error "Please check configured Conjur Appliance URL.\n" \
-                  "It is not reachable via 'curl -k'"
+    display_error "The 'conjur.applianceURL' chart value is set to\n" \
+                  "$conjurApplianceURL. This is not reachable via 'curl -k'"
   fi
   assert_success
 }
+
+# If the Conjur instance supports an /info endpoint, then validate that one
+# part of the Conjur config (e.g. Conjur account or authenticator ID) matches
+# the corresponding field in the /info response.
+#
+# Syntax:
+#   validate_info_endpoint_field <YAML path> <exp value> <desc> <chart value>
+#
+# Where arguments are:
+#   <YAML path>:   YAML path to field in /info response,
+#                  e.g. '.configuration.conjur.account'
+#   <exp value>:   Value expected in /info response
+#   <desc>:        Description of field
+#   <chart value>: Corresponding Helm chart value, e.g. 'conjur.account'
+#
+function validate_info_endpoint_field() {
+  yaml_path=$1
+  expected_value=$2
+  description=$3
+  chart_value=$4
+
+  # First make sure that the Conjur URL is a reachable address
+  display_info "Checking whether Conjur URL is a reachable address."
+  run conjur_is_reachable
+  if [ "$status" -ne 0 ]; then
+    skip "test due to Conjur URL being unreachable."
+  fi
+
+  display_info "Conjur URL is reachable. Checking whether /info REST\n" \
+               "endpoint is available at that address."
+  run get_conjur_info
+  if [ "$status" -ne 0 ] || (has_authorization_error "$output"); then
+    skip "test due to the /info REST endpoint being unavailable for Conjur OSS."
+  fi
+  conjur_info="$output"
+
+  display_info "The /info endpoint is available. Validating $description\n" \
+               "($expected_value) based on /info content."
+  run yq eval "$yaml_path" <(echo "$conjur_info")
+  if [ "$output" != "$expected_value" ]; then
+    display_error "The '$chart_value' chart value is set to $expected_value.\n" \
+                  "This does not match the actual $description."
+  fi
+  assert_output "$expected_value"
+}
+
+@test "Conjur Account is valid" {
+  yaml_path=".configuration.conjur.account"
+  exp_value="$conjurAccount"
+  description="Conjur account"
+  chart_value="conjur.account"
+  validate_info_endpoint_field "$yaml_path" "$exp_value" "$description" "$chart_value"
+}
+
+@test "Conjur Authenticator ID is valid" {
+  yaml_path=".services.authn-k8s.name"
+  exp_value="$authnK8sAuthenticatorID"
+  description="Authenticator ID"
+  chart_value="authnK8s.authenticatorID"
+  validate_info_endpoint_field "$yaml_path" "$exp_value" "$description" "$chart_value"
+}
+
+
+###################################################
+#    Validation Tests Requiring Authentication    #
+###################################################
 
 {{- if .Values.test.authentication.enable }}
 
@@ -39,15 +127,12 @@ text_color "$MAGENTA"
   display_info "Checking for existence of access token at '$ACCESS_TOKEN_FILE'"
   secs=0
   until [ "$secs" -ge "$AUTHN_TIMEOUT_SECS" ]
-  status=0
   do
-    echo "Checking for existence of authn token at $ACCESS_TOKEN_FILE"
-    test -f "$ACCESS_TOKEN_FILE" || status="$?"
+    run conjur_access_token_exists
     if [ "$status" -eq 0 ]; then
       break
     fi
     secs=$((secs+1))
-    echo "$n"
     sleep 1
   done
   if [ "$status" -ne 0 ]; then
@@ -59,7 +144,15 @@ text_color "$MAGENTA"
   assert_success
 }
 
+function skip_if_authn_successful() {
+  # No need to check for logged errors if authentication was successful
+  if conjur_access_token_exists; then
+    skip "error checking since authentication with Conjur was successful."
+  fi
+}
+
 @test "CAKC028 error code does not appear in authenticator logs" {
+  skip_if_authn_successful
   error_code="CAKC028"
   display_info "Checking for existence of error code $error_code in authenticator logs"
   run grep "$error_code" "$AUTHN_LOG_FILE"
@@ -74,44 +167,24 @@ text_color "$MAGENTA"
   # Failure of the grep command is success in this case 
   assert_failure
 }
+
+@test "CAKC007 error code does not appear in authenticator logs" {
+  skip_if_authn_successful
+  error_code="CAKC007"
+  display_info "Checking for existence of error code $error_code in authenticator logs"
+  run grep "$error_code" "$AUTHN_LOG_FILE"
+  if [ "$status" -eq 0 ]; then
+    display_error "The authenticator returns the following error:\n" \
+      "$output\n" \
+      "This means that neither of the following Helm chart values is set:\n" \
+      "    conjur.certificateFilePath\n" \
+      "    conjur.certificateBase64\n" \
+      "At least one of these must be set."
+  fi
+  # Failure of the grep command is success in this case 
+  assert_failure
+}
+
 {{- end }}
-
-@test "Conjur Account is valid" {
-  display_info "Validating account from the info endpoint for enterprise"
-
-  cmd=( curl -k --connect-timeout 5 "$conjurApplianceUrl"/info -o "$TEMP_INFO_FILE")
-  display_info "Running ${cmd[@]}"
-  "${cmd[@]}"
-  run grep account.*"$conjurAccount" "$TEMP_INFO_FILE"
-
-  if [ "$status" -ne 0 ]; then
-    if (grep account "$TEMP_INFO_FILE"); then
-        display_error "Please check the configured Conjur Account.\n" \
-                      "It does not match with values from the info endpoint."
-    else
-        skip "test due to the info endpoint is not available for OSS"
-    fi
-  fi
-  assert_success
-}
-
-@test "Conjur Authenticator is valid" {
-  display_info "Validating authenticator ID from the info endpoint for enterprise"
-
-  cmd=( curl -k --connect-timeout 5 "$conjurApplianceUrl"/info -o "$TEMP_INFO_FILE")
-  display_info "Running ${cmd[@]}"
-  run "${cmd[@]}"
-  run grep name.*"$authnK8sAuthenticatorID" "$TEMP_INFO_FILE"
-
-  if [ "$status" -ne 0 ]; then
-    if (grep name "$TEMP_INFO_FILE"); then
-        display_error "Please check configured authenticator ID\n" \
-                      "It does not match with values from the info endpoint."
-    else
-        skip "test due to the info endpoint is not available for OSS"
-    fi
-  fi
-  assert_success
-}
 
 {{- end }}
