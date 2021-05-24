@@ -5,5 +5,5 @@
 
 source ../common/utils.sh
 
-banner $BOLD "Running Helm unit tests for chart \"kubernetes-cluster-prep\""
+banner $BOLD "Running Helm unit tests for chart \"conjur-config-namespace-prep\""
 run_helm_unittest

@@ -26,7 +26,7 @@ namespace="app-test"
 
 pushd helm
     # Prepare our cluster with conjur and authnK8s credentials in a golden configmap
-    pushd kubernetes-cluster-prep
+    pushd conjur-config-cluster-prep
         announce "Installing cluster prep chart"
         helm uninstall cluster-prep -n conjur-oss
 
@@ -40,7 +40,7 @@ pushd helm
     popd
 
     # Prepare a given namespace with a subset of credentials from the golden configmap
-    pushd application-namespace-prep
+    pushd conjur-config-namespace-prep
         announce "Installing application namespace prep chart"
         helm uninstall namespace-prep -n $namespace
 
@@ -51,7 +51,7 @@ pushd helm
 
     # Deploy a given app with yet another subset of the subset of our golden configmap, allowing
     # connection to Conjur
-    pushd app-deploy
+    pushd conjur-app-deploy
         announce "Installing application chart"
         helm uninstall app -n $namespace
 

@@ -58,7 +58,7 @@ function clusterrole_name_test() {
 }
 
 function main() {
-    banner $BOLD "Running Helm schema tests for chart \"kubernetes-cluster-prep\""
+    banner $BOLD "Running Helm schema tests for chart \"conjur-config-cluster-prep\""
     check_helm_version
 
     announce "Appliance URL that begins with 'https://' is accepted"

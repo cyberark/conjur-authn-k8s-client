@@ -12,7 +12,7 @@ function popd() {
     command popd "$@" > /dev/null
 }
 
-banner $BOLD "Running Helm lint for chart \"app-deploy\""
+banner $BOLD "Running Helm lint for chart \"conjur-app-deploy\""
 helm lint .
 
 pushd charts

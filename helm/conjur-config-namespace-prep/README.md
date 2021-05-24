@@ -30,7 +30,7 @@ in the given Conjur NameSpace.
 ### Prerequisites
 
 - A running Conjur instance inside or outside of a Kubernetes cluster
-- A NameSpace configured to contain a ["Golden Configmap"](../kubernetes-cluster-prep/README.md)
+- A NameSpace configured to contain a ["Golden Configmap"](../conjur-config-cluster-prep/README.md)
 
 ### Objects Created
 

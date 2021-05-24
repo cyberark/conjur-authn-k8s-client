@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Helm lint tests for the Conjur Kubernetes cluster prep Helm chart.
+# Helm lint tests for the Conjur config cluster prep Helm chart.
 
 source ../common/utils.sh
 
-banner $BOLD "Running Helm lint for chart \"kubernetes-cluster-prep\""
+banner $BOLD "Running Helm lint for chart \"conjur-config-cluster-prep\""
 
 # Run Helm lint with a Conjur certificate file
 announce "With a Conjur certificate file"
