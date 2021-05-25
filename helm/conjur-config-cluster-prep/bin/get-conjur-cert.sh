@@ -49,8 +49,10 @@ print_usage() {
   echo "    -h                             Show help"
   echo "    -i                             Conjur appliance URL is a Kubernetes"
   echo "                                   cluster internal address."
-  echo "    -u <Conjur appliance URL>      Conjur appliance URL (required)"
-  echo "    -v                             Verify the certificate"
+  echo "    -s                             Display the fingerprint but skip prompting"
+  echo "                                   the user to acknowledge it is trusted."
+  echo "    -u <Conjur appliance URL>      Conjur appliance URL (required)."
+  echo "    -v                             Verify the certificate."
 }
 
 function main() {
@@ -59,16 +61,18 @@ function main() {
   filepath=""
   internal_addr=false
   conjur_url=""
+  skip_fingerprint_check=false
   verify=false
  
   # Process command line options
   local OPTIND
-  while getopts ':f:hid:u:v' flag; do
+  while getopts ':f:hid:su:v' flag; do
     case "${flag}" in
       f) filepath=${OPTARG} ;;
       h) print_usage; exit 0 ;;
       i) internal_addr=true ;;
       d) openssl_deployment=${OPTARG} ;;
+      s) skip_fingerprint_check=true ;;
       u) conjur_url=${OPTARG} ;;
       v) verify=true ;;
       *) echo "Invalid argument -${OPTARG}" >&2; echo; print_usage ; exit 1;;
@@ -150,6 +154,32 @@ function main() {
     if [ "$deployment_was_created" = true ]; then
         delete_openssl_deployment "$openssl_deployment"
         deployment_was_created=false
+    fi
+  fi
+  verify_fingerprint
+}
+
+# This function will check the certificate fingerprint and
+# ask the user if they trust the certificate
+function verify_fingerprint() {
+  echo -e "\n\nThe Conjur server's certificate SHA-1 fingerprint is:"
+  # get the cert fingerprint
+  openssl x509 -in $cert_filepath -noout -fingerprint
+
+  if [[ "$skip_fingerprint_check" = false ]]; then
+
+    echo "To verify this certificate, we recommend running "
+    echo "the following command on the Conjur server:"
+    echo "openssl x509 -fingerprint -noout -in ~conjur/etc/ssl/conjur.pem"
+    echo "See https://github.com/cyberark/conjur-authn-k8s-client/blob/master/helm/kubernetes-cluster-prep/README.md"
+    echo "for information on checking the fingerprint in Kubernetes"
+
+    read -p "Trust this certificate? Y/N (Default: no): " trust
+    if [[ !("$trust" =~ ^([yY][eE][sS]|[yY])$) ]]; then
+      echo "You decided not to trust the certificate"
+      echo "removing" $cert_filepath
+      rm $cert_filepath
+      exit 1
     fi
   fi
 

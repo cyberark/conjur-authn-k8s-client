@@ -123,6 +123,8 @@ The steps are as follows:
       -h                             Show help
       -i                             Conjur appliance URL is a Kubernetes
                                      cluster internal address.
+      -s                             Display the fingerprint but skip prompting
+                                     the user to acknowledge it is trusted
       -u <Conjur appliance URL>      Conjur appliance URL (required)
       -v                             Verify the certificate
 
@@ -178,6 +180,27 @@ The steps are as follows:
    9gi8KwcJAxv0+CXPjL0gAH9dWrUmKXAQGzA2dnNCgIfVqgfPZwMqpxEwZt+GEEu8
    zA==
    -----END CERTIFICATE-----
+   ```
+
+   The script will display the fingerprint for the certificate and ask if
+   you trust the certificate.
+
+   For Conjur Enterprise, the fingerprint can be verified by running
+   the following command on the Conjur instance (either leader or follower,
+   depending upon the Conjur appliance URL):
+   ```
+   openssl x509 -fingerprint -noout -in <certificate file path>
+   ```
+   The certificate is located at ~conjur/etc/ssl/conjur.pem
+
+   In a Kubernetes cluster, the certificate is located at
+   /opt/conjur/etc/ssl/cert/tls.crt in the nginx container in the conjur server pod.
+   OpenSSL may need to be installed in the container.
+
+   For example:
+
+   ```
+   kubectl exec -it conjur-oss-7ddbb984c9-j96nb  -- bash -c "apt-get update;apt-get install openssl;openssl x509 -fingerprint -noout -in /opt/conjur/etc/ssl/cert/tls.crt"
    ```
 
 1. Create a Namespace for the authn-k8s authenticator.
