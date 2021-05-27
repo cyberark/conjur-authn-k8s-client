@@ -30,6 +30,7 @@ pushd temp > /dev/null
 
         announce "Retrieving the Conjur admin password"
         export CONJUR_ADMIN_PASSWORD="$(./3_retrieve_admin_password.sh)"
+        echo "CONJUR_ADMIN_PASSWORD=$CONJUR_ADMIN_PASSWORD"
 
         announce "Enabling the Conjur Kubernetes authenticator if necessary"
         ./4_ensure_authn_k8s_enabled.sh

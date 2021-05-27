@@ -14,5 +14,6 @@ cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 ./4_kubernetes_cluster_prep.sh
 ./5_app_namespace_prep.sh
 ./6_app_build_and_push_containers.sh
-./7_app_deploy.sh
-./8_app_verify_authentication.sh
+./7_app_deploy_backend.sh
+./8_app_deploy_summon_sidecar.sh
+./9_app_verify_authentication.sh

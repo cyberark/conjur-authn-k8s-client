@@ -52,7 +52,6 @@ ensure_conjur_cli_initialized() {
   $cli exec $1 -- bash -c "yes yes | conjur init -a $CONJUR_ACCOUNT -u $conjur_url"
   # Flaky with 500 Internal Server Error, mitigate with retry
   wait_for_it 300 "$cli exec $1 -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD"
-  sleep 5
 }
 
 pushd policy > /dev/null
@@ -100,8 +99,8 @@ announce "Loading Conjur policy."
 $cli exec $conjur_cli_pod -- rm -rf /policy
 $cli cp ./policy $conjur_cli_pod:/policy
 
-$cli exec $conjur_cli_pod -- \
-  bash -c "
+wait_for_it 300 "$cli exec $conjur_cli_pod -- \
+  bash -c \"
   conjur_appliance_url=${CONJUR_APPLIANCE_URL:-https://conjur-oss.$CONJUR_NAMESPACE.svc.cluster.local}
     CONJUR_ACCOUNT=${CONJUR_ACCOUNT} \
     CONJUR_ADMIN_PASSWORD=${CONJUR_ADMIN_PASSWORD} \
@@ -109,7 +108,8 @@ $cli exec $conjur_cli_pod -- \
     TEST_APP_NAMESPACE_NAME=${TEST_APP_NAMESPACE_NAME} \
     TEST_APP_DATABASE=${TEST_APP_DATABASE} \
     /policy/load_policies.sh
-  "
+  \"
+"
 
 $cli exec $conjur_cli_pod -- rm -rf ./policy
 
