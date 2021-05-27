@@ -18,7 +18,8 @@ test_failed=false
 function authenticator_variable_test() {
     helm lint . --strict \
         --set "authnK8s.goldenConfigMap=authn-k8s-configmap"\
-        --set "authnK8s.namespace=golden"
+        --set "authnK8s.namespace=golden" \
+        --set "authnK8s.backendSecret=test-backend-secret"
 }
 
 function authenticator_missing_configmap_test() {

@@ -6,6 +6,7 @@ templates:
 defaults: &defaultRequired
   authnK8s.goldenConfigMap: authn-k8s-configmap
   authnK8s.namespace: golden
+  authnK8s.backendSecret: test-backend-secret
   
 
 tests:
