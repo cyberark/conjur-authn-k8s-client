@@ -30,7 +30,7 @@ tests:
       # Confirm that default ClusterRole name has been used
       - equal:
           path: metadata.name
-          value: "authn-k8s-clusterrole"
+          value: "conjur-clusterrole"
 
   #=======================================================================
   - it: should allow ClusterRole name to be set explicitly

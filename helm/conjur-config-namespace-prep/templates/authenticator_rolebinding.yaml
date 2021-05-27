@@ -10,12 +10,13 @@
 apiVersion: {{ include "conjur-prep.rbac-api" . }}
 kind: RoleBinding
 metadata:
-  name: {{ .Values.authnK8s.namespace }}-conjur-authenticator-role-binding
+  name: conjur-rolebinding
   labels: 
-    app.kubernetes.io/name: "rolebinding"
-    app.kubernetes.io/component: "authn-k8s-access-permissions"
-    app.kubernetes.io/instance: {{ .Release.Namespace }}
-    app.kubernetes.io/part-of: "authn-k8s-namespace-config"
+    app.kubernetes.io/name: "conjur-rolebinding"
+    app.kubernetes.io/component: "conjur-namespace-access"
+    app.kubernetes.io/instance: "conjur-{{ .Release.Namespace }}-rolebinding"
+    app.kubernetes.io/part-of: "conjur-config"
+    conjur.org/name: "conjur-rolebinding"
 subjects:
 - kind: ServiceAccount
   name: {{ get $g "authnK8sServiceAccount" }}

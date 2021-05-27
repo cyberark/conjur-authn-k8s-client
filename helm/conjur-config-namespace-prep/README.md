@@ -81,7 +81,7 @@ kubectl create NameSpace my-NameSpace
 
 ```shell-session
 helm install NameSpace-prep . -n "my-NameSpace" \
-  --set authnK8s.goldenConfigMap="authn-k8s-configmap" \
+  --set authnK8s.goldenConfigMap="conjur-configmap" \
   --set authnK8s.NameSpace="default"
 ```
 
@@ -101,7 +101,7 @@ For example:
 
 ```shell-session
 helm upgrade NameSpace-prep . -n "my-NameSpace" \
-  --set authnK8s.goldenConfigMap="authn-k8s-configmap" \
+  --set authnK8s.goldenConfigMap="conjur-configmap" \
   --set authnK8s.NameSpace="new-NameSpace"
 ```
 

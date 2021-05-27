@@ -6,22 +6,23 @@ metadata:
     labels:
       release: {{ .Release.Name }}
       heritage: {{ .Release.Service }}
-      app.kubernetes.io/name: golden-configmap
-      app.kubernetes.io/component: "conjur-config"
-      app.kubernetes.io/instance: {{ .Release.Namespace }}
-      app.kubernetes.io/part-of: "authn-k8s-cluster-config"
+      app.kubernetes.io/name: "conjur-golden-configmap"
+      app.kubernetes.io/component: "conjur-reference-config"
+      app.kubernetes.io/instance: "conjur-golden-configmap"
+      app.kubernetes.io/part-of: "conjur-config"
+      conjur.org/name: "conjur-golden-configmap"
       helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 data:
     # authn-k8s Configuration 
     authnK8sAuthenticatorID: {{ required "A valid authnK8s.authenticatorID is required!" .Values.authnK8s.authenticatorID }}
     {{- if eq .Values.authnK8s.clusterRole.create true }}
-    authnK8sClusterRole: {{ .Values.authnK8s.clusterRole.name | default "authn-k8s-clusterrole" }}
+    authnK8sClusterRole: {{ .Values.authnK8s.clusterRole.name | default "conjur-clusterrole" }}
     {{- else }}
     authnK8sClusterRole: {{ required "A valid authnK8s.clusterRole.name is required!" .Values.authnK8s.clusterRole.name }}
     {{- end }}
     authnK8sNamespace: {{ .Release.Namespace }}
     {{- if eq .Values.authnK8s.serviceAccount.create true }}
-    authnK8sServiceAccount: {{ .Values.authnK8s.serviceAccount.name | default "authn-k8s-serviceaccount" }}
+    authnK8sServiceAccount: {{ .Values.authnK8s.serviceAccount.name | default "conjur-serviceaccount" }}
     {{- else }}
     authnK8sServiceAccount: {{ required "A valid authnK8s.serviceAccount.name is required!" .Values.authnK8s.serviceAccount.name }}
     {{- end }}
