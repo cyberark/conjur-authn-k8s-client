@@ -2,6 +2,7 @@
 set -euo pipefail
 
 export PLATFORM="${PLATFORM:-kubernetes}"
+export TIMEOUT="${TIMEOUT:-5m0s}"
 
 . utils.sh
 
@@ -20,7 +21,8 @@ pushd $(dirname "$0")/../../helm/app-deploy > /dev/null
   helm install app-summon-sidecar . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait \
       --set app-summon-sidecar.enabled=true \
       --set global.conjur.conjurConnConfigMap="conjur-connect-configmap" \
-      --set app-summon-sidecar.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar"
+      --set app-summon-sidecar.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar" \
+      --timeout $TIMEOUT
 popd > /dev/null
 
 echo "Test app/sidecar deployed."

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 export PLATFORM="${PLATFORM:-kubernetes}"
+export TIMEOUT="${TIMEOUT:-5m0s}"
 
 . utils.sh
 
@@ -21,5 +22,6 @@ pushd $(dirname "$0")/../../helm/kubernetes-cluster-prep > /dev/null
         --set conjur.account="$CONJUR_ACCOUNT" \
         --set conjur.applianceUrl="$CONJUR_APPLIANCE_URL" \
         --set conjur.certificateFilePath="files/conjur-cert.pem" \
-        --set authnK8s.authenticatorID="$AUTHENTICATOR_ID"
+        --set authnK8s.authenticatorID="$AUTHENTICATOR_ID" \
+        --timeout $TIMEOUT
 popd > /dev/null

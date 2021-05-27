@@ -2,6 +2,7 @@
 set -euo pipefail
 
 export PLATFORM="${PLATFORM:-kubernetes}"
+export TIMEOUT="${TIMEOUT:-5m0s}"
 
 . utils.sh
 
@@ -38,4 +39,5 @@ helm install app-summon-sidecar-backend-pg bitnami/postgresql -n $TEST_APP_NAMES
     --set securityContext.fsGroup="999" \
     --set postgresqlDatabase="test_app" \
     --set postgresqlUsername="test_app" \
-    --set postgresqlPassword=$SAMPLE_APP_BACKEND_DB_PASSWORD
+    --set postgresqlPassword=$SAMPLE_APP_BACKEND_DB_PASSWORD \
+    --timeout $TIMEOUT

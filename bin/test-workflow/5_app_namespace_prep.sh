@@ -2,6 +2,7 @@
 set -euo pipefail
 
 export PLATFORM="${PLATFORM:-kubernetes}"
+export TIMEOUT="${TIMEOUT:-5m0s}"
 
 . utils.sh
 
@@ -18,5 +19,6 @@ pushd $(dirname "$0")/../../helm/application-namespace-prep > /dev/null
         --create-namespace \
         --set authnK8s.goldenConfigMap="authn-k8s-configmap" \
         --set authnK8s.namespace="$CONJUR_NAMESPACE" \
-        --set authnK8s.backendSecret="test-app-backend-certs"
+        --set authnK8s.backendSecret="test-app-backend-certs" \
+        --timeout $TIMEOUT
 popd > /dev/null
