@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-. set_env_vars.sh
-
 if [ $PLATFORM = 'kubernetes' ]; then
     cli=kubectl
 elif [ $PLATFORM = 'openshift' ]; then
@@ -23,20 +21,6 @@ check_env_var() {
   fi
 }
 
-ensure_env_database() {
-  local valid_dbs=(
-  'postgres'
-  'mysql'
-  )
-
-  if ! echo "${valid_dbs[@]}" | grep -Eq "\b${TEST_APP_DATABASE}\b"; then
-    printf "TEST_APP_DATABASE value not found in valid_dbs: '%s'\n" "${TEST_APP_DATABASE}"
-    printf "valid_dbs:\n"
-    printf "'%s'\n" "${valid_dbs[@]}"
-    exit 1
-  fi
-}
-
 announce() {
   echo "++++++++++++++++++++++++++++++++++++++"
   echo ""
@@ -48,8 +32,6 @@ announce() {
 platform_image_for_pull() {
   if [[ ${PLATFORM} = "openshift" ]]; then
     echo "${PULL_DOCKER_REGISTRY_PATH}/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
-  elif is_minienv; then
-    echo "$1:$CONJUR_NAMESPACE"
   elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
     echo "${PULL_DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE"
   else
@@ -60,8 +42,6 @@ platform_image_for_pull() {
 platform_image_for_push() {
   if [[ ${PLATFORM} = "openshift" ]]; then
     echo "${DOCKER_REGISTRY_PATH}/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
-  elif is_minienv; then
-    echo "$1:$CONJUR_NAMESPACE"
   elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
     echo "${DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE"
   else
@@ -97,19 +77,6 @@ get_pod_name() {
 
 get_pods() {
   $cli get pods --selector "$1" --no-headers | awk '{ print $1 }'
-}
-
-get_nodeport(){
-  svc_name="$1"
-  echo "$(kubectl get svc $svc_name -o jsonpath='{.spec.ports[0].nodePort}')"
-}
-
-app_service_type() {
-  if [[ "$TEST_APP_LOADBALANCER_SVCS" == "true" ]]; then
-    echo "LoadBalancer"
-  else
-    echo "NodePort"
-  fi
 }
 
 get_master_pod_name() {
@@ -196,25 +163,6 @@ function wait_for_it() {
       sleep $spacer
     done
     echo 'Success!'
-  fi
-}
-
-function is_minienv() {
-  MINI_ENV="${MINI_ENV:-false}"
-
-  if hash minishift 2>/dev/null; then
-    # Check if Minishift is running too
-    if [[ "$MINI_ENV" == "false" ]] && [[ "$(minishift status | grep Running)" = "" ]]; then
-      false
-    else
-      true
-    fi
-  else
-    if [[ "$MINI_ENV" == "false" ]]; then
-      false
-    else
-      true
-    fi
   fi
 }
 

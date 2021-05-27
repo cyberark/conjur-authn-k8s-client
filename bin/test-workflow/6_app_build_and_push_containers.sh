@@ -46,23 +46,6 @@ pushd test_app_summon
     test_app_image=$(platform_image_for_push "test-$app_type-app")
     docker tag test-app:$CONJUR_NAMESPACE $test_app_image
 
-    if ! is_minienv; then
-      docker push $test_app_image
-    fi
+    docker push $test_app_image
   done
 popd
-
-if [[ "$LOCAL_AUTHENTICATOR" == "true" ]]; then
-  # Re-tag the locally-built conjur-authn-k8s-client:dev image
-  authn_image=$(platform_image_for_push conjur-authn-k8s-client)
-  docker tag conjur-authn-k8s-client:dev $authn_image
-
-  # Re-tag the locally-built secretless-broker:latest image
-  secretless_image=$(platform_image_for_push secretless-broker)
-  docker tag secretless-broker:latest $secretless_image
-
-  if ! is_minienv; then
-    docker push $authn_image
-    docker push $secretless_image
-  fi
-fi

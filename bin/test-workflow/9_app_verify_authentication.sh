@@ -55,12 +55,10 @@ pod_curl() {
   kubectl exec test-curl -- curl "$@"
 }
 
-if [[ "$TEST_APP_LOADBALANCER_SVCS" == "false" ]]; then
-  echo "Deploying a test curl pod"
-  deploy_test_curl
-  echo "Waiting for test curl pod to become available"
-  bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_test_curl
-fi
+echo "Deploying a test curl pod"
+deploy_test_curl
+echo "Waiting for test curl pod to become available"
+bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_test_curl
   
 echo "Waiting for pods to become available"
 
@@ -104,31 +102,12 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   secretless_url="localhost:8083"
   init_url_with_host_outside_apps="localhost:8084"
 else
-  if [[ "$TEST_APP_LOADBALANCER_SVCS" == "true" ]]; then
-    echo "Waiting for external IPs to become available"
-    check_services(){
-      # [[ -n "$(external_ip "test-app-summon-init")" ]] &&
-      # [[ -n "$(external_ip "test-app-with-host-outside-apps-branch-summon-init")" ]] &&
-      [[ -n "$(external_ip "test-app-summon-sidecar")" ]] # &&
-      # [[ -n "$(external_ip "test-app-secretless")" ]]
-    }
-    bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_services
-
-    curl_cmd=curl
-    init_url=$(external_ip test-app-summon-init):8080
-    init_url_with_host_outside_apps=$(external_ip test-app-with-host-outside-apps-branch-summon-init):8080
-    sidecar_url=$(external_ip test-app-summon-sidecar):8080
-    secretless_url=$(external_ip test-app-secretless):8080
-
-  else
-    # Apps don't have loadbalancer services, so test by curling from
-    # a pod that is inside the KinD cluster.
-    curl_cmd=pod_curl
-    init_url="test-app-summon-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
-    init_url_with_host_outside_apps="test-app-with-host-outside-apps-branch-summon-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
-    sidecar_url="test-app-summon-sidecar.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
-    secretless_url="test-app-secretless.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
-  fi
+  # Test by curling from a pod that is inside the KinD cluster.
+  curl_cmd=pod_curl
+  init_url="test-app-summon-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
+  init_url_with_host_outside_apps="test-app-with-host-outside-apps-branch-summon-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
+  sidecar_url="test-app-summon-sidecar.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
+  secretless_url="test-app-secretless.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
 fi
 
 echo "Waiting for urls to be ready"

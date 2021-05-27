@@ -4,14 +4,14 @@ set -eo pipefail
 
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
-. ./0_prep_conjur_in_kind.sh
+./0_prep_conjur_in_kind.sh
 
-. ./1_prep_check_dependencies.sh
+. ./1_prep_env.sh
 
 ./2_admin_load_conjur_policies.sh
 ./3_admin_init_conjur_cert_authority.sh
 
-./4_kubernetes_cluster_prep.sh
+./4_admin_cluster_prep.sh
 ./5_app_namespace_prep.sh
 ./6_app_build_and_push_containers.sh
 ./7_app_deploy_backend.sh

@@ -13,19 +13,13 @@ prepare_conjur_cli_image() {
   cli_app_image=$(platform_image_for_push conjur-cli)
   docker tag cyberark/conjur-cli:$CONJUR_VERSION-latest $cli_app_image
 
-  if ! is_minienv; then
-    docker push $cli_app_image
-  fi
+  docker push $cli_app_image
 }
 
 deploy_conjur_cli() {
   announce "Deploying Conjur CLI pod."
 
-  if is_minienv; then
-    IMAGE_PULL_POLICY='Never'
-  else
-    IMAGE_PULL_POLICY='Always'
-  fi
+  IMAGE_PULL_POLICY='Always'
 
   cli_app_image=$(platform_image_for_pull conjur-cli)
   sed -e "s#{{ CONJUR_SERVICE_ACCOUNT }}#$(conjur_service_account)#g" ./$PLATFORM/conjur-cli.yml |
