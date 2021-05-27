@@ -17,7 +17,7 @@ if [ "$(helm list -q -n $TEST_APP_NAMESPACE_NAME | grep "^app-summon-sidecar$")"
     helm uninstall app-summon-sidecar -n "$TEST_APP_NAMESPACE_NAME"
 fi
 
-pushd $(dirname "$0")/../../helm/app-deploy > /dev/null
+pushd $(dirname "$0")/../../helm/conjur-app-deploy > /dev/null
   helm install app-summon-sidecar . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait \
       --set app-summon-sidecar.enabled=true \
       --set global.conjur.conjurConnConfigMap="conjur-connect-configmap" \
