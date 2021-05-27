@@ -16,5 +16,6 @@ pushd $(dirname "$0")/../../helm/application-namespace-prep > /dev/null
     helm install namespace-prep . -n "$TEST_APP_NAMESPACE_NAME"  --debug --wait \
         --create-namespace \
         --set authnK8s.goldenConfigMap="authn-k8s-configmap" \
-        --set authnK8s.namespace="$CONJUR_NAMESPACE"
+        --set authnK8s.namespace="$CONJUR_NAMESPACE" \
+        --set authnK8s.backendSecret="test-app-backend-certs"
 popd > /dev/null

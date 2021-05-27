@@ -4,13 +4,17 @@
         "authnK8s": {
             "required": [
                 "goldenConfigMap",
-                "namespace"
+                "namespace",
+                "backendSecret"
             ],
             "properties": {
                 "goldenConfigMap": {
                     "type": "string"
                 },
                 "namespace": {
+                    "type": "string"
+                },
+                "backendSecret": {
                     "type": "string"
                 }
             }

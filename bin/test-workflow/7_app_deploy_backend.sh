@@ -7,16 +7,6 @@ announce "Deploying summon-sidecar test app postgres backend for $TEST_APP_NAMES
 
 set_namespace $TEST_APP_NAMESPACE_NAME
 
-echo "Create secrets for test app backend"
-$cli delete --namespace $TEST_APP_NAMESPACE_NAME --ignore-not-found \
-  secret test-app-backend-certs
-
-$cli --namespace $TEST_APP_NAMESPACE_NAME \
-  create secret generic \
-  test-app-backend-certs \
-  --from-file=server.crt=./etc/ca.pem \
-  --from-file=server.key=./etc/ca-key.pem
-
 echo "Deploying test app backend"
 
 # Install postgresql helm chart

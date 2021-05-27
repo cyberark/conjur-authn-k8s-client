@@ -2,6 +2,7 @@ authnK8s:
   # These are required values
   # goldenConfigMap: 
   # namespace: 
+  # backendSecret:
 
 authnRoleBinding:
   create: true
