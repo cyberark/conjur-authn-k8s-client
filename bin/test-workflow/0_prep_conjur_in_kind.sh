@@ -1,9 +1,7 @@
 #!/bin/bash
 
 set -eo pipefail
-
-rm -rf bash-lib
-git clone https://github.com/cyberark/bash-lib.git
+cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
 # Install Conjur in our cluster
 mkdir -p temp
@@ -12,10 +10,10 @@ pushd temp > /dev/null
     git clone https://github.com/cyberark/conjur-oss-helm-chart.git
 
     pushd conjur-oss-helm-chart/examples/kubernetes-in-docker > /dev/null
-        . utils.sh
+        source utils.sh
 
         announce "Setting demo environment variable defaults"
-        . ./0_export_env_vars.sh
+        source ./0_export_env_vars.sh
 
         announce "Creating a Kubernetes-in-Docker cluster if necessary"
         ./1_create_kind_cluster.sh

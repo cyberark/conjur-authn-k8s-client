@@ -1,12 +1,11 @@
 #!/bin/bash
 
 set -eo pipefail
-
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
 ./0_prep_conjur_in_kind.sh
 
-. ./1_prep_env.sh
+source ./1_prep_env.sh
 
 ./2_admin_load_conjur_policies.sh
 ./3_admin_init_conjur_cert_authority.sh

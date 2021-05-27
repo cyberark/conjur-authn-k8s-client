@@ -1,7 +1,21 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-. utils.sh
+set -euo pipefail
+cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
+
+PLATFORM="${PLATFORM:-kubernetes}"
+
+source utils.sh
+
+check_env_var TEST_APP_NAMESPACE_NAME
+check_env_var CONJUR_VERSION
+check_env_var CONJUR_ACCOUNT
+check_env_var CONJUR_APPLIANCE_URL
+check_env_var CONJUR_ADMIN_PASSWORD
+check_env_var AUTHENTICATOR_ID
+check_env_var CONJUR_NAMESPACE
+check_env_var TEST_APP_DATABASE
+check_env_var SAMPLE_APP_BACKEND_DB_PASSWORD
 
 announce "Generating Conjur policy."
 
@@ -36,14 +50,7 @@ deploy_conjur_cli() {
 ensure_conjur_cli_initialized() {
   announce "Ensure that Conjur CLI pod has a connection with Conjur initialized."
 
-  if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-    conjur_service='conjur-oss'
-  else
-    conjur_service='conjur-master'
-  fi
-  conjur_url=${CONJUR_APPLIANCE_URL:-https://$conjur_service.$CONJUR_NAMESPACE.svc.cluster.local}
-
-  $cli exec $1 -- bash -c "yes yes | conjur init -a $CONJUR_ACCOUNT -u $conjur_url"
+  $cli exec $1 -- bash -c "yes yes | conjur init -a $CONJUR_ACCOUNT -u $CONJUR_APPLIANCE_URL"
   # Flaky with 500 Internal Server Error, mitigate with retry
   wait_for_it 300 "$cli exec $1 -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD"
 }
@@ -95,7 +102,7 @@ $cli cp ./policy $conjur_cli_pod:/policy
 
 wait_for_it 300 "$cli exec $conjur_cli_pod -- \
   bash -c \"
-  conjur_appliance_url=${CONJUR_APPLIANCE_URL:-https://conjur-oss.$CONJUR_NAMESPACE.svc.cluster.local}
+  conjur_appliance_url=${CONJUR_APPLIANCE_URL}
     CONJUR_ACCOUNT=${CONJUR_ACCOUNT} \
     CONJUR_ADMIN_PASSWORD=${CONJUR_ADMIN_PASSWORD} \
     DB_PASSWORD=${SAMPLE_APP_BACKEND_DB_PASSWORD} \

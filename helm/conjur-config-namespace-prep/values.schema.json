@@ -5,7 +5,9 @@
             "required": [
                 "goldenConfigMap",
                 "namespace",
-                "backendSecret"
+                "backendSecretToCreate",
+                "backendCertificateFilePath",
+                "backendKeyFilePath"
             ],
             "properties": {
                 "goldenConfigMap": {
@@ -14,7 +16,13 @@
                 "namespace": {
                     "type": "string"
                 },
-                "backendSecret": {
+                "backendSecretToCreate": {
+                    "type": "string"
+                },
+                "backendCertificateFilePath": {
+                    "type": "string"
+                },
+                "backendKeyFilePath": {
                     "type": "string"
                 }
             }

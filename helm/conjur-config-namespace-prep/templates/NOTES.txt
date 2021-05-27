@@ -5,4 +5,5 @@ A Conjur Connection Configmap
 {{- end }}
 {{- if .Values.authnRoleBinding.create }}
 An authenticator Rolebinding
+A Secret containing the sample app backend TLS certificate and key
 {{- end }}

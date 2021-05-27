@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-. utils.sh
+set -euo pipefail
+cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
+
+PLATFORM="${PLATFORM:-kubernetes}"
+USE_DOCKER_LOCAL_REGISTRY="${USE_DOCKER_LOCAL_REGISTRY:-true}"
+DOCKER_REGISTRY_URL="${DOCKER_REGISTRY_URL:-localhost:5000}"
+PULL_DOCKER_REGISTRY_URL="${PULL_DOCKER_REGISTRY_URL:-localhost:5000}"
+CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
+
+source utils.sh
 
 if [[ "$PLATFORM" == "openshift" ]]; then
     docker login -u _ -p $(oc whoami -t) $DOCKER_REGISTRY_PATH

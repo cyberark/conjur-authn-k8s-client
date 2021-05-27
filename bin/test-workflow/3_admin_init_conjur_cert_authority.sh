@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-. utils.sh
+set -euo pipefail
+cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
+
+PLATFORM="${PLATFORM:-kubernetes}"
+
+source utils.sh
+
+check_env_var CONJUR_NAMESPACE
+check_env_var CONJUR_OSS_HELM_INSTALLED
+check_env_var CONJUR_ACCOUNT
+check_env_var AUTHENTICATOR_ID
 
 announce "Initializing Conjur certificate authority."
 

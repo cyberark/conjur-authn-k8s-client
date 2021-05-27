@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-. utils.sh
+set -euo pipefail
+cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
+
+PLATFORM="${PLATFORM:-kubernetes}"
+
+source utils.sh
+
+check_env_var TEST_APP_NAMESPACE_NAME
+
+rm -rf bash-lib
+git clone https://github.com/cyberark/bash-lib.git
 
 init_bash_lib
 
