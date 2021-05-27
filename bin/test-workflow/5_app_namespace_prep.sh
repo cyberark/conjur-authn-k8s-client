@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export PLATFORM="${PLATFORM:-kubernetes}"
+
 . utils.sh
+
+check_env_var TEST_APP_NAMESPACE_NAME
+check_env_var CONJUR_NAMESPACE
 
 set_namespace default
 

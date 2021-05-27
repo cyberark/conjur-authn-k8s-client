@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export PLATFORM="${PLATFORM:-kubernetes}"
+
 . utils.sh
+
+check_env_var TEST_APP_NAMESPACE_NAME
+check_env_var SAMPLE_APP_BACKEND_DB_PASSWORD
 
 announce "Deploying summon-sidecar test app postgres backend for $TEST_APP_NAMESPACE_NAME."
 

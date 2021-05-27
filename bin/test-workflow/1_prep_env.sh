@@ -15,7 +15,7 @@ export CONJUR_AUTHN_LOGIN_RESOURCE="${CONJUR_AUTHN_LOGIN_RESOURCE:-service_accou
 export CONJUR_APPLIANCE_URL="${CONJUR_APPLIANCE_URL:-https://conjur-oss.$CONJUR_NAMESPACE.svc.cluster.local}"
 export CONJUR_AUTHN_LOGIN_PREFIX="${CONJUR_AUTHN_LOGIN_PREFIX:-host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps}"
 export CONJUR_VERSION="${CONJUR_VERSION:-5}"
-export PLATFORM="${PLATFORM:-kubernetes}"  # default to kubernetes if env var not set
+export PLATFORM="${PLATFORM:-kubernetes}"
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
 export USE_DOCKER_LOCAL_REGISTRY="${USE_DOCKER_LOCAL_REGISTRY:-false}"
 

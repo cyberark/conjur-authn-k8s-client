@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export PLATFORM="${PLATFORM:-kubernetes}"
+
 . utils.sh
+
+check_env_var CONJUR_APPLIANCE_URL
+check_env_var CONJUR_NAMESPACE
+check_env_var CONJUR_ACCOUNT
+check_env_var AUTHENTICATOR_ID
 
 set_namespace default
 
