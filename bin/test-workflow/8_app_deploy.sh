@@ -11,7 +11,7 @@ source utils.sh
 check_env_var TEST_APP_NAMESPACE_NAME
 check_env_var CONJUR_AUTHN_LOGIN_PREFIX
 
-announce "Deploying summon-sidecar test app for $TEST_APP_NAMESPACE_NAME."
+announce "Deploying summon-sidecar test app in $TEST_APP_NAMESPACE_NAME."
 
 set_namespace $TEST_APP_NAMESPACE_NAME
 

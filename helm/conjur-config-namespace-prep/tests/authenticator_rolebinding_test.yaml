@@ -6,9 +6,6 @@ templates:
 defaults: &defaultRequired
   authnK8s.goldenConfigMap: authn-k8s-configmap
   authnK8s.namespace: golden
-  authnK8s.backendSecretToCreate: test-backend-secret
-  authnK8s.backendCertificateFilePath: files/ca.pem
-  authnK8s.backendKeyFilePath: files/ca-key.pem
   
 tests:
   #=======================================================================

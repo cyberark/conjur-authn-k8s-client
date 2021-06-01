@@ -4,25 +4,13 @@
         "authnK8s": {
             "required": [
                 "goldenConfigMap",
-                "namespace",
-                "backendSecretToCreate",
-                "backendCertificateFilePath",
-                "backendKeyFilePath"
+                "namespace"
             ],
             "properties": {
                 "goldenConfigMap": {
                     "type": "string"
                 },
                 "namespace": {
-                    "type": "string"
-                },
-                "backendSecretToCreate": {
-                    "type": "string"
-                },
-                "backendCertificateFilePath": {
-                    "type": "string"
-                },
-                "backendKeyFilePath": {
                     "type": "string"
                 }
             }
