@@ -5,10 +5,11 @@ metadata:
     labels:
       release: {{ .Release.Name }}
       heritage: {{ .Release.Service }}
-      app.kubernetes.io/name: authn-configmap
-      app.kubernetes.io/component: "app-conjur-authn-config"
-      app.kubernetes.io/instance: {{ .Release.Namespace }}
-      app.kubernetes.io/part-of: "authn-k8s-app-config"
+      app.kubernetes.io/name: "conjur-authn-configmap"
+      app.kubernetes.io/component: "conjur-authn-config"
+      app.kubernetes.io/instance: "conjur-{{ .Chart.Name }}-configmap"
+      app.kubernetes.io/part-of: "conjur-app-config"
+      conjur.org/name: "conjur-authn-configmap"
       helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 data:
     # authn-k8s Configuration 

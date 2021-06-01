@@ -2,14 +2,15 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ .Values.authnK8s.clusterRole.name | default "authn-k8s-clusterrole" }}
+  name: {{ .Values.authnK8s.clusterRole.name | default "conjur-clusterrole" }}
   labels:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-    app.kubernetes.io/name: authn-k8s-clusterrole
-    app.kubernetes.io/component: authn-k8s-permissions
-    app.kubernetes.io/instance: {{ .Release.Namespace }}
-    app.kubernetes.io/part-of: "authn-k8s-cluster-config"
+    app.kubernetes.io/name: "conjur-clusterrole"
+    app.kubernetes.io/component: "conjur-permissions"
+    app.kubernetes.io/instance: "conjur-clusterrole"
+    app.kubernetes.io/part-of: "conjur-config"
+    conjur.org/name: "conjur-clusterrole"
     helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 
 rules:

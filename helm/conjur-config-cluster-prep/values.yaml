@@ -23,7 +23,7 @@ authnK8s:
 
   configMap:
     create: true
-    name: "authn-k8s-configmap"
+    name: "conjur-configmap"
 
   clusterRole:
     create: true
@@ -31,9 +31,9 @@ authnK8s:
     # The name of the authenticator ClusterRole to use or create.
     #
     # If 'authnK8s.clusterRole.create` is set to `true`, then this defaults to
-    # "authn-k8s-clusterrole". If 'authnK8s.clusterRole.create` is set to `false`,
+    # "conjur-clusterrole". If 'authnK8s.clusterRole.create` is set to `false`,
     # then this is a required value. Example:
-    # name: authn-k8s-clusterrole
+    # name: conjur-clusterrole
     # name:
 
   serviceAccount:
@@ -41,9 +41,9 @@ authnK8s:
     # The name of the authenticator ServiceAccount to use or create.
     #
     # If 'authnK8s.serviceAccount.create` is set to `true`, then this defaults
-    # to "authn-k8s-serviceaccount". If 'authnK8s.serviceAccount.create` is set
+    # to "conjur-serviceaccount". If 'authnK8s.serviceAccount.create` is set
     # to `false`, then this is a required value. Example:
-    # name: authn-k8s-serviceaccount
+    # name: conjur-serviceaccount
     # name:
 
 test:

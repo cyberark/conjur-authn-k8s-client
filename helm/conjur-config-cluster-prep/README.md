@@ -397,11 +397,11 @@ The following table lists the configurable parameters of the Conjur OSS chart an
 |`conjur.ssl.certificateBase64`|Base64-encoded Conjur certificate file||Either certificateFile or certificateBase64|
 |`authnK8s.authenticatorID`|Conjur authn-k8s authenticator ID to use for authentication||Yes|
 |`authnK8s.configMap.create`|Flag to generate the Golden ConfigMap |`true`||
-|`authnK8s.configMap.name`|The name of the authenticator ConfigMap|`"authn-k8s-configmap"`||
+|`authnK8s.configMap.name`|The name of the Conjur ConfigMap|`"conjur-configmap"`||
 |`authnK8s.clusterRole.create`|Flag to generate the ClusterRole |`true`||
-|`authnK8s.clusterRole.name`|The name of the authenticator ClusterRole to use or create|`Defaults to authn-k8s-clusterrole when 'authnK8s.clusterRole.create' is set to 'true'`|Mandatory if authnK8s.clusterRole.create is set to 'false'|
+|`authnK8s.clusterRole.name`|The name of the authenticator ClusterRole to use or create|`Defaults to conjur-clusterrole when 'authnK8s.clusterRole.create' is set to 'true'`|Mandatory if authnK8s.clusterRole.create is set to 'false'|
 |`authnK8s.serviceAccount.create`|Flag to generate the ServiceAccount |`true`||
-|`authnK8s.serviceAccount.name`|The name of the authenticator ServiceAccount to use or create|Defaults to authn-k8s-serviceaccount when `authnK8s.ServiceAccount.create` is set to `true`|Mandatory if `authnK8s.ServiceAccount.create` is set to 'false'|
+|`authnK8s.serviceAccount.name`|The name of the Conjur ServiceAccount to use or create|Defaults to conjur-serviceaccount when `authnK8s.ServiceAccount.create` is set to `true`|Mandatory if `authnK8s.ServiceAccount.create` is set to 'false'|
 |`test.colorize`|Determines whether Helm test output should include color escape sequences|Defaults to `true`||
 |`test.authentication.enable`|Indicates whether the Helm test should attempt to authenticate with the Conjur instance|`false`||
 |`test.authentication.validatorID`|Indicates the Conjur Host ID that should be used to authenticate with the Conjur instance|`validator`||

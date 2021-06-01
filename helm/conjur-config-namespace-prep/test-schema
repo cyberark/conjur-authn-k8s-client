@@ -17,7 +17,7 @@ test_failed=false
 
 function authenticator_variable_test() {
     helm lint . --strict \
-        --set "authnK8s.goldenConfigMap=authn-k8s-configmap"\
+        --set "authnK8s.goldenConfigMap=conjur-configmap"\
         --set "authnK8s.namespace=golden"
 }
 
@@ -28,7 +28,7 @@ function authenticator_missing_configmap_test() {
 
 function authenticator_missing_namespace_test() {
     helm lint . --strict \
-        --set "authnK8s.goldenConfigMap=authn-k8s-configmap"
+        --set "authnK8s.goldenConfigMap=conjur-configmap"
 }
 
 function main() {

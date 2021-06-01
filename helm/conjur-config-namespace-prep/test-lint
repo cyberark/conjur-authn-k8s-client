@@ -4,6 +4,6 @@ source ../common/utils.sh
 
 banner $BOLD "Running Helm lint for chart \"conjur-config-namespace-prep\""
 helm lint . \
-    --set authnK8s.goldenConfigMap="authn-k8s-configmap" \
+    --set authnK8s.goldenConfigMap="conjur-configmap" \
     --set authnK8s.namespace="app-test" \
     --set test.mock.enable=true

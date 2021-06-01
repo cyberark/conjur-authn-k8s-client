@@ -4,7 +4,7 @@
 global:
   conjur:
     # name of the ConfigMap created by the conjur-config-namespace-prep chart
-    conjurConnConfigMap: "conjur-connect-configmap"
+    conjurConnConfigMap: "conjur-connect"
 
   appServiceType: "NodePort"
 
