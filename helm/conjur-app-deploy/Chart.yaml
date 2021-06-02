@@ -19,3 +19,4 @@ dependencies:
     - name: app-summon-sidecar
       repository: "file://charts/app-summon-sidecar"
       version: ">= 0.0.1"
+      condition: app-summon-sidecar.enabled

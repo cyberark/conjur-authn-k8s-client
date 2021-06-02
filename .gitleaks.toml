@@ -1,0 +1,4 @@
+[allowlist]
+  files = [
+    "bin/test-workflow/etc/ca-key.pem" # test ssl certs
+  ]

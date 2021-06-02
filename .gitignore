@@ -5,4 +5,9 @@ test
 
 temp
 
-helm/kubernetes-cluster-prep/files/conjur-cert.pem
+helm/conjur-config-cluster-prep/files/conjur-cert.pem
+
+bin/test-workflow/policy/generated/*
+tmp.*
+bin/test-workflow/output/
+bin/test-workflow/bash-lib/

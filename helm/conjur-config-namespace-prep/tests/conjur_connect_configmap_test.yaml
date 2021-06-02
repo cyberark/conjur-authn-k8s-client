@@ -6,7 +6,6 @@ templates:
 defaults: &defaultRequired
   authnK8s.goldenConfigMap: conjur-configmap
   authnK8s.namespace: golden
-  
 
 tests:
   #=======================================================================
