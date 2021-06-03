@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   [cyberark/conjur-authn-k8s-client#134](https://github.com/cyberark/conjur-authn-k8s-client/issues/134)
 - Errors in the certificate injection process on login are now printed to the client logs.
   [cyberark/conjur-authn-k8s-client#/170](https://github.com/cyberark/conjur-authn-k8s-client/issues/170)
+- Support for OpenShift 4.7 has been certified as of this release.
 
 ### Changed
 - Detailed logs moved from Info to Debug log level to decrease verbosity of log messages.
