@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - The `CAKC048` log message now shows the release version for release builds
   and no longer includes the git commit hash in the log output.
   [cyberark/conjur-authn-k8s-client#196](https://github.com/cyberark/conjur-authn-k8s-client/issues/196)
+- RH base image is now `ubi8/ubi` instead of `rhel7/rhel`.
 
 ## [0.19.1] - 2021-02-08
 ### Changed
@@ -36,6 +37,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - Support for OpenShift 4.6 was certified as of this release.
+- Support for OpenShift 4.7 was certified as of this release.
 
 ## [0.19.0] - 2020-10-08
 ### Added
@@ -43,7 +45,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   [cyberark/conjur-authn-k8s-client#134](https://github.com/cyberark/conjur-authn-k8s-client/issues/134)
 - Errors in the certificate injection process on login are now printed to the client logs.
   [cyberark/conjur-authn-k8s-client#/170](https://github.com/cyberark/conjur-authn-k8s-client/issues/170)
-- Support for OpenShift 4.7 has been certified as of this release.
 
 ### Changed
 - Detailed logs moved from Info to Debug log level to decrease verbosity of log messages.
