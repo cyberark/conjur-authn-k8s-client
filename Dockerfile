@@ -78,7 +78,7 @@ COPY --from=authenticator-client-builder /opt/conjur-authn-k8s-client/authentica
 ENTRYPOINT [ "/usr/local/bin/authenticator" ]
 
 # =================== MAIN CONTAINER (REDHAT) ===================
-FROM registry.access.redhat.com/rhel as authenticator-client-redhat
+FROM registry.access.redhat.com/ubi8/ubi as authenticator-client-redhat
 MAINTAINER CyberArk Software Ltd.
 
     # Add Limited user
