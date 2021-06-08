@@ -19,7 +19,7 @@ pushd ../../helm/conjur-config-namespace-prep > /dev/null
     # Namespace $TEST_APP_NAMESPACE_NAME will be created if it does not exist
     helm upgrade --install namespace-prep . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout $TIMEOUT \
         --create-namespace \
-        --set authnK8s.goldenConfigMap="authn-k8s-configmap" \
+        --set authnK8s.goldenConfigMap="conjur-configmap" \
         --set authnK8s.namespace="$CONJUR_NAMESPACE"
 
 popd > /dev/null
