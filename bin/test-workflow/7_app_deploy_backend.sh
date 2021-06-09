@@ -11,11 +11,11 @@ source utils.sh
 check_env_var TEST_APP_NAMESPACE_NAME
 check_env_var SAMPLE_APP_BACKEND_DB_PASSWORD
 
-announce "Deploying summon-sidecar test app postgres backend for $TEST_APP_NAMESPACE_NAME."
+announce "Deploying test app postgres backend for $TEST_APP_NAMESPACE_NAME."
 
 set_namespace $TEST_APP_NAMESPACE_NAME
 
-app_name="app-summon-sidecar-backend-pg"
+app_name="app-backend-pg"
 
 # Uninstall backend if it exists so any PVCs can be deleted
 if [ "$(helm list -q -n $TEST_APP_NAMESPACE_NAME | grep "^$app_name$")" = "$app_name" ]; then
@@ -43,7 +43,7 @@ helm install $app_name bitnami/postgresql -n $TEST_APP_NAMESPACE_NAME --debug --
     --set image.tag="9.6" \
     --set postgresqlDataDir="/data/pgdata" \
     --set persistence.mountPath="/data/" \
-    --set fullnameOverride="test-summon-sidecar-app-backend" \
+    --set fullnameOverride="test-app-backend" \
     --set tls.enabled=true \
     --set volumePermissions.enabled=true \
     --set tls.certificatesSecret="test-app-backend-certs" \

@@ -1,0 +1,21 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: test-app-secrets-provider-init-role
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: test-app-secrets-provider-init-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: test-app-secrets-provider-init
+  apiGroup: ""
+roleRef:
+  kind: Role
+  name: test-app-secrets-provider-init-role
+  apiGroup: ""

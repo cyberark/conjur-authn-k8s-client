@@ -20,3 +20,7 @@ dependencies:
       repository: "file://charts/app-summon-sidecar"
       version: ">= 0.0.1"
       condition: app-summon-sidecar.enabled
+    - name: app-secrets-provider-init
+      repository: "file://charts/app-secrets-provider-init"
+      version: ">= 0.0.1"
+      condition: app-secrets-provider-init.enabled
