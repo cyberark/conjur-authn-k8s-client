@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  # Run this on pushes to main
+  push:
+    branches:
+    - main
+
+  # Or when PR operations are done
+  pull_request:
+    types:
+    - opened
+    - reopened
+    - synchronize
+
+jobs:
+  validate-test-helm-v3:
+    name: Validate Helm tests with Helm V3 on a KinD Cluster
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        kube-tag:
+          - v1.18.2
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Install Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: v3.3.0
+
+      - name: Run Helm happy test
+        run: ./bin/validate-helm -c -t happy > helm.log
+
+      - name: Run Helm incorrect_url test
+        run: ./bin/validate-helm -t incorrect_url > helm.log
+
+      - name: Check status
+        if: ${{ always() }}
+        run: tail helm.log
+
+      - name: Run Helm incorrect_cert test
+        run: ./bin/validate-helm -t incorrect_cert > helm.log
+
+      - name: Check status
+        if: ${{ always() }}
+        run: tail helm.log
+
+      - name: Run Helm incorrect_auth_id test
+        run: ./bin/validate-helm -t incorrect_auth_id > helm.log
+
+      - name: Check status
+        if: ${{ always() }}
+        run: tail helm.log
