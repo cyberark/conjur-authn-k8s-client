@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.20.0] - 2021-06-16
 ### Fixed
 - Fixes bug in error handling within the `VerifyFileExists` method that resulted in a
   panic when the error from `os.Stat` was not `ErrNotExist`. The fix includes introducing
@@ -17,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   and no longer includes the git commit hash in the log output.
   [cyberark/conjur-authn-k8s-client#196](https://github.com/cyberark/conjur-authn-k8s-client/issues/196)
 - RH base image is now `ubi8/ubi` instead of `rhel7/rhel`.
+  [cyberark/conjur-authn-k8s-client#324](https://github.com/cyberark/conjur-authn-k8s-client/pull/324)
 
 ## [0.19.1] - 2021-02-08
 ### Changed
@@ -154,7 +157,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.1...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.20.0...HEAD
+[0.20.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.1...v0.20.0
 [0.19.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.18.1...v0.19.0
 [0.18.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.18.0...v0.18.1
