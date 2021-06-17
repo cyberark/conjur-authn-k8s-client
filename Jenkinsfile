@@ -91,14 +91,10 @@ pipeline {
             }
         }
         stage('On a new tag') {
-          when {
-            allOf {
-              branch 'master'
-              tag "v*"
-            }
-          }
+          when { tag "v*" }
+
           steps {
-            sh 'summon ./bin/publish'
+            sh 'summon ./bin/publish --latest'
           }
         }
       }
