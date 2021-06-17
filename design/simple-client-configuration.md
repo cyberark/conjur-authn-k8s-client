@@ -38,7 +38,7 @@
 <td><a href="https://cyberark365.sharepoint.com/:w:/s/Conjur/EQnlgrc_aYZAhaZdR3oPSr0BsBoAtMnvyJuNDHGkOzokgw?e=sgrgBx">link</a> (private)</td>
 </tr>
 <tr class="odd">
-<td>Examples of Using Kubernetes with DAP</td>
+<td>Examples of Using Kubernetes with Conjur Enterprise</td>
 <td><a href="https://github.com/cyberark/dap-wiki/tree/master/how-to-guides/kubernetes">link</a> (private)</td>
 </tr>
 <tr class="even">
@@ -1019,7 +1019,7 @@ GKE 1.18.16</td>
 -   Conjur instance is available. Testing should support the following
     three configurations:
 
-    -   Conjur OSS in the Kubernetes cluster
+    -   Conjur Open Source in the Kubernetes cluster
 
     -   Conjur Enterprise master outside of Kubernetes cluster,
         followers inside the Kubernetes cluster
@@ -1329,7 +1329,7 @@ The overall workflow for this automated testing is:
 -   Create a Kubernetes cluster for testing. (This can be done using
     Kubernetes-in-Docker, a.k.a. KinD, in a GitHub action).
 
--   Create a Conjur instance. (This can be done using Conjur OSS Helm
+-   Create a Conjur instance. (This can be done using Conjur Open Source Helm
     chart).
 
 -   Generate and load Conjur policy for the authn-k8s authenticator.
@@ -1507,7 +1507,7 @@ The overall workflow for this testing is:
 <tr class="odd">
 <td>1</td>
 <td>Kubernetes</td>
-<td>Conjur OSS</td>
+<td>Conjur Open Source</td>
 <td>Application with Secrets Provider several types of authenticator containers can authenticate and retrieve secrets from Conjur.</td>
 <td></td>
 <td><ul>
@@ -1861,12 +1861,12 @@ conjur-authn-k8s-client</td>
 </tr>
 <tr class="even">
 <td>11</td>
-<td>Integration / E2E CI for Conjur OSS</td>
+<td>Integration / E2E CI for Conjur Open Source</td>
 <td>cyberark/<br />
 conjur-authn-k8s-client</td>
 <td><ul>
 <li><p>Can be either Jenkins+GKE or Github Actions + KinD</p></li>
-<li><p>Create script to Helm install Conjur OSS</p></li>
+<li><p>Create script to Helm install Conjur Open Source</p></li>
 <li><p>Run scripts from Task #5 above</p></li>
 </ul></td>
 <td></td>

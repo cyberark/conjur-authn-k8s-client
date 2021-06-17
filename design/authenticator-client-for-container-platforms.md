@@ -92,7 +92,7 @@ by the Authenticator) it uses the certificate to authenticate, thereby obtaining
 **Note:** in the original design, we also proposed apply IP restrictions to the short-lived access token. This is not
 yet implemented. We also originally planned to have the Authenticator encrypt the access token using the client's
 private key (and have it implemented this way for Conjur Enterprise v4), but since the `authenticate` request is sent
-using mTLS for DAP v10+ and Conjur OSS v1+, we do not encrypt the access token for these versions.
+using mTLS for Conjur Enterprise (formerly DAP) v10+ and Conjur Open Source v1+, we do not encrypt the access token for these versions.
 
 ## Description
 
@@ -145,7 +145,7 @@ access token and sends the access token back to the client.
   have a short lifespan (minutes to hours); the default duration is 8 minutes.
 - In the original design (and in the Conjur Enterprise v4 implementation) the Conjur Authenticator encrypts the
   access token using the client certificate before returning it, and the client decrypts the access token upon
-  receipt. In the DAP v10+ and Conjur OSS v1+ implementations, the access token is returned over the encrypted
+  receipt. In the Conjur Enterprise (formerly DAP) v10+ and Conjur Open Source v1+ implementations, the access token is returned over the encrypted
   connection using the same process as the default authenticator.
 
 #### Authenticate flow
