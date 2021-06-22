@@ -49,8 +49,8 @@ function conjur_access_token_exists() {
   display_info "Attempting to reach Conjur URL with 'curl -k ...'"
   run conjur_is_reachable
   if [ "$status" -ne 0 ]; then
-    display_error "The 'conjur.applianceURL' chart value is set to\n" \
-                  "$conjurApplianceURL. This is not reachable via 'curl -k'"
+    display_error "The 'conjur.applianceUrl' chart value is set to\n" \
+                  "$conjurApplianceUrl. This is not reachable via 'curl -k'"
   fi
   assert_success
 }

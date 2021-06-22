@@ -1,0 +1,181 @@
+#!/bin/bash
+
+cd "$(dirname "$0")"
+
+source ./test-workflow/utils.sh
+source ../helm/common/utils.sh
+
+helm_tests_return_code=0
+
+tests=(happy incorrect_url incorrect_cert incorrect_auth_id)
+
+print_usage() {
+  echo "Usage:"
+  echo "    This script will validate the helm chart tests"
+  echo ""
+  echo "Syntax:"
+  echo "    $0  [Options]"
+  echo "    Options:"
+  echo "    -h            Show help"
+  echo "    -c            Create the Kind cluster"
+  echo "    -d            Delete the Kind cluster"
+  echo "    -t            run one test"
+}
+
+
+function pushd() {
+    command pushd "$@" > /dev/null
+}
+
+function popd() {
+    command popd "$@" > /dev/null
+}
+
+function create_cluster() {
+# Create kind cluster
+    ./0_prep_conjur_in_kind.sh
+    . ./1_prep_env.sh
+    ./2_admin_load_conjur_policies.sh
+    ./3_admin_init_conjur_cert_authority.sh
+}
+
+function delete_cluster() {
+
+    kind delete cluster
+}
+
+readonly APPLIANCE_URL="https://conjur-oss.conjur-oss.svc.cluster.local"
+
+function clone_ws_and_get_cert() {
+    rm -rf conjur-authn-k8s-client
+    git clone https://github.com/cyberark/conjur-authn-k8s-client.git
+    pushd conjur-authn-k8s-client/helm/conjur-config-cluster-prep
+    ./bin/get-conjur-cert.sh -u $APPLIANCE_URL -i -v -s
+    popd
+}
+
+function create_cluster_helm_chart() {
+  test_name=$1
+  auth_enable=false
+  appl_url=$APPLIANCE_URL
+  cert_path="files/conjur-cert.pem"
+  auth_id="my-authenticator-id"
+
+  announce "$test_name test"
+
+  if [ "$test_name" = "incorrect_url" ]
+  then
+    appl_url="https://conjer-oss.conjer-oss.svc.cluster.local"
+  fi
+
+  if [ "$test_name" = "incorrect_cert" ]
+  then
+    auth_enable=true
+    cert_path="tests/test-cert.pem"
+  fi
+
+  if [ "$test_name" = "incorrect_auth_id" ]
+  then
+    auth_enable=true
+    auth_id="your-authenticator-id"
+  fi
+
+  helm upgrade --install "$helm_release" . -n conjur-oss --wait \
+               --set test.authentication.enable="$auth_enable" \
+               --set conjur.applianceUrl="$appl_url" \
+               --set conjur.certificateFilePath="$cert_path" \
+               --set authnK8s.authenticatorID="$auth_id"
+
+  if [ $? -eq 0 ]
+  then
+      announce "Helm $helm_release installed successfully"
+  else
+       banner "$RED" "Helm install Failed"
+  fi
+  helm get values "$helm_release"
+}
+
+function test_helm_chart() {
+
+  release=$1
+  test_name=$2
+  helm test "$1" --timeout "$test_timeout" --debug
+  res=$?
+  if [[ ( "$test_name" = "happy" && $res -eq 0 ) || ( "$test_name" != "happy" && $res -ne 0 ) ]]
+  then
+    banner "$GREEN" "Helm test $release $test_name test returned $res as expected"
+  else
+    banner "$RED" "Helm test $release $test_name test returned $res, expected $expected"
+    helm_tests_return_code=1
+  fi
+}
+
+function delete_cluster_helm_chart() {
+
+  helm uninstall "$helm_release"
+}
+
+function main() {
+
+  test_timeout="10s"
+  helm_release="cluster-prep"
+  create_kind=false
+  delete_kind=false
+
+  # Process command line options
+  local OPTIND
+  while getopts ':cdht:' flag; do
+    case "${flag}" in
+      c) create_kind=true ;;
+      d) delete_kind=true ;;
+      h) print_usage; exit 0 ;;
+      t) tests=(${OPTARG}) ;;
+      *) echo "Invalid argument -${OPTARG}" >&2; echo; print_usage ; exit 1;;
+    esac
+  done
+  shift $((OPTIND-1))
+
+  echo "Validating Helm"
+
+  pushd test-workflow
+
+  echo $(pwd)
+
+  if [ "$create_kind" = true ] ; then
+    create_cluster
+  fi
+  mkdir -p temp_verify
+  pushd temp_verify
+
+  clone_ws_and_get_cert
+  pushd conjur-authn-k8s-client/helm/conjur-config-cluster-prep
+
+  for i in ${tests[@]}
+  do
+    announce "Starting $i tests"
+    create_cluster_helm_chart "$i"
+
+    test_helm_chart $helm_release $i
+ 
+    helm list
+
+    delete_cluster_helm_chart
+
+  done
+
+  if [ "$delete_kind" = true ] ; then
+    delete_cluster
+  fi
+  popd
+  popd
+  popd
+  if [ "$helm_tests_return_code" -eq 0 ]
+  then
+    banner "$GREEN" "All Helm tests passed"
+    echo "All Helm tests passed" > passed.txt
+  else
+    banner "$RED" "One or more Helm tests failed"
+  fi
+  exit "$helm_tests_return_code"
+}
+main "$@"
