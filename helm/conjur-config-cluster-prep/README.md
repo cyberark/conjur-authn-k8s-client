@@ -8,7 +8,7 @@
 * [Preparing the Kubernetes Cluster for Conjur Authentication](#preparing-the-kubernetes-cluster-for-conjur-authentication)
 * [Examples: Running Helm Install](#examples-running-helm-install)
   + [Optional: Creating a Local Copy of This Helm Chart](#optional-creating-a-local-copy-of-this-helm-chart)
-  + [Optional: Deploying the Kubernetes resources specified by this chart without Helm](#optional-deploying-the-kubernetes-resources-specified-by-this-chart-without-helm)
+  + [Alternative: Creating K8s Resources with `kubectl` instead of Helm](#alternative-creating-k8s-resources-with-kubectl-instead-of-helm)
 * [Configuration](#configuration)
 
 ## Overview
@@ -296,9 +296,9 @@ command is run using a local copy of the Helm chart. You can use
   helm install my-conjur-release . -f my-custom-values.yaml 
   ```
 
-### Optional: Deploying the Kubernetes resources specified by this chart without Helm
+### Alternative: Creating K8s Resources with `kubectl` instead of Helm
 
-If Helm can not be used to deploy Kubernetes resources, the raw Kubernetes manifests can be generated ahead of time with the `helm template` command. Then the generated manifests can be applied with `kubectl`.
+If Helm can not be used to deploy Kubernetes resources, the raw Kubernetes manifests can instead be generated ahead of time with the `helm template` command. The generated manifests can then be applied with `kubectl`.
 
 ```
 helm template my-conjur-release . \

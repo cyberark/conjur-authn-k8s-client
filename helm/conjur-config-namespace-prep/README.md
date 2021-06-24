@@ -9,6 +9,7 @@
   * [Examples](#examples)
     + [Fresh Installation](#fresh-installation)
     + [Upgrading](#upgrading)
+    + [Alternative: Creating K8s Resources with `kubectl` instead of Helm](#alternative-creating-k8s-resources-with-kubectl-instead-of-helm)
   * [Issues with Helm "lookup"](#issues-with-helm-"lookup")
   * [Using the Conjur Connection ConfigMap in your application deployment manifest](#using-the-conjur-connection-configmap-in-your-application-deployment-manifest)
 
@@ -111,9 +112,9 @@ helm upgrade NameSpace-prep . -n "my-NameSpace" \
   --set authnK8s.NameSpace="new-NameSpace"
 ```
 
-### Optional: Deploying the Kubernetes resources specified by this chart without Helm
+### Alternative: Creating K8s Resources with `kubectl` instead of Helm
 
-If Helm can not be used to deploy Kubernetes resources, the raw Kubernetes manifests can be generated ahead of time with the `helm template` command. Then the generated manifests can be applied with `kubectl`.
+If Helm can not be used to deploy Kubernetes resources, the raw Kubernetes manifests can instead be generated ahead of time with the `helm template` command. The generated manifests can then be applied with `kubectl`.
 
 ```shell-session
 helm template NameSpace-prep . -n "my-NameSpace" \
@@ -133,7 +134,7 @@ supported by `--dry-run` or `lint`.
 
 ## Using the Conjur Connection ConfigMap in your application deployment manifest
 
-Edit the relevant `container` and/or `image` subsections of your application deployment manifest to include the Conjur Connection ConfigMap values as environment variables as in the example for the Kubernetes Authenticator Client below:
+In order to leverage the standardized `ConfigMap` containing Conjur connection details, it needs to be exposed as environment variables to the Kubernetes Authenticator Client. Edit the relevant `container` and/or `image` subsections of your application manifest to include the `ConfigMap` in the container environment, as seen in the example below:
 
 ```
 containers:
@@ -147,4 +148,4 @@ containers:
         name: conjur-connect
 ```
 
-Applications using Secrets Provider or Secretless can be modified similarly to make use of the `ConfigMap` values.
+Applications using [Secrets Provider](https://github.com/cyberark/secrets-provider-for-k8s) or [Secretless Broker](https://github.com/cyberark/secretless-broker) can be modified similarly to make use of the `ConfigMap` values.
