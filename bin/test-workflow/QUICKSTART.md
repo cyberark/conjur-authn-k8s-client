@@ -13,7 +13,7 @@ This guide will improve with updates to the end-to-end workflow scripts:
 
 At the end of this quickstart, you will have:
 
-* Deployed Conjur OSS to a KinD cluster
+* Deployed Conjur Open Source to a KinD cluster
 * Prepared the cluster with Conjur Config Cluster Prep Helm chart
 * Prepared and enabled the Kubernetes authenticator in Conjur
 * Prepared PetStore app namespace with Conjur NameSpace Prep Helm chart
@@ -28,23 +28,23 @@ At the end of this quickstart, you will have:
 
 # Steps
 
-### Prepare a Cluster and Deploy Conjur OSS
+### Prepare a Cluster and Deploy Conjur Open Source
 
 Preparing for the rest of the workflow requires:
 
 * Starting a KinD cluster with local Docker registry
 * Creating a new namespace for Conjur, `conjur-oss`
-* Deploying Conjur OSS with Helm
+* Deploying Conjur Open Source with Helm
 * Enable the Kubernetes Authenticator in Conjur
 
-The Conjur OSS Helm Chart is published on
+The Conjur Open Source Helm Chart is published on
 [GitHub](https://github.com/cyberark/conjur-oss-helm-chart).
 
-The Conjur OSS Helm Chart repository contains an [example]
+The Conjur Open Source Helm Chart repository contains an [example]
 (https://github.com/cyberark/conjur-oss-helm-chart/tree/main/examples/kubernetes-in-docker)
-folder with scripts and instructions for deploying the Conjur OSS Helm Chart on
+folder with scripts and instructions for deploying the Conjur Open Source Helm Chart on
 KinD. The scripts from the example folder are used to accomplish this step by
-git cloning the Conjur OSS Helm Chart repository and using them to carry out the
+git cloning the Conjur Open Source Helm Chart repository and using them to carry out the
 tasks mentioned above.
 
 To perform these steps, run:
@@ -99,7 +99,7 @@ Certificate authority initialized.
 ### Cluster Preparation
 
 In this step, the KinD cluster is prepared to enable applications to
-authenticate with Conjur OSS using:
+authenticate with Conjur Open Source using:
 
 * a "Golden" ConfigMap
 * an authenticator ClusterRole
@@ -130,7 +130,7 @@ directory.
 ### App Namespace Preparation
 
 In this step, a new namespace is created in the KinD cluster for the PetStore
-test app deployment, and it is prepared to authenticate with Conjur OSS using:
+test app deployment, and it is prepared to authenticate with Conjur Open Source using:
 
 * a Conjur connection ConfigMap
 * an authenticator RoleBinding
@@ -158,11 +158,11 @@ directory.
 
 At this point in the workflow:
 
-* Conjur OSS has been deployed to its own namespace
+* Conjur Open Source has been deployed to its own namespace
 * the `conjur-oss` namespace has been configured for Conjur Kubernetes
   authentication
 * an application namespace has been created and prepared for connecting to and
-  authenticating with Conjur OSS
+  authenticating with Conjur Open Source
 
 The following steps cover deploying the PetStore test app and the Conjur
 Kubernetes sidecar authenticator, and are performed by the Kubernetes Admin.

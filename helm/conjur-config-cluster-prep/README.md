@@ -67,7 +67,7 @@ The steps are as follows:
 
    - Conjur appliance URL:\
      The URL of the Conjur Enterprise Follower
-     or Conjur OSS server that will be used to authenticate your applications.
+     or Conjur Open Source server that will be used to authenticate your applications.
      The Conjur appliance URL could be an address that is either internal
      or external with respect to the Kubernetes cluster. Examples include:
      - https://conjur.example.com       (external address)
@@ -84,7 +84,7 @@ The steps are as follows:
    - __(OPTIONAL)__ Existing ServiceAccount to reuse for Conjur authentication:\
      If a Conjur-related ServiceAccount already exists in the Namespace
      to which you intend to deploy this Helm chart (for example, if
-     you're using the same Namespace to which Conjur OSS has been deployed,
+     you're using the same Namespace to which Conjur Open Source has been deployed,
      and you'd like to reuse the existing Conjur ServiceAccount), then you
      have the option of simply reusing that ServiceAccount.
 
@@ -387,7 +387,7 @@ can be found [here](assets/example-Conjur-policy-with-validator.md).
 
 ## Configuration
 
-The following table lists the configurable parameters of the Conjur OSS chart and their default values.
+The following table lists the configurable parameters of the Conjur Open Source chart and their default values.
 
 |Parameter|Description|Default|Mandatory|
 |---------|-----------|-------|---------|

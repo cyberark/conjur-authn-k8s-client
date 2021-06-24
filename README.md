@@ -19,7 +19,7 @@ The client is configured entirely through environment variables. These are liste
 ### Using conjur-authn-k8s-client with Conjur Open Source 
 
 Are you using this project with [Conjur Open Source](https://github.com/cyberark/conjur)? Then we 
-**strongly** recommend choosing the version of this project to use from the latest [Conjur Open Source 
+**strongly** recommend choosing the version of this project to use from the latest [Conjur OSS 
 suite release](https://docs.conjur.org/Latest/en/Content/Overview/Conjur-OSS-Suite-Overview.html). 
 Conjur maintainers perform additional testing on the suite release versions to ensure 
 compatibility. When possible, upgrade your Conjur version to match the 
