@@ -11,16 +11,18 @@ global:
 # Authenticator types to deploy and test. Multiple authenticator types
 # can be selected. All enabled authenticator types (along with their
 # associated sample application container) will be deployed to the
-# same application Namespace. The default (app-summon-sidecar) is to enable only an authn-k8s
-# sidecar container. Enable authenticator types as desired.
-app-summon-sidecar:
-  enabled: true
-
+# same application Namespace. Enable authenticator types as desired.
 app-summon-init:
+  enabled: false
+
+app-summon-sidecar:
   enabled: false
 
 app-secretless-broker:
   enabled: false
 
-app-secrets-provider:
+app-secrets-provider-init:
+  enabled: false
+
+app-secrets-provider-standalone:
   enabled: false

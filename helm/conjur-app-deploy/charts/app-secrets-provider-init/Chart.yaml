@@ -1,0 +1,17 @@
+apiVersion: v2
+name: app-secrets-provider-init
+home: https://www.conjur.org
+version: 0.1.0
+description: A Helm chart deploying an application with a Secrets Provider init container
+icon: https://www.cyberark.com/wp-content/uploads/2015/12/cybr-aim.jpg
+keywords:
+  - security
+  - "secrets management"
+sources:
+  - https://github.com/cyberark/conjur-authn-k8s-client
+  - https://github.com/cyberark/secrets-provider-for-k8s
+  - https://github.com/cyberark/conjur-oss-helm-chart
+  - https://github.com/cyberark/conjur
+maintainers:
+  - name: Conjur Maintainers
+    email: conj_maintainers@cyberark.com

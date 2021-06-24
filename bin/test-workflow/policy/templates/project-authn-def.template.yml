@@ -36,6 +36,14 @@
         authn-k8s/deployment: test-app-secretless
         authn-k8s/authentication-container-name: secretless
         kubernetes: "{{ IS_KUBERNETES }}"
+    - !host
+      id: test-app-secrets-provider-init
+      annotations:
+        authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+        authn-k8s/service-account: test-app-secrets-provider-init
+        authn-k8s/deployment: test-app-secrets-provider-init
+        authn-k8s/authentication-container-name: cyberark-secrets-provider-for-k8s
+        kubernetes: "{{ IS_KUBERNETES }}"
 
     - !host
       id: oc-test-app-summon-sidecar

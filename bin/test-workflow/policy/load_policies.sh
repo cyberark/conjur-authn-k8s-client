@@ -33,6 +33,7 @@ readonly APPS=(
   "test-summon-init-app"
   "test-summon-sidecar-app"
   "test-secretless-app"
+  "test-secrets-provider-init-app"
 )
 
 for app_name in "${APPS[@]}"; do
@@ -54,7 +55,7 @@ for app_name in "${APPS[@]}"; do
     exit 1
     ;;
   esac
-  db_host="$app_name-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local"
+  db_host="test-app-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local"
   db_address="$db_host:$PORT"
 
   if [[ "$app_name" = "test-secretless-app" ]]; then
