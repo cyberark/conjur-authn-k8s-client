@@ -4,9 +4,11 @@
 
 * [Overview](#overview)
   + [Objects Created](#objects-created)
+  + [Conjur Enterprise Documentation Reference](#conjur-enterprise-documentation-reference)
 * [Preparing the Kubernetes Cluster for Conjur Authentication](#preparing-the-kubernetes-cluster-for-conjur-authentication)
 * [Examples: Running Helm Install](#examples-running-helm-install)
   + [Optional: Creating a Local Copy of This Helm Chart](#optional-creating-a-local-copy-of-this-helm-chart)
+  + [Alternative: Creating K8s Resources with `kubectl` instead of Helm](#alternative-creating-k8s-resources-with-kubectl-instead-of-helm)
 * [Configuration](#configuration)
 
 ## Overview
@@ -52,6 +54,10 @@ include:
   This ClusterRole is used to provide a list of Kubernetes API access
   permissions that the Conjur authenticator will require in order to
   validate application identities.
+
+### Conjur Enterprise Documentation Reference
+
+Installation of this Helm chart replaces the manual creation of the Kubernetes resources outlined in [Step 5 of the Conjur Enterprise Kubernetes Authenticator Documentation](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-k8s-authn.htm). The `Namespace` for the authn-k8s authenticator is created as part of Step 3 of the [next section](#preparing-the-kubernetes-cluster-for-conjur-authentication).
 
 ## Preparing the Kubernetes Cluster for Conjur Authentication
 
@@ -289,6 +295,19 @@ command is run using a local copy of the Helm chart. You can use
 
   helm install my-conjur-release . -f my-custom-values.yaml 
   ```
+
+### Alternative: Creating K8s Resources with `kubectl` instead of Helm
+
+If Helm can not be used to deploy Kubernetes resources, the raw Kubernetes manifests can instead be generated ahead of time with the `helm template` command. The generated manifests can then be applied with `kubectl`.
+
+```
+helm template my-conjur-release . \
+       --set conjur.applianceUrl="https://conjur.example.com" \
+       --set conjur.certificateFilePath="files/conjur-cert.pem" \
+       --set authnK8s.authenticatorID="my-authenticator-id" > conjur-config-cluster-prep.yaml
+
+kubectl apply -f conjur-config-cluster-prep.yaml
+```
 
 ## Running Helm Chart Tests
 

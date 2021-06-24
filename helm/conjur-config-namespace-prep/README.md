@@ -4,11 +4,14 @@
   * [Overview](#overview)
     + [Prerequisites](#prerequisites)
     + [Objects Created](#objects-created)
+    + [Conjur Enterprise Documentation Reference](#conjur-enterprise-documentation-reference)
   * [Configuration](#configuration)
   * [Examples](#examples)
     + [Fresh Installation](#fresh-installation)
     + [Upgrading](#upgrading)
+    + [Alternative: Creating K8s Resources with `kubectl` instead of Helm](#alternative-creating-k8s-resources-with-kubectl-instead-of-helm)
   * [Issues with Helm "lookup"](#issues-with-helm-"lookup")
+  * [Using the Conjur Connection ConfigMap in your application deployment manifest](#using-the-conjur-connection-configmap-in-your-application-deployment-manifest)
 
 <!--
   Table of contents generated with markdown-toc
@@ -26,6 +29,8 @@ in the "Golden Configmap", and making them available within the NameSpace throug
 ConfigMap and RoleBinding of its own. These objects will expose the credentials as 
 environment variables and prepare for communication for any Kubernetes authenticators 
 in the given Conjur NameSpace. 
+
+<img alt="Prepare Namespace" src="https://user-images.githubusercontent.com/26872683/111843074-eae22480-88d6-11eb-9cc3-60b1ece9139b.png">
 
 ### Prerequisites
 
@@ -47,6 +52,10 @@ The per-Kubernetes-NameSpace resources created by this Helm chart include:
 
     The [Authenticator RoleBinding](templates/authenticator-RoleBinding.yml) 
     grants permissions to the Conjur Authenticator ServiceAccount for the Authn-Kubernetes ClusterRole, which provides a list of Kubernetes API access permissions. This is required to validate application identities.
+
+### Conjur Enterprise Documentation Reference
+
+Installation of this Helm chart replaces the manual creation of the Kubernetes resources outlined in [Steps 4 and 5 of the Conjur Enterprise Kubernetes Authenticator Documentation](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client.htm?tocpath=Integrations%7COpenShift%252FKubernetes%7CSet%20Up%20Applications%7C_____1#Setuptheapplicationtoretrievesecrets).
 
 ## Configuration
 
@@ -105,10 +114,40 @@ helm upgrade NameSpace-prep . -n "my-NameSpace" \
   --set authnK8s.NameSpace="new-NameSpace"
 ```
 
+### Alternative: Creating K8s Resources with `kubectl` instead of Helm
+
+If Helm can not be used to deploy Kubernetes resources, the raw Kubernetes manifests can instead be generated ahead of time with the `helm template` command. The generated manifests can then be applied with `kubectl`.
+
+```shell-session
+helm template NameSpace-prep . -n "my-NameSpace" \
+  --set authnK8s.goldenConfigMap="conjur-configmap" \
+  --set authnK8s.NameSpace="default" > conjur-config-namespace-prep.yaml
+
+kubectl apply -f conjur-config-namespace-prep.yaml
+```
+
 ## Issues with Helm "lookup"
 
-When using `helm install -dry-run` or `helm lint`, you may notice that the
+When using `helm install --dry-run` or `helm lint`, you may notice that the
 outputted ConfigMap and RoleBinding do not contain the actual credentials
 that would be retrieved from your "Golden Configmap". This is due to the
 Helm `lookup` function, which retrieves Kubernetes objects and data, not being
 supported by `--dry-run` or `lint`.
+
+## Using the Conjur Connection ConfigMap in your application deployment manifest
+
+In order to leverage the standardized `ConfigMap` containing Conjur connection details, it needs to be exposed as environment variables to the Kubernetes Authenticator Client. Edit the relevant `container` and/or `image` subsections of your application manifest to include the `ConfigMap` in the container environment, as seen in the example below:
+
+```
+containers:
+- name: test-app
+  envFrom:
+    - configMapRef:
+        name: conjur-connect
+- image: cyberark/conjur-authn-k8s-client
+  envFrom:
+    - configMapRef:
+        name: conjur-connect
+```
+
+Applications using [Secrets Provider](https://github.com/cyberark/secrets-provider-for-k8s) or [Secretless Broker](https://github.com/cyberark/secretless-broker) can be modified similarly to make use of the `ConfigMap` values.
