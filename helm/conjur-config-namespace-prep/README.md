@@ -30,6 +30,8 @@ ConfigMap and RoleBinding of its own. These objects will expose the credentials 
 environment variables and prepare for communication for any Kubernetes authenticators 
 in the given Conjur NameSpace. 
 
+<img alt="Prepare Namespace" src="https://user-images.githubusercontent.com/26872683/111843074-eae22480-88d6-11eb-9cc3-60b1ece9139b.png">
+
 ### Prerequisites
 
 - A running Conjur instance inside or outside of a Kubernetes cluster
