@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.21.0] - 2021-06-25
+### Added
+- Introduces the `conjur-config-cluster-prep` and `conjur-config-namespace-prep` Helm charts.
+  Together these charts simplify the deployment of Conjur-authenticated applications as part of
+  the [Simplified Client Configuration](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/design/simple-client-configuration.md) feature.
+  [cyberark/conjur-authn-k8s-client#232](https://github.com/cyberark/conjur-authn-k8s-client/issues/232)
+  [cyberark/conjur-authn-k8s-client#249](https://github.com/cyberark/conjur-authn-k8s-client/issues/249)
+
 ## [0.20.0] - 2021-06-16
 ### Fixed
 - Fixes bug in error handling within the `VerifyFileExists` method that resulted in a
@@ -157,7 +165,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.20.0...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.21.0...HEAD
+[0.21.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.1...v0.20.0
 [0.19.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.18.1...v0.19.0
