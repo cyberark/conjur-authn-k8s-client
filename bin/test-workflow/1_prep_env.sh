@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo pipefail
+set -o pipefail
 
 export DOCKER_REGISTRY_URL="${DOCKER_REGISTRY_URL:-localhost:5000}"
 export DOCKER_REGISTRY_PATH="${DOCKER_REGISTRY_PATH:-localhost:5000}"

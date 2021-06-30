@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo pipefail
+set -o pipefail
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
 # Install Conjur in our cluster
