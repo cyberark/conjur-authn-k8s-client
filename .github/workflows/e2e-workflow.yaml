@@ -9,7 +9,7 @@ on:
   # Or when PR operations are done
   pull_request:
     types: [ opened, synchronize, reopened, edited ]
-
+    
 jobs:
   run-E2E-workflow:
     name: Run E2E Workflow on KinD cluster
