@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Run a Kubernetes cluster prep Helm chart Helm test to validate
+# Run a Kubernetes Namespace prep Helm chart Helm test to validate
 # an installed chart release.
 #
 # Example: Run test without authentication with a Conjur instance:
@@ -23,40 +23,53 @@ print_usage() {
   echo "    Options:"
   echo "    -a             Test authentication with Conjur instance"
   echo "    -h             Show help"
-  echo "    -n <namespace> Specify the Namespace from which to test"
-  echo "                   (defaults to 'conjur-oss')"
+  echo "    -H <host-ID>   Specify a Conjur host ID to use for validating"
+  echo "                   authentication with Conjur. This host ID must be"
+  echo "                   pre-configured in Conjur policy for basic"
+  echo "                   authentication (i.e. no secrets access required)".
+  echo "                   Example:"
+  echo "                    -l \"host/conjur/authn-k8s/my-authenticator-id/app-validator\""
+  echo "                   This is required if '-a' option is used."
+  echo "    -n <namespace> Specify the application Namespace from which to test"
+  echo "                   (defaults to 'app-test')"
   echo "    -r <release>   Specify the Helm release"
-  echo "                   (defaults to 'authn-k8s')"
-  echo "    -v <host-ID>   Specify validator host ID to use for testing"
-  echo "                   authentication (defaults to 'validator')"
+  echo "                   (defaults to 'app-namespace-prep')"
 }
 
+app_namespace="app-test"
+helm_release="app-namespace-prep"
 test_authentication=false
-namespace="conjur-oss"
-helm_release="authn-k8s"
-validator_id="validator"
+host_id=""
 
 function main() {
   # Process command line options
   local OPTIND
-  while getopts ':ahn:r:v:' flag; do
+  while getopts ':ahH:n:r:' flag; do
     case "${flag}" in
       a) test_authentication=true ;;
       h) print_usage; exit 0 ;;
-      n) namespace="${OPTARG}" ;;
+      H) host_id="${OPTARG}" ;;
+      n) app_namespace="${OPTARG}" ;;
       r) helm_release="${OPTARG}" ;;
-      v) validator_id="${OPTARG}" ;;
       *) echo "Invalid argument -${OPTARG}" >&2; echo; print_usage ; exit 1;;
     esac
   done
   shift $((OPTIND-1))
 
-  kubectl delete pod -l "app=cluster-prep-test" --ignore-not-found=true -n "$namespace"
+  if $test_authentication && [ -z "$host_id" ]; then
+    echo "ERROR: The '-H <host-id>' option is required when the '-a' option"
+    echo "       (test authentication with Conjur) is set."
+    echo
+    print_usage
+    exit 1
+  fi
+
+  kubectl delete pod -n "$app_namespace" -l "app=namespace-prep-test" --ignore-not-found=true
   helm upgrade "$helm_release" . \
-      --namespace "$namespace" \
+      --namespace "$app_namespace" \
       --reuse-values \
       --set test.authentication.enable="$test_authentication" \
-      --set test.authentication.validatorID="$validator_id" \
+      --set test.authentication.authnLogin="$host_id" \
       --set test.authentication.debug=true \
       --timeout "$UPGRADE_TIMEOUT" \
       --wait
@@ -65,23 +78,23 @@ function main() {
   if "$test_authentication"; then
     # Run with a timeout, since authenticator sidecar will run indefinitely.
     # Also, the Helm test '--logs' option does not work if there are
-    # multiple containers in the test Pod, so logs have to be collected
-    # individually.
+    # multiple containers in the test Pod.
     helm test "$helm_release" \
-        --namespace "$namespace" \
+        --namespace "$app_namespace" \
         --timeout "$TEST_TIMEOUT"
     announce "Retrieving Conjur authenticator container logs"
-    kubectl logs "$helm_release"-cluster-prep-test authenticator -n "$namespace"
+    kubectl logs "$helm_release"-namespace-prep-test authenticator -n "$app_namespace"
     announce "Retrieving BATS tester logs"
-    kubectl logs "$helm_release"-cluster-prep-test tester -n "$namespace"
+    kubectl logs "$helm_release"-namespace-prep-test tester -n "$app_namespace"
     # Since the Helm test always times out (since the authenticator sidecar
     # runs indefinitely whether its successful or not), we need to look at
     # the 'exitCode' of the test container to get the results of the test.
-    kubectl get pod -l app=cluster-prep-test -o yaml | grep "exitCode: 0"
+    announce "Checking exit code of Helm test 'tester' container"
+    kubectl get pod -l app=namespace-prep-test -o yaml -n "$app_namespace" | grep "exitCode: 0"
 
   else
     helm test "$helm_release" \
-        --namespace "$namespace" \
+        --namespace "$app_namespace" \
         --timeout "$TEST_TIMEOUT" \
         --logs
   fi
