@@ -234,3 +234,15 @@ function dump_authentication_policy {
   announce "Authentication policy:"
   cat policy/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml
 }
+
+function get_admin_password {
+  if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+    echo "$(kubectl exec \
+                --namespace "$CONJUR_NAMESPACE" \
+                deploy/conjur-oss \
+                --container conjur-oss \
+                -- conjurctl role retrieve-key "$CONJUR_ACCOUNT":user:admin | tail -1)"
+  else
+    echo "$CONJUR_ADMIN_PASSWORD"
+  fi
+}

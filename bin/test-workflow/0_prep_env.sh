@@ -15,7 +15,7 @@ export CONJUR_AUTHN_LOGIN_PREFIX="${CONJUR_AUTHN_LOGIN_PREFIX:-host/conjur/authn
 export CONJUR_VERSION="${CONJUR_VERSION:-5}"
 export PLATFORM="${PLATFORM:-kubernetes}"
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
-export USE_DOCKER_LOCAL_REGISTRY="${USE_DOCKER_LOCAL_REGISTRY:-false}"
+export USE_DOCKER_LOCAL_REGISTRY="${USE_DOCKER_LOCAL_REGISTRY:-true}"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
     conjur_service='conjur-oss'
@@ -26,11 +26,10 @@ fi
 export CONJUR_NAMESPACE="${CONJUR_NAMESPACE:-$conjur_service}"
 export CONJUR_APPLIANCE_URL=${CONJUR_APPLIANCE_URL:-https://$conjur_service.$CONJUR_NAMESPACE.svc.cluster.local}
 
-export CONJUR_ADMIN_PASSWORD="$(kubectl exec \
-            --namespace "$CONJUR_NAMESPACE" \
-            deploy/conjur-oss \
-            --container conjur-oss \
-            -- conjurctl role retrieve-key "$CONJUR_ACCOUNT":user:admin | tail -1)"
+if [[ "$CONJUR_OSS_HELM_INSTALLED" == "false" ]]; then
+    export CONJUR_FOLLOWER_URL="https://conjur-follower.$CONJUR_NAMESPACE.svc.cluster.local"
+    export CONJUR_ADMIN_PASSWORD="MySecretP@ss1"
+fi
 
 # Create the random database password
 export SAMPLE_APP_BACKEND_DB_PASSWORD=$(openssl rand -hex 12)

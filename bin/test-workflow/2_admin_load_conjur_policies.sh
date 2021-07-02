@@ -7,6 +7,8 @@ PLATFORM="${PLATFORM:-kubernetes}"
 
 source utils.sh
 
+export CONJUR_ADMIN_PASSWORD="$(get_admin_password)"
+
 check_env_var TEST_APP_NAMESPACE_NAME
 check_env_var CONJUR_VERSION
 check_env_var CONJUR_ACCOUNT
@@ -93,7 +95,10 @@ if [ -z "$conjur_cli_pod" ]; then
   deploy_conjur_cli
   conjur_cli_pod=$(get_conjur_cli_pod_name)
 fi
-ensure_conjur_cli_initialized $conjur_cli_pod
+
+if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+  ensure_conjur_cli_initialized $conjur_cli_pod
+fi
 
 announce "Loading Conjur policy."
 
