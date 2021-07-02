@@ -3,10 +3,35 @@
 set -eo pipefail
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
-./0_prep_conjur_in_kind.sh
+function print_help {
+  cat << EOF
+Runs the end-to-end workflow for testing Conjur Kubernetes authentication.
+By default, the workflow is run against Conjur Open Source, but can be run
+against Conjur Enterprise.
 
-source ./1_prep_env.sh
+Usage: ./start [options]:
 
+    -o, --open-source  Run the E2E workflow against Conjur Open Source
+    -e, --enterprise   Run the E2E workflow against Conjur Enterprise
+    -h, --help         Show the help message
+EOF
+  exit
+}
+
+while true; do
+  case "$1" in
+    --open-source|-o ) CONJUR_OSS_HELM_INSTALLED="true" ; shift ;;
+    --enterprise|-e ) CONJUR_OSS_HELM_INSTALLED="false" ; shift ;;
+    --help|-h ) print_help ; shift ;;
+    * ) if [ -z "$1" ]; then break ; else echo "$1 is not a valid option" ; exit 1 ; fi ;;
+  esac
+done
+
+export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
+
+source ./0_prep_env.sh
+
+./1_prep_conjur_in_kind.sh
 ./2_admin_load_conjur_policies.sh
 ./3_admin_init_conjur_cert_authority.sh
 

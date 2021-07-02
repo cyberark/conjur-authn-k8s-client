@@ -24,7 +24,8 @@ pushd ../../helm/conjur-app-deploy > /dev/null
   helm install app-summon-sidecar . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout $TIMEOUT \
       --set global.conjur.conjurConnConfigMap="conjur-connect" \
       --set app-summon-sidecar.enabled=true \
-      --set app-summon-sidecar.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar"
+      --set app-summon-sidecar.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar" \
+      --set app-summon-sidecar.app.image.tag="$CONJUR_NAMESPACE"
 
 popd > /dev/null
 
