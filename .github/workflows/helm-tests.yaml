@@ -28,26 +28,8 @@ jobs:
         with:
           version: v3.3.0
 
-      - name: Run Helm happy test
-        run: ./bin/validate-helm -c -t happy > helm.log
+      - name: Run cluster prep Helm chart tests
+        run: ./bin/validate-helm -c -C cluster_prep
 
-      - name: Run Helm incorrect_url test
-        run: ./bin/validate-helm -t incorrect_url > helm.log
-
-      - name: Check status
-        if: ${{ always() }}
-        run: tail helm.log
-
-      - name: Run Helm incorrect_cert test
-        run: ./bin/validate-helm -t incorrect_cert > helm.log
-
-      - name: Check status
-        if: ${{ always() }}
-        run: tail helm.log
-
-      - name: Run Helm incorrect_auth_id test
-        run: ./bin/validate-helm -t incorrect_auth_id > helm.log
-
-      - name: Check status
-        if: ${{ always() }}
-        run: tail helm.log
+      - name: Run Namespace prep Helm chart tests
+        run: ./bin/validate-helm -C namespace_prep

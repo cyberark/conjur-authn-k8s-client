@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-if [ $PLATFORM = 'kubernetes' ]; then
+if [ "$PLATFORM" = 'kubernetes' ]; then
     cli=kubectl
-elif [ $PLATFORM = 'openshift' ]; then
+elif [ "$PLATFORM" = 'openshift' ]; then
     cli=oc
 fi
 
