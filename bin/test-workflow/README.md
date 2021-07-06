@@ -10,14 +10,21 @@
 
 ## Overview
 
-The scripts within this folder encompass an end-to-end workflow for testing Conjur Kubernetes authentication by deploying a PetStore demo application to a Kubernetes-in-Docker (KinD) cluster. The authenticator and cluster configuration is validated at a high level via basic POST and GET requests to the PetStore app; implicitly verifying communication with the app's backend database (with credentials provided by a particular Conjur Kubernetes authenticator).
+The scripts within this folder encompass an end-to-end workflow for testing Conjur Kubernetes authentication by deploying a PetStore demo application to a Kubernetes cluster. The authenticator and cluster configuration is validated at a high level via basic POST and GET requests to the PetStore app; implicitly verifying communication with the app's backend database (with credentials provided by a particular Conjur Kubernetes authenticator).
 
 The workflow: 
-* Deploys Conjur Open Source to a KinD cluster
+* Deploys Conjur to a Kubernetes cluster
 * Prepares the cluster with Conjur Config Cluster Prep Helm chart
 * Prepares and enables the Kubernetes authenticator in Conjur
 * Prepares PetStore app namespace with Conjur NameSpace Prep Helm chart
 * Deploys and verifies the PetStore demo application with authenticator sidecar
+
+The workflow current supports testing Kubernetes authentication against Conjur Open Source and Enterprise. Each can be run from the `start` script:
+
+```bash
+./start --open-source
+./start --enterprise --platform gke
+```
 
 ## Ongoing Improvements
 
@@ -27,18 +34,34 @@ The workflow:
   ([#322](https://github.com/cyberark/conjur-authn-k8s-client/issues/322) &
   [#323](https://github.com/cyberark/conjur-authn-k8s-client/issues/323))
 
-## Quick Start Guide
+## Prerequisites
 
-### Prerequisites
+#### Common
+* [git](https://git-scm.com/downloads)
+* [Docker](https://docs.docker.com/get-docker/)
 
-* [Docker](https://docs.docker.com/get-docker/) and [KinD](https://github.com/kubernetes-sigs/kind#installation-and-usage)
+#### Conjur Open Source Workflow
+* [Kubernetes in Docker (KinD)](https://github.com/kubernetes-sigs/kind#installation-and-usage)
 * [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
 * [Helm](https://helm.sh/docs/intro/install/)
-* [git](https://git-scm.com/downloads)
+
+#### Conjur Enterprise Workflow
+* Google Kubernetes Engine (GKE) cluster access
+
+## Quick Start Guide
 
 ### Steps
 
-1) Prepare a Cluster and Deploy Conjur Open Source
+1) Prepare Environment
+
+    - The following scripts use environment variables to persist information regarding the workflow's configuration. Each is set to a default value, and can be changed by setting the envvar before invoking the script.
+
+    - Prepare the environment by running:
+      ```bash
+      source ./0_prep_env.sh
+      ```
+
+2) Prepare a Cluster and Deploy Conjur Open Source
 
     - Start a KinD cluster with local Docker registry
     - Create a new namespace for Conjur, `conjur-oss`
@@ -49,16 +72,7 @@ The workflow:
     - Enable the Kubernetes Authenticator in Conjur
     - To perform these steps, run:
       ```bash
-      ./0_prep_conjur_in_kind.sh
-      ```
-
-2) Prepare Environment
-
-    - The following scripts use environment variables to persist information regarding the workflow's configuration. Each is set to a default value, and can be changed by setting the envvar before invoking the script.
-
-    - Prepare the environment by running:
-      ```bash
-      source ./1_prep_env.sh
+      ./1_deploy_conjur.sh
       ```
 
 3) Load Conjur Policy
