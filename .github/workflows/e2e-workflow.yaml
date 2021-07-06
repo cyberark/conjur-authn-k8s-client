@@ -8,10 +8,7 @@ on:
 
   # Or when PR operations are done
   pull_request:
-    types:
-    - opened
-    - reopened
-    - synchronize
+    types: [ opened, synchronize, reopened, edited ]
 
 jobs:
   run-E2E-workflow:
