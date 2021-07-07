@@ -1,0 +1,32 @@
+name: E2E Workflow
+
+on:
+  # Run this on pushes to main
+  push:
+    branches:
+    - main
+
+  # Or when PR operations are done
+  pull_request:
+    types: [ opened, synchronize, reopened, edited ]
+
+jobs:
+  run-E2E-workflow:
+    name: Run E2E Workflow on KinD cluster
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        kube-tag:
+          - v1.18.2
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Install Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: v3.3.0
+
+      - name: Run Start
+        run: bin/test-workflow/start
