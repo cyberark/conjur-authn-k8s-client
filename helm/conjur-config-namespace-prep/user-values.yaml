@@ -1,0 +1,7 @@
+# User-supplied values for the conjur-config-namespace-prep Helm chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+authnK8s:
+  goldenConfigMap: "conjur-configmap"
+  namespace: "conjur-oss"
