@@ -2,7 +2,6 @@ package config
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -42,55 +41,7 @@ func TestAuthenticator(t *testing.T) {
 		}
 	}()
 
-	TestCases := []struct {
-		description string
-		envVersion  string
-		expVersion  string
-		expErrStr   string
-	}{
-		{
-			description: "Succeeds if version is 4",
-			envVersion:  "4",
-			expVersion:  "4",
-			expErrStr:   "",
-		},
-		{
-			description: "Succeeds if version is 5",
-			envVersion:  "5",
-			expVersion:  "5",
-			expErrStr:   "",
-		},
-		{
-			description: "Sets the default version for an empty value",
-			envVersion:  "",
-			expVersion:  DefaultConjurVersion,
-			expErrStr:   "",
-		},
-		{
-			description: "Returns error if version is invalid",
-			envVersion:  "3",
-			expVersion:  "",
-			expErrStr:   fmt.Sprintf(logger.CAKC021, "invalid conjur version"),
-		},
-	}
-
-	Convey("NewFromEnv", t, func() {
-		for _, tc := range TestCases {
-			Convey(tc.description, func() {
-				_ = os.Setenv("CONJUR_VERSION", tc.envVersion)
-
-				config, err := FromEnv(successfulMockReadFile)
-
-				if tc.expErrStr == "" {
-					So(err, ShouldBeNil)
-					So(config.ConjurVersion, ShouldEqual, tc.expVersion)
-				} else {
-					So(err, ShouldNotBeNil)
-					So(err.Error(), ShouldEqual, tc.expErrStr)
-				}
-			})
-		}
-
+	Convey("FromEnv", t, func() {
 		Convey("Debug logs are enabled if DEBUG env var is 'true'", func() {
 			_ = os.Setenv("DEBUG", "true")
 

@@ -50,6 +50,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Support for OpenShift 4.6 was certified as of this release.
 - Support for OpenShift 4.7 was certified as of this release.
 
+### Removed
+- The conjur-authn-k8s-client no longer supports Conjur v4.
+  [cyberark/conjur-authn-k8s-client#183](https://github.com/cyberark/conjur-authn-k8s-client/issues/183)
+
 ## [0.19.0] - 2020-10-08
 ### Added
 - Users can set the `DEBUG` environment variable to run the client in debug mode and view more log messages.

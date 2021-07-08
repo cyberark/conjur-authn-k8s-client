@@ -33,7 +33,6 @@ questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/
 - `CONTAINER_MODE`: Set this to `init` to run as an init container that will exit after performing authentication. All other values (including blank) will cause the container to run as a sidecar.
 
 ## Conjur
-- `CONJUR_VERSION`: Conjur version ('4' or '5', defaults to '5'). Must use a string value in the manifest due to YAML parsing not handling integer values well.
 - `CONJUR_ACCOUNT`: Conjur account name
 - `CONJUR_AUTHN_URL`: URL pointing to authenticator service endpoint
 - `CONJUR_AUTHN_LOGIN`: Host login for pod e.g. `namespace/service_account/some_service_account`
