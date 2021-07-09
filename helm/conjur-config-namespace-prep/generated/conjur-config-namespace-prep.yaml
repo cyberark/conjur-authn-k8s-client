@@ -1,0 +1,37 @@
+---
+# Source: conjur-config-namespace-prep/templates/conjur_connect_configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: conjur-connect
+  labels:
+    app.kubernetes.io/name: "conjur-connect-configmap"
+    app.kubernetes.io/component: "conjur-connect-config"
+    app.kubernetes.io/instance: "conjur-default-configmap"
+    app.kubernetes.io/part-of: "conjur-config"
+    conjur.org/name: "conjur-connect-configmap"
+data:
+  CONJUR_ACCOUNT: 
+  CONJUR_APPLIANCE_URL: 
+  CONJUR_AUTHN_URL: /authn-k8s/
+  CONJUR_SSL_CERTIFICATE: |-
+---
+# Source: conjur-config-namespace-prep/templates/authenticator_rolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: conjur-rolebinding
+  labels: 
+    app.kubernetes.io/name: "conjur-rolebinding"
+    app.kubernetes.io/component: "conjur-namespace-access"
+    app.kubernetes.io/instance: "conjur-default-rolebinding"
+    app.kubernetes.io/part-of: "conjur-config"
+    conjur.org/name: "conjur-rolebinding"
+subjects:
+- kind: ServiceAccount
+  name: 
+  namespace: conjur-oss
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name:
