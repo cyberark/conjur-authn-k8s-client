@@ -1,0 +1,11 @@
+# User-supplied values for the conjur-config-cluster-prep Helm chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+conjur:
+  account: "myConjurAccount"
+  applianceUrl: "https://conjur-oss.conjur-oss.svc.cluster.local"
+  certificateFilePath: "files/conjur-cert.pem"
+
+authnK8s:
+  authenticatorID: "myAuthenticatorId"
