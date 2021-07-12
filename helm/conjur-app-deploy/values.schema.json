@@ -19,11 +19,9 @@
 					"pullPolicy": {
 						"type": "string"
 					}
-
 				}
-			}
-			
-			},
+            }	
+		},
         "conjur": {
             "authnConfigMap":{
                 "properties": {
@@ -37,7 +35,7 @@
                             "type": "string"
                     }
                 }
-        }
+            }
 		},
 		"authnClient": {
 			"image": {
@@ -53,7 +51,6 @@
 					}
 				}
 			}
-
 		},
         "secretsProvider": {
 			"image": {
@@ -69,7 +66,6 @@
 					}
 				}
 			}
-
 		},
 		"conjurConnConfigMap": {
 			"name": {
