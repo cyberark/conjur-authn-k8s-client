@@ -7,14 +7,14 @@ PLATFORM="${PLATFORM:-kubernetes}"
 
 source utils.sh
 
-check_env_var CONJUR_NAMESPACE
+check_env_var CONJUR_NAMESPACE_NAME
 check_env_var CONJUR_OSS_HELM_INSTALLED
 check_env_var CONJUR_ACCOUNT
 check_env_var AUTHENTICATOR_ID
 
 announce "Initializing Conjur certificate authority."
 
-set_namespace $CONJUR_NAMESPACE
+set_namespace $CONJUR_NAMESPACE_NAME
 
 conjur_master=$(get_master_pod_name)
 

@@ -15,7 +15,7 @@ check_env_var CONJUR_ACCOUNT
 check_env_var CONJUR_APPLIANCE_URL
 check_env_var CONJUR_ADMIN_PASSWORD
 check_env_var AUTHENTICATOR_ID
-check_env_var CONJUR_NAMESPACE
+check_env_var CONJUR_NAMESPACE_NAME
 check_env_var TEST_APP_DATABASE
 check_env_var SAMPLE_APP_BACKEND_DB_PASSWORD
 
@@ -71,7 +71,7 @@ pushd policy > /dev/null
   fi
 
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml |
-    sed "s#{{ CONJUR_NAMESPACE }}#$CONJUR_NAMESPACE#g" > ./generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml
+    sed "s#{{ CONJUR_NAMESPACE }}#$CONJUR_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml
 
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/project-authn-def.template.yml |
     sed "s#{{ IS_OPENSHIFT }}#$is_openshift#g" |
@@ -86,7 +86,7 @@ pushd policy > /dev/null
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.authn-any-policy-branch.yml
 popd > /dev/null
 
-set_namespace "$CONJUR_NAMESPACE"
+set_namespace "$CONJUR_NAMESPACE_NAME"
 
 announce "Finding or creating a Conjur CLI pod"
 conjur_cli_pod=$(get_conjur_cli_pod_name)
