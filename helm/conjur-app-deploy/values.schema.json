@@ -12,19 +12,29 @@
 			}
 		},
 		"app-summon-init":{
-			"type":"boolean"
+			"enabled": {
+				"type":"boolean"
+			}
 		},
 		"app-summon-sidecar":{
-			"type":"boolean"
+			"enabled": {
+				"type":"boolean"
+			}
 		},
 		"app-secretless-broker":{
-			"type":"boolean"
+			"enabled": {
+				"type":"boolean"
+			}
 		},
 		"app-secrets-provider-init":{
-			"type":"boolean"
+			"enabled": {
+				"type":"boolean"
+			}
 		},
 		"app-secrets-provider-standalone":{
-			"type":"boolean"
+			"enabled": {
+				"type":"boolean"
+			}
 		}
 	}
 }
