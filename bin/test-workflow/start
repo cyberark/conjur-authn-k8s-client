@@ -11,33 +11,100 @@ against Conjur Enterprise.
 
 Usage: ./start [options]:
 
-    -o, --open-source  Run the E2E workflow against Conjur Open Source
-    -e, --enterprise   Run the E2E workflow against Conjur Enterprise
-    -h, --help         Show the help message
+    -o, --open-source         Run the E2E workflow against Conjur Open Source
+    -e, --enterprise          Run the E2E workflow against Conjur Enterprise
+    -p, --platform <pform>    Platform on which to delpoy Conjur
+                              Flag required for Enterprise workflow
+                              Only accepts 'kind' for Open Source workflow
+                              Only accepts 'gke' for Enterprise workflow
+    -h, --help                Show the help message
 EOF
   exit
 }
 
+function cleanup {
+  announce "Removing test environment"
+  ./stop
+}
+
 while true; do
   case "$1" in
-    --open-source|-o ) CONJUR_OSS_HELM_INSTALLED="true" ; shift ;;
-    --enterprise|-e ) CONJUR_OSS_HELM_INSTALLED="false" ; shift ;;
-    --help|-h ) print_help ; shift ;;
-    * ) if [ -z "$1" ]; then break ; else echo "$1 is not a valid option" ; exit 1 ; fi ;;
+    -o|--open-source )
+      CONJUR_OSS_HELM_INSTALLED="true"
+      shift
+      ;;
+    -e|--enterprise )
+      CONJUR_OSS_HELM_INSTALLED="false"
+      shift
+      ;;
+    -p|--platform )
+      TEST_PLATFORM="$2"
+
+      if [[ "$TEST_PLATFORM" == "oc" ]]; then
+        PLATFORM="openshift"
+      else
+        PLATFORM="kubernetes"
+      fi
+
+      shift
+      shift
+      ;;
+    -h|--help )
+      print_help
+      shift
+      ;;
+    * )
+      if [ -z "$1" ]; then
+        break
+      else
+        echo "$1 is not a valid option"
+        exit 1
+      fi
+      ;;
   esac
 done
 
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
+if [[ -n "$TEST_PLATFORM" ]]; then
+  export TEST_PLATFORM
+  export PLATFORM
+else
+  export PLATFORM="kubernetes"
+fi
+
+if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+  if [[ "$TEST_PLATFORM" != "" && "$TEST_PLATFORM" != "kind" ]]; then
+    echo "Conjur Open Source workflow not compatible with platform \"$TEST_PLATFORM\""
+    echo "Workflow currently only compatible with \"kind\""
+    exit
+  fi
+else
+  if [[ "$TEST_PLATFORM" != "gke" ]]; then
+    echo "Conjur Enterprise workflow not compatible with platform \"$TEST_PLATFORM\""
+    echo "Workflow currently only compatible with \"gke\""
+    exit
+  fi
+fi
+
+trap cleanup EXIT
+source ./utils.sh
 
 source ./0_prep_env.sh
+./1_deploy_conjur.sh
 
-./1_prep_conjur_in_kind.sh
-./2_admin_load_conjur_policies.sh
-./3_admin_init_conjur_cert_authority.sh
-
-./4_admin_cluster_prep.sh
-./5_app_namespace_prep.sh
-./6_app_build_and_push_containers.sh
-./7_app_deploy_backend.sh
-./8_app_deploy.sh
+workflow="
+./2_admin_load_conjur_policies.sh &&
+./3_admin_init_conjur_cert_authority.sh &&
+./4_admin_cluster_prep.sh &&
+./5_app_namespace_prep.sh &&
+./6_app_build_and_push_containers.sh &&
+./7_app_deploy_backend.sh &&
+./8_app_deploy.sh &&
 ./9_app_verify_authentication.sh
+"
+
+if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+  eval $workflow
+else
+  run_command_with_platform $workflow
+fi
