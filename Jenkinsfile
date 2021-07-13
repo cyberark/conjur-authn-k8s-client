@@ -47,6 +47,12 @@ pipeline {
       }
     }
 
+    stage('E2E Workflow Tests') {
+      steps {
+        sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke'
+      }
+    }
+
     stage("Scan images") {
       parallel {
         stage ("Scan main image for fixable vulns") {
