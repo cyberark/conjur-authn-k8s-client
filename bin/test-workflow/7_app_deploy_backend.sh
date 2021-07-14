@@ -37,6 +37,7 @@ $cli --namespace $TEST_APP_NAMESPACE_NAME \
   --from-file=server.key=./etc/ca-key.pem
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
 
 helm install $app_name bitnami/postgresql -n $TEST_APP_NAMESPACE_NAME --debug --wait --timeout $TIMEOUT \
     --set image.repository="postgres" \

@@ -9,7 +9,7 @@ TIMEOUT="${TIMEOUT:-5m0s}"
 source utils.sh
 
 check_env_var TEST_APP_NAMESPACE_NAME
-check_env_var CONJUR_NAMESPACE
+check_env_var CONJUR_NAMESPACE_NAME
 
 set_namespace default
 
@@ -20,6 +20,6 @@ pushd ../../helm/conjur-config-namespace-prep > /dev/null
     helm upgrade --install namespace-prep . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout $TIMEOUT \
         --create-namespace \
         --set authnK8s.goldenConfigMap="conjur-configmap" \
-        --set authnK8s.namespace="$CONJUR_NAMESPACE"
+        --set authnK8s.namespace="$CONJUR_NAMESPACE_NAME"
 
 popd > /dev/null

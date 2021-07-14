@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+source utils.sh
+
+if [[ "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
+  kubectl delete namespace $CONJUR_NAMESPACE_NAME
+  kubectl delete namespace $TEST_APP_NAMESPACE_NAME
+else
+  run_command_with_platform "
+    cd temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID &&
+    ./stop &&
+    kubectl delete namespace $TEST_APP_NAMESPACE_NAME &&
+    kubectl delete clusterrole conjur-clusterrole
+  "
+  rm -rf temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+fi
