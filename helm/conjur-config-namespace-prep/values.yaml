@@ -22,3 +22,22 @@ MIIC/ThisIsAMockThisIsOnlyAMock==\n
     authnK8sAuthenticatorID: "mock-authenticator-id"
     authnK8sClusterRole: "mock-clusterrole"
     authnK8sServiceAccount: "mock-serviceaccount"
+
+  # The following chart values are for configuring Helm test
+
+  # 'colorize' determines if test output should include color escape sequences
+  colorize: true
+  authentication:
+    # 'enable' indicates whether validation tests should include an attempt
+    # to authenticate with a Conjur instance using the Golden ConfigMap
+    # contents and a special "authentication-only" (no secrets access)
+    # validator Conjur host ID.
+    enable: false
+    # If Conjur authentication validation testing is enabled, then
+    # 'authnLogin' must be set to a Conjur host ID that has been
+    # pre-configured for basic authentication (i.e. no access to secrets
+    # is required) in Conjur security policy. Example:
+    #    authnLogin: host/conjur/authn-k8s/my-authenticator-id/validator
+    authnLogin:
+    # 'debug' enables authenticator sidecar debug logs during testing
+    debug: true
