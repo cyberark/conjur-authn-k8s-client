@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "$schema": "http://json-schema.org/draft-07/schema",
   "properties": {
     "app": {
@@ -48,5 +49,56 @@
         }
       }
     }
+=======
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"properties": {
+        "app": {
+			  "image": {
+				"properties": {
+					"repository": {
+						"type": "string",
+                        "pattern": "^[a-z0-9/_-]+$"
+					},
+					"tag": {
+						"type": "string"
+					},
+					"pullPolicy": {
+						"type": "string",
+                        "pattern": "^(Always|Never|IfNotPresent)$"
+					}
+				}
+      }	
+		},
+        "conjur": {
+            "authnConfigMap": {
+                "properties": {
+                    "create": {
+                        "type": "boolean"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "authnLogin": {
+                            "type": "string"
+                    }
+                }
+            }
+		},
+		"authnClient": {
+			"image": {
+				"properties": {
+					"repository": {
+						"type": "string"
+					},
+					"tag": {
+						"type": "string"
+					},
+					"pullPolicy": {
+						"type": "string"
+					}
+				}
+			}
+		}
+>>>>>>> Changes to indentation
   }
 }
