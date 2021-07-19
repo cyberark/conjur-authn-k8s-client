@@ -2,7 +2,7 @@
 	"$schema": "http://json-schema.org/draft-07/schema",
 	"properties": {
         "app": {
-			"image": {
+			  "image": {
 				"properties": {
 					"repository": {
 						"type": "string",
@@ -16,7 +16,7 @@
                         "pattern": "^(Always|Never|IfNotPresent)$"
 					}
 				}
-            }	
+      }	
 		},
         "conjur": {
             "authnConfigMap": {
@@ -48,5 +48,5 @@
 				}
 			}
 		}
-    }
+  }
 }
