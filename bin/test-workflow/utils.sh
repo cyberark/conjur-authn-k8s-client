@@ -85,7 +85,7 @@ get_master_pod_name() {
   else
     pod_list=$(get_pods "app=conjur-node,role=master")
   fi
-  echo $pod_list | awk '{print $1}'
+  echo "$pod_list" | awk '{print $1}'
 }
 
 get_conjur_cli_pod_name() {
@@ -236,15 +236,11 @@ function dump_authentication_policy {
 }
 
 function get_admin_password {
-  if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
     echo "$(kubectl exec \
                 --namespace "$CONJUR_NAMESPACE_NAME" \
                 deploy/conjur-oss \
                 --container conjur-oss \
                 -- conjurctl role retrieve-key "$CONJUR_ACCOUNT":user:admin | tail -1)"
-  else
-    echo "$CONJUR_ADMIN_PASSWORD"
-  fi
 }
 
 function run_command_with_platform {
@@ -256,7 +252,7 @@ function run_command_with_platform {
     -i \
     -e CONJUR_OSS_HELM_INSTALLED \
     -e PLATFORM \
-    -e TEST_PLATFORM \
+    -e CLUSTER_TYPE \
     -e USE_DOCKER_LOCAL_REGISTRY \
     -e DOCKER_REGISTRY_URL \
     -e DOCKER_REGISTRY_PATH \
@@ -286,13 +282,13 @@ function run_command_with_platform {
     -e OSHIFT_CLUSTER_ADMIN_USERNAME \
     -e CONJUR_LOG_LEVEL \
     -e TEST_APP_LOADBALANCER_SVCS \
-    -e GCLOUD_SERVICE_KEY=/tmp$GCLOUD_SERVICE_KEY \
-    $GCLOUD_INCLUDES \
+    -e GCLOUD_SERVICE_KEY=/tmp"$GCLOUD_SERVICE_KEY" \
+    "$GCLOUD_INCLUDES" \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v ~/.config:/root/.config \
     -v "$PWD/../..":/src \
     -w /src/bin/test-workflow \
-    $PLATFORM_CONTAINER:$CONJUR_NAMESPACE_NAME \
+    "$PLATFORM_CONTAINER:$CONJUR_NAMESPACE_NAME" \
     bash -c "
       ./platform_login.sh
       $*

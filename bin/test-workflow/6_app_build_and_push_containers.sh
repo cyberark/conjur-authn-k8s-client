@@ -12,7 +12,7 @@ CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
 source utils.sh
 
 if [[ "$PLATFORM" == "openshift" ]]; then
-    docker login -u _ -p $(oc whoami -t) $DOCKER_REGISTRY_PATH
+    docker login -u _ -p $(oc whoami -t) "$DOCKER_REGISTRY_PATH"
 fi
 
 announce "Building and pushing test app images."
@@ -28,10 +28,10 @@ pushd test_app_summon
     docker build -t test-app-builder -f Dockerfile.builder .
 
     # retrieve the summon binaries
-    id=$(docker create test-app-builder)
-    docker cp $id:/usr/local/lib/summon/summon-conjur ./tmp.summon-conjur
-    docker cp $id:/usr/local/bin/summon ./tmp.summon
-    docker rm --volumes $id
+    id="$(docker create test-app-builder)"
+    docker cp "$id":/usr/local/lib/summon/summon-conjur ./tmp.summon-conjur
+    docker cp "$id":/usr/local/bin/summon ./tmp.summon
+    docker rm --volumes "$id"
   fi
 
 
@@ -47,13 +47,13 @@ pushd test_app_summon
 
     echo "Building test app image"
     docker build \
-      --build-arg namespace=$TEST_APP_NAMESPACE_NAME \
-      --tag test-app:$CONJUR_NAMESPACE_NAME \
-      --file $dockerfile .
+      --build-arg namespace="$TEST_APP_NAMESPACE_NAME" \
+      --tag test-app:"$CONJUR_NAMESPACE_NAME" \
+      --file "$dockerfile" .
 
     test_app_image=$(platform_image_for_push "test-$app_type-app")
-    docker tag test-app:$CONJUR_NAMESPACE_NAME $test_app_image
+    docker tag "test-app:$CONJUR_NAMESPACE_NAME" "$test_app_image"
 
-    docker push $test_app_image
+    docker push "$test_app_image"
   done
 popd

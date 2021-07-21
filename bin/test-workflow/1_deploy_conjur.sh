@@ -11,23 +11,21 @@ function setup_conjur_enterprise {
   check_env_var GCLOUD_CLUSTER_NAME
   check_env_var GCLOUD_SERVICE_KEY
 
-  docker pull $CONJUR_APPLIANCE_IMAGE
+  docker pull "$CONJUR_APPLIANCE_IMAGE"
 
-  # rm -rf kubernetes-conjur-deploy
   pushd temp > /dev/null
-    git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy kubernetes-conjur-deploy-$UNIQUE_TEST_ID
+    git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy "kubernetes-conjur-deploy-$UNIQUE_TEST_ID"
   popd > /dev/null
 
   announce "Deploying Conjur Enterprise"
 
-  if [[ "${TEST_PLATFORM}" == "gke" ]]; then
+  if [[ "${CLUSTER_TYPE}" == "gke" ]]; then
     run_command_with_platform "cd temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
   fi
 }
 
 function setup_conjur_open_source {
   pushd temp > /dev/null
-    rm -rf temp/conjur-oss-helm-chart
     git clone https://github.com/cyberark/conjur-oss-helm-chart.git
 
     pushd conjur-oss-helm-chart/examples/common > /dev/null
@@ -50,6 +48,8 @@ function setup_conjur_open_source {
       announce "Enabling the Conjur Kubernetes authenticator if necessary"
       ./4_ensure_authn_k8s_enabled.sh
     popd > /dev/null
+
+    rm -rf conjur-oss-helm-chart
   popd > /dev/null
 }
 

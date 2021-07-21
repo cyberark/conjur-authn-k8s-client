@@ -47,12 +47,6 @@ pipeline {
       }
     }
 
-    stage('E2E Workflow Tests') {
-      steps {
-        sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke'
-      }
-    }
-
     stage("Scan images") {
       parallel {
         stage ("Scan main image for fixable vulns") {
@@ -83,6 +77,16 @@ pipeline {
         stage ("Scan helm test image for total vulns") {
           steps {
             scanAndReport("conjur-k8s-cluster-test:dev", "NONE", true)
+          }
+        }
+      }
+    }
+
+    stage('E2E Workflow Tests') {
+      parallel {
+        stage('Enterprise and test app deployed to GKE') {
+          steps {
+            sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke'
           }
         }
       }

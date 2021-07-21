@@ -13,8 +13,9 @@ RUN apt-get update -y && \
     rm -rf /var/lib/apt/lists/*
 
 # Install kubectl CLI
-ARG KUBECTL_CLI_URL
-RUN wget -O /usr/local/bin/kubectl ${KUBECTL_CLI_URL:-https://storage.googleapis.com/kubernetes-release/release/v1.7.6/bin/linux/amd64/kubectl} && \
+ARG KUBECTL_VERSION
+RUN curl -LO https://dl.k8s.io/release/v"${KUBECTL_VERSION:-1.21.3}"/bin/linux/amd64/kubectl && \
+    mv kubectl /usr/local/bin/kubectl && \
     chmod +x /usr/local/bin/kubectl
 
 # Install Helm CLI

@@ -7,7 +7,9 @@ PLATFORM="${PLATFORM:-kubernetes}"
 
 source utils.sh
 
-export CONJUR_ADMIN_PASSWORD="$(get_admin_password)"
+if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+  export CONJUR_ADMIN_PASSWORD="$(get_admin_password)"
+fi
 
 check_env_var TEST_APP_NAMESPACE_NAME
 check_env_var CONJUR_VERSION
@@ -24,12 +26,12 @@ announce "Generating Conjur policy."
 prepare_conjur_cli_image() {
   announce "Pulling and pushing Conjur CLI image."
 
-  docker pull cyberark/conjur-cli:$CONJUR_VERSION-latest
+  docker pull cyberark/conjur-cli:"$CONJUR_VERSION"-latest
 
-  cli_app_image=$(platform_image_for_push conjur-cli)
-  docker tag cyberark/conjur-cli:$CONJUR_VERSION-latest $cli_app_image
+  cli_app_image="$(platform_image_for_push conjur-cli)"
+  docker tag cyberark/conjur-cli:"$CONJUR_VERSION"-latest "$cli_app_image"
 
-  docker push $cli_app_image
+  docker push "$cli_app_image"
 }
 
 deploy_conjur_cli() {
@@ -71,39 +73,39 @@ pushd policy > /dev/null
   fi
 
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml |
-    sed "s#{{ CONJUR_NAMESPACE }}#$CONJUR_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml
+    sed "s#{{ CONJUR_NAMESPACE }}#$CONJUR_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".cluster-authn-svc.yml
 
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/project-authn-def.template.yml |
     sed "s#{{ IS_OPENSHIFT }}#$is_openshift#g" |
     sed "s#{{ IS_KUBERNETES }}#$is_kubernetes#g" |
-    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml
+    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".project-authn.yml
 
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-identity-def.template.yml |
-    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.app-identity.yml
+    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".app-identity.yml
 
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/authn-any-policy-branch.template.yml |
     sed "s#{{ IS_OPENSHIFT }}#$is_openshift#g" |
-    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/$TEST_APP_NAMESPACE_NAME.authn-any-policy-branch.yml
+    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".authn-any-policy-branch.yml
 popd > /dev/null
 
 set_namespace "$CONJUR_NAMESPACE_NAME"
 
 announce "Finding or creating a Conjur CLI pod"
-conjur_cli_pod=$(get_conjur_cli_pod_name)
+conjur_cli_pod="$(get_conjur_cli_pod_name)"
 if [ -z "$conjur_cli_pod" ]; then
   prepare_conjur_cli_image
   deploy_conjur_cli
-  conjur_cli_pod=$(get_conjur_cli_pod_name)
+  conjur_cli_pod="$(get_conjur_cli_pod_name)"
 fi
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-  ensure_conjur_cli_initialized $conjur_cli_pod
+  ensure_conjur_cli_initialized "$conjur_cli_pod"
 fi
 
 announce "Loading Conjur policy."
 
-$cli exec $conjur_cli_pod -- rm -rf /policy
-$cli cp ./policy $conjur_cli_pod:/policy
+$cli exec "$conjur_cli_pod" -- rm -rf /policy
+$cli cp ./policy "$conjur_cli_pod:/policy"
 
 wait_for_it 300 "$cli exec $conjur_cli_pod -- \
   bash -c \"
@@ -117,6 +119,6 @@ wait_for_it 300 "$cli exec $conjur_cli_pod -- \
   \"
 "
 
-$cli exec $conjur_cli_pod -- rm -rf ./policy
+$cli exec "$conjur_cli_pod" -- rm -rf ./policy
 
 echo "Conjur policy loaded."

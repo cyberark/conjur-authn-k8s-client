@@ -11,12 +11,13 @@ against Conjur Enterprise.
 
 Usage: ./start [options]:
 
-    -o, --open-source         Run the E2E workflow against Conjur Open Source
     -e, --enterprise          Run the E2E workflow against Conjur Enterprise
-    -p, --platform <pform>    Platform on which to delpoy Conjur
-                              Flag required for Enterprise workflow
-                              Only accepts 'kind' for Open Source workflow
-                              Only accepts 'gke' for Enterprise workflow
+    -p, --platform <pform>    Platform on which to deploy Conjur
+                              For Open Source workflow:
+                                - Defaults to 'kind'
+                              For Enterprise workflow:
+                                - Defaults to 'gke'
+                              All other selections are rejected
     -h, --help                Show the help message
 EOF
   exit
@@ -29,23 +30,12 @@ function cleanup {
 
 while true; do
   case "$1" in
-    -o|--open-source )
-      CONJUR_OSS_HELM_INSTALLED="true"
-      shift
-      ;;
     -e|--enterprise )
       CONJUR_OSS_HELM_INSTALLED="false"
       shift
       ;;
     -p|--platform )
-      TEST_PLATFORM="$2"
-
-      if [[ "$TEST_PLATFORM" == "oc" ]]; then
-        PLATFORM="openshift"
-      else
-        PLATFORM="kubernetes"
-      fi
-
+      CLUSTER_TYPE="$2"
       shift
       shift
       ;;
@@ -65,26 +55,24 @@ while true; do
 done
 
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
-if [[ -n "$TEST_PLATFORM" ]]; then
-  export TEST_PLATFORM
-  export PLATFORM
-else
-  export PLATFORM="kubernetes"
-fi
-
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-  if [[ "$TEST_PLATFORM" != "" && "$TEST_PLATFORM" != "kind" ]]; then
-    echo "Conjur Open Source workflow not compatible with platform \"$TEST_PLATFORM\""
+  if [[ -z "$CLUSTER_TYPE" ]]; then
+    CLUSTER_TYPE="kind"
+  elif [[ "$CLUSTER_TYPE" != "kind" ]]; then
+    echo "Conjur Open Source workflow not compatible with platform \"$CLUSTER_TYPE\""
     echo "Workflow currently only compatible with \"kind\""
     exit
   fi
 else
-  if [[ "$TEST_PLATFORM" != "gke" ]]; then
-    echo "Conjur Enterprise workflow not compatible with platform \"$TEST_PLATFORM\""
+  if [[ -z "$CLUSTER_TYPE" ]]; then
+    CLUSTER_TYPE="gke"
+  elif [[ "$CLUSTER_TYPE" != "gke" ]]; then
+    echo "Conjur Enterprise workflow not compatible with platform \"$CLUSTER_TYPE\""
     echo "Workflow currently only compatible with \"gke\""
     exit
   fi
 fi
+export CLUSTER_TYPE
 
 trap cleanup EXIT
 source ./utils.sh
@@ -104,7 +92,7 @@ workflow="
 "
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-  eval $workflow
+  eval "$workflow"
 else
-  run_command_with_platform $workflow
+  run_command_with_platform "$workflow"
 fi

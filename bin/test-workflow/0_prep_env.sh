@@ -5,15 +5,17 @@ set -o pipefail
 ### PLATFORM DETAILS
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
 
+# PLATFORM is used to differentiate between general Kubernetes platforms (K8s vs. oc), while
+# CLUSTER_TYPE is used to differentiate between sub-platforms (for vanilla K8s, KinD vs. GKE)
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-  TEST_PLATFORM="${TEST_PLATFORM:-kind}"
+  CLUSTER_TYPE="${CLUSTER_TYPE:-kind}"
 else
-  TEST_PLATFORM="${TEST_PLATFORM:-gke}"
+  CLUSTER_TYPE="${CLUSTER_TYPE:-gke}"
   export UNIQUE_TEST_ID="$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)"
 fi
-export TEST_PLATFORM
+export CLUSTER_TYPE
 
-if [[ "${TEST_PLATFORM}" == "oc" ]]; then
+if [[ "$CLUSTER_TYPE" == "oc" ]]; then
   PLATFORM="openshift"
 else
   PLATFORM="kubernetes"
@@ -46,10 +48,10 @@ else
 fi
 
 export CONJUR_APPLIANCE_URL=${CONJUR_APPLIANCE_URL:-https://$conjur_service.$CONJUR_NAMESPACE_NAME.svc.cluster.local}
-export SAMPLE_APP_BACKEND_DB_PASSWORD=$(openssl rand -hex 12)
+export SAMPLE_APP_BACKEND_DB_PASSWORD="$(openssl rand -hex 12)"
 
 ### PLATFORM SPECIFIC CONFIG
-if [[ "$TEST_PLATFORM" == "gke" ]]; then
+if [[ "$CLUSTER_TYPE" == "gke" ]]; then
     export CONJUR_FOLLOWER_URL="https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local"
     export CONJUR_ADMIN_PASSWORD="MySecretP@ss1"
     export CONJUR_APPLIANCE_IMAGE="registry2.itci.conjur.net/conjur-appliance:5.0-stable"
@@ -60,8 +62,8 @@ if [[ "$TEST_PLATFORM" == "gke" ]]; then
     export CONFIGURE_CONJUR_MASTER=true
     export PLATFORM_CONTAINER="platform-container"
 
-    docker build --tag  $PLATFORM_CONTAINER:$CONJUR_NAMESPACE_NAME \
+    docker build --tag "$PLATFORM_CONTAINER:$CONJUR_NAMESPACE_NAME" \
         --file Dockerfile \
-        --build-arg KUBECTL_CLI_URL=$KUBECTL_CLI_URL \
+        --build-arg KUBECTL_VERSION="$KUBECTL_VERSION" \
         .
 fi

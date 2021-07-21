@@ -19,10 +19,12 @@ The workflow:
 * Prepares PetStore app namespace with Conjur NameSpace Prep Helm chart
 * Deploys and verifies the PetStore demo application with authenticator sidecar
 
-The workflow current supports testing Kubernetes authentication against Conjur Open Source and Enterprise. Each can be run from the `start` script:
+The workflow currently supports testing Kubernetes authentication against Conjur Open Source or Enterprise. Each can be run from the `start` script:
 
 ```bash
-./start --open-source
+# run Open Source workflow
+./start
+# run Enterprise workflow on GKE
 ./start --enterprise --platform gke
 ```
 
@@ -46,7 +48,11 @@ The workflow current supports testing Kubernetes authentication against Conjur O
 * [Helm](https://helm.sh/docs/intro/install/)
 
 #### Conjur Enterprise Workflow
-* Google Kubernetes Engine (GKE) cluster access
+* Google Kubernetes Engine (GKE) cluster access, which requires the following environment variables to be set:
+  * `GCLOUD_PROJECT_NAME`
+  * `GCLOUD_ZONE`
+  * `GCLOUD_CLUSTER_NAME`
+  * `GCLOUD_SERVICE_KEY`
 
 ## Quick Start Guide
 
@@ -61,14 +67,20 @@ The workflow current supports testing Kubernetes authentication against Conjur O
       source ./0_prep_env.sh
       ```
 
-2) Prepare a Cluster and Deploy Conjur Open Source
+2) Deploy Conjur to Kubernetes Cluster
 
-    - Start a KinD cluster with local Docker registry
-    - Create a new namespace for Conjur, `conjur-oss`
-    - Deploy Conjur Open Source with Helm
-        - The Conjur Open Source Helm Chart is published on [GitHub](https://github.com/cyberark/conjur-oss-helm-chart).
+    - The workflow can either deploy Conjur Open Source or Conjur Enterprise, and decides based on the `CONJUR_OSS_HELM_INSTALLED` environment variable
+        - Deploy Conjur Open Source to KinD
+            - Start a KinD cluster with local Docker registry
+            - Create a new namespace for Conjur
+            - Deploy Conjur Open Source with Helm
+                - The Conjur Open Source Helm Chart is published on [GitHub](https://github.com/cyberark/conjur-oss-helm-chart).
 
-        - The Conjur Open Source Helm Chart repository contains an [example](https://github.com/cyberark/conjur-oss-helm-chart/tree/main/examples/kubernetes-in-docker) folder with scripts and instructions for deploying the Conjur Open Source Helm Chart on KinD. The scripts from the example folder are used to accomplish this step by git cloning the Conjur Open Source Helm Chart repository and using them to carry out the tasks mentioned above.
+                - The Conjur Open Source Helm Chart repository contains an [example](https://github.com/cyberark/conjur-oss-helm-chart/tree/main/examples/kubernetes-in-docker) folder with scripts and instructions for deploying the Conjur Open Source Helm Chart on KinD. The scripts from the example folder are used to accomplish this step by git cloning the Conjur Open Source Helm Chart repository and using them to carry out the tasks mentioned above.
+        - Deploy Conjur Enterprise to GKE
+            - Create a new namespace for Conjur
+            - Deploy Conjur Enterprise
+                - Conjur Enterprise is deployed with scripts in the [Kubernetes Conjur Deploy GitHub repo](https://github.com/cyberark/kubernetes-conjur-deploy).
     - Enable the Kubernetes Authenticator in Conjur
     - To perform these steps, run:
       ```bash
@@ -109,7 +121,7 @@ The workflow current supports testing Kubernetes authentication against Conjur O
 
 5) Cluster Preparation
 
-    - In this step, the KinD cluster is prepared to enable applications to authenticate with Conjur Open Source using:
+    - In this step, the Kubernetes cluster is prepared to enable applications to authenticate with Conjur Open Source using:
 
         - a "Golden" ConfigMap
         - an authenticator ClusterRole
@@ -137,7 +149,7 @@ The workflow current supports testing Kubernetes authentication against Conjur O
 
 6) App Namespace Preparation
 
-    - In this step, a new namespace is created in the KinD cluster for the PetStore test app deployment, and it is prepared to authenticate with Conjur Open Source using:
+    - In this step, a new namespace is created in the Kubernetes cluster for the PetStore test app deployment, and it is prepared to authenticate with Conjur Open Source using:
 
         - a Conjur connection ConfigMap
         - an authenticator RoleBinding
