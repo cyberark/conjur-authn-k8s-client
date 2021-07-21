@@ -5,15 +5,15 @@
 			  "image": {
 				"properties": {
 					"repository": {
-						"type": "string",
-                        "pattern": "^[a-z0-9/_-]+$"
+						  "type": "string",
+              "pattern": "^[a-z0-9/_-]+$"
 					},
 					"tag": {
-						"type": "string"
+						  "type": "string"
 					},
 					"pullPolicy": {
-						"type": "string",
-                        "pattern": "^(Always|Never|IfNotPresent)$"
+						  "type": "string",
+              "pattern": "^(Always|Never|IfNotPresent)$"
 					}
 				}
       }	
@@ -28,7 +28,7 @@
                         "type": "string"
                     },
                     "authnLogin": {
-                            "type": "string"
+                        "type": "string"
                     }
                 }
             }
