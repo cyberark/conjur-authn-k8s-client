@@ -9,11 +9,11 @@ pushd temp > /dev/null
     rm -rf conjur-oss-helm-chart
     git clone https://github.com/cyberark/conjur-oss-helm-chart.git
 
-    pushd conjur-oss-helm-chart/examples/kubernetes-in-docker > /dev/null
-        source utils.sh
+    pushd conjur-oss-helm-chart/examples/common > /dev/null
+        source ./utils.sh
 
         announce "Setting demo environment variable defaults"
-        source ./0_export_env_vars.sh
+        source ../kubernetes-in-docker/0_export_env_vars.sh
 
         announce "Creating a Kubernetes-in-Docker cluster if necessary"
         ./1_create_kind_cluster.sh
