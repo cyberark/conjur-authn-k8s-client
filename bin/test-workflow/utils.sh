@@ -33,9 +33,9 @@ platform_image_for_pull() {
   if [[ ${PLATFORM} = "openshift" ]]; then
     echo "${PULL_DOCKER_REGISTRY_PATH}/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
   elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
-    echo "${PULL_DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE"
+    echo "${PULL_DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE_NAME"
   else
-    echo "${PULL_DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE"
+    echo "${PULL_DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE_NAME"
   fi
 }
 
@@ -43,9 +43,9 @@ platform_image_for_push() {
   if [[ ${PLATFORM} = "openshift" ]]; then
     echo "${DOCKER_REGISTRY_PATH}/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
   elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
-    echo "${DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE"
+    echo "${DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE_NAME"
   else
-    echo "${DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE"
+    echo "${DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE_NAME"
   fi
 }
 
@@ -59,7 +59,7 @@ has_namespace() {
 
 has_resource() {
   local selector=$1
-  local num_matching_resources=$($cli get pods -n "$CONJUR_NAMESPACE" --selector $selector --no-headers 2>/dev/null | wc -l)
+  local num_matching_resources=$($cli get pods -n "$CONJUR_NAMESPACE_NAME" --selector $selector --no-headers 2>/dev/null | wc -l)
   if [ $num_matching_resources -gt 0 ]; then
     return 0
   else
@@ -85,11 +85,11 @@ get_master_pod_name() {
   else
     pod_list=$(get_pods "app=conjur-node,role=master")
   fi
-  echo $pod_list | awk '{print $1}'
+  echo "$pod_list" | awk '{print $1}'
 }
 
 get_conjur_cli_pod_name() {
-  pod_list=$($cli get pods -n "$CONJUR_NAMESPACE" --selector app=conjur-cli --no-headers | awk '{ print $1 }')
+  pod_list=$($cli get pods -n "$CONJUR_NAMESPACE_NAME" --selector app=conjur-cli --no-headers | awk '{ print $1 }')
   echo $pod_list | awk '{print $1}'
 }
 
@@ -233,4 +233,64 @@ function dump_kubernetes_resources() {
 function dump_authentication_policy {
   announce "Authentication policy:"
   cat policy/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml
+}
+
+function get_admin_password {
+    echo "$(kubectl exec \
+                --namespace "$CONJUR_NAMESPACE_NAME" \
+                deploy/conjur-oss \
+                --container conjur-oss \
+                -- conjurctl role retrieve-key "$CONJUR_ACCOUNT":user:admin | tail -1)"
+}
+
+function run_command_with_platform {
+  GCLOUD_INCLUDES=""
+  if [[ ! -z "${GCLOUD_SERVICE_KEY}" ]]; then
+    GCLOUD_INCLUDES="-v$GCLOUD_SERVICE_KEY:/tmp$GCLOUD_SERVICE_KEY"
+  fi
+  docker run --rm \
+    -i \
+    -e CONJUR_OSS_HELM_INSTALLED \
+    -e PLATFORM \
+    -e CLUSTER_TYPE \
+    -e USE_DOCKER_LOCAL_REGISTRY \
+    -e DOCKER_REGISTRY_URL \
+    -e DOCKER_REGISTRY_PATH \
+    -e PULL_DOCKER_REGISTRY_URL \
+    -e PULL_DOCKER_REGISTRY_PATH \
+    -e CONJUR_ACCOUNT \
+    -e CONJUR_ADMIN_PASSWORD \
+    -e CONJUR_APPLIANCE_URL \
+    -e CONJUR_AUTHN_LOGIN_PREFIX \
+    -e AUTHENTICATOR_ID \
+    -e CONJUR_NAMESPACE_NAME \
+    -e CONJUR_VERSION \
+    -e SAMPLE_APP_BACKEND_DB_PASSWORD \
+    -e TEST_APP_DATABASE \
+    -e TEST_APP_NAMESPACE_NAME \
+    -e CONJUR_APPLIANCE_IMAGE \
+    -e CONJUR_FOLLOWER_URL \
+    -e DEPLOY_MASTER_CLUSTER \
+    -e GCLOUD_CLUSTER_NAME \
+    -e GCLOUD_ZONE \
+    -e GCLOUD_PROJECT_NAME \
+    -e OPENSHIFT_VERSION \
+    -e OPENSHIFT_URL \
+    -e OPENSHIFT_USERNAME \
+    -e OPENSHIFT_PASSWORD \
+    -e OSHIFT_CONJUR_ADMIN_USERNAME \
+    -e OSHIFT_CLUSTER_ADMIN_USERNAME \
+    -e CONJUR_LOG_LEVEL \
+    -e TEST_APP_LOADBALANCER_SVCS \
+    -e GCLOUD_SERVICE_KEY=/tmp"$GCLOUD_SERVICE_KEY" \
+    "$GCLOUD_INCLUDES" \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v ~/.config:/root/.config \
+    -v "$PWD/../..":/src \
+    -w /src/bin/test-workflow \
+    "$PLATFORM_CONTAINER:$CONJUR_NAMESPACE_NAME" \
+    bash -c "
+      ./platform_login.sh
+      $*
+    "
 }

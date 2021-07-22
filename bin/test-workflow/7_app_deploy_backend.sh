@@ -3,7 +3,6 @@
 set -euo pipefail
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
-PLATFORM="${PLATFORM:-kubernetes}"
 TIMEOUT="${TIMEOUT:-5m0s}"
 
 source utils.sh
@@ -13,32 +12,33 @@ check_env_var SAMPLE_APP_BACKEND_DB_PASSWORD
 
 announce "Deploying test app postgres backend for $TEST_APP_NAMESPACE_NAME."
 
-set_namespace $TEST_APP_NAMESPACE_NAME
+set_namespace "$TEST_APP_NAMESPACE_NAME"
 
 app_name="app-backend-pg"
 
 # Uninstall backend if it exists so any PVCs can be deleted
 if [ "$(helm list -q -n $TEST_APP_NAMESPACE_NAME | grep "^$app_name$")" = "$app_name" ]; then
-    helm uninstall $app_name -n "$TEST_APP_NAMESPACE_NAME"
+    helm uninstall "$app_name" -n "$TEST_APP_NAMESPACE_NAME"
 fi
 
 # Delete any created PVCs
-$cli delete --namespace $TEST_APP_NAMESPACE_NAME --ignore-not-found \
-  pvc -l app.kubernetes.io/instance=$app_name
+$cli delete --namespace "$TEST_APP_NAMESPACE_NAME" --ignore-not-found \
+  pvc -l app.kubernetes.io/instance="$app_name"
 
 echo "Create secrets for test app backend"
-$cli delete --namespace $TEST_APP_NAMESPACE_NAME --ignore-not-found \
+$cli delete --namespace "$TEST_APP_NAMESPACE_NAME" --ignore-not-found \
   secret test-app-backend-certs
 
-$cli --namespace $TEST_APP_NAMESPACE_NAME \
+$cli --namespace "$TEST_APP_NAMESPACE_NAME" \
   create secret generic \
   test-app-backend-certs \
   --from-file=server.crt=./etc/ca.pem \
   --from-file=server.key=./etc/ca-key.pem
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
 
-helm install $app_name bitnami/postgresql -n $TEST_APP_NAMESPACE_NAME --debug --wait --timeout $TIMEOUT \
+helm install "$app_name" bitnami/postgresql -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
     --set image.repository="postgres" \
     --set image.tag="9.6" \
     --set postgresqlDataDir="/data/pgdata" \
@@ -52,5 +52,5 @@ helm install $app_name bitnami/postgresql -n $TEST_APP_NAMESPACE_NAME --debug --
     --set securityContext.fsGroup="999" \
     --set postgresqlDatabase="test_app" \
     --set postgresqlUsername="test_app" \
-    --set postgresqlPassword=$SAMPLE_APP_BACKEND_DB_PASSWORD
+    --set postgresqlPassword="$SAMPLE_APP_BACKEND_DB_PASSWORD"
 

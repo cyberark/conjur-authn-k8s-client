@@ -3,16 +3,96 @@
 set -eo pipefail
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
-./0_prep_conjur_in_kind.sh
+function print_help {
+  cat << EOF
+Runs the end-to-end workflow for testing Conjur Kubernetes authentication.
+By default, the workflow is run against Conjur Open Source, but can be run
+against Conjur Enterprise.
 
-source ./1_prep_env.sh
+Usage: ./start [options]:
 
-./2_admin_load_conjur_policies.sh
-./3_admin_init_conjur_cert_authority.sh
+    -e, --enterprise          Run the E2E workflow against Conjur Enterprise
+    -p, --platform <pform>    Platform on which to deploy Conjur
+                              For Open Source workflow:
+                                - Defaults to 'kind'
+                              For Enterprise workflow:
+                                - Defaults to 'gke'
+                              All other selections are rejected
+    -h, --help                Show the help message
+EOF
+  exit
+}
 
-./4_admin_cluster_prep.sh
-./5_app_namespace_prep.sh
-./6_app_build_and_push_containers.sh
-./7_app_deploy_backend.sh
-./8_app_deploy.sh
+function cleanup {
+  announce "Removing test environment"
+  ./stop
+}
+
+while true; do
+  case "$1" in
+    -e|--enterprise )
+      CONJUR_OSS_HELM_INSTALLED="false"
+      shift
+      ;;
+    -p|--platform )
+      CLUSTER_TYPE="$2"
+      shift
+      shift
+      ;;
+    -h|--help )
+      print_help
+      shift
+      ;;
+    * )
+      if [ -z "$1" ]; then
+        break
+      else
+        echo "$1 is not a valid option"
+        exit 1
+      fi
+      ;;
+  esac
+done
+
+export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
+if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+  if [[ -z "$CLUSTER_TYPE" ]]; then
+    CLUSTER_TYPE="kind"
+  elif [[ "$CLUSTER_TYPE" != "kind" ]]; then
+    echo "Conjur Open Source workflow not compatible with platform \"$CLUSTER_TYPE\""
+    echo "Workflow currently only compatible with \"kind\""
+    exit
+  fi
+else
+  if [[ -z "$CLUSTER_TYPE" ]]; then
+    CLUSTER_TYPE="gke"
+  elif [[ "$CLUSTER_TYPE" != "gke" ]]; then
+    echo "Conjur Enterprise workflow not compatible with platform \"$CLUSTER_TYPE\""
+    echo "Workflow currently only compatible with \"gke\""
+    exit
+  fi
+fi
+export CLUSTER_TYPE
+
+trap cleanup EXIT
+source ./utils.sh
+
+source ./0_prep_env.sh
+./1_deploy_conjur.sh
+
+workflow="
+./2_admin_load_conjur_policies.sh &&
+./3_admin_init_conjur_cert_authority.sh &&
+./4_admin_cluster_prep.sh &&
+./5_app_namespace_prep.sh &&
+./6_app_build_and_push_containers.sh &&
+./7_app_deploy_backend.sh &&
+./8_app_deploy.sh &&
 ./9_app_verify_authentication.sh
+"
+
+if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+  eval "$workflow"
+else
+  run_command_with_platform "$workflow"
+fi

@@ -53,7 +53,7 @@ set_namespace "$TEST_APP_NAMESPACE_NAME"
 
 deploy_test_curl() {
   $cli delete --ignore-not-found pod/test-curl
-  $cli create -f ./$PLATFORM/test-curl.yml
+  $cli create -f ./"$PLATFORM"/test-curl.yml
 }
 
 check_test_curl() {

@@ -82,6 +82,16 @@ pipeline {
       }
     }
 
+    stage('E2E Workflow Tests') {
+      parallel {
+        stage('Enterprise and test app deployed to GKE') {
+          steps {
+            sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke'
+          }
+        }
+      }
+    }
+
     stage('Publish client Docker images') {
       parallel {
         stage('On a master build') {
