@@ -39,13 +39,13 @@
 					  "repository": {
 						  "type": "string"
 					  },
-					" tag": {
+					"tag": {
 					  	"type": "string"
 				  	},
 					  "pullPolicy": {
 						  "type": "string"
 					  }
-				 }
+				}
 			}
 		}
   }
