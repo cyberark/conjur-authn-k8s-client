@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "properties": {
+    "global": {
+      "conjur": {
+        "conjurConnConfigMap": {
+          "type": "string"
+        }
+      },
+      "appServiceType": {
+        "type": "string"
+      }
+    },
+    "app-summon-init":{
+      "enabled": {
+        "type":"boolean"
+      }
+    },
+    "app-summon-sidecar":{
+      "enabled": {
+        "type":"boolean"
+      }
+    },
+    "app-secretless-broker":{
+      "enabled": {
+        "type":"boolean"
+      }
+    },
+    "app-secrets-provider-init":{
+      "enabled": {
+        "type":"boolean"
+      }
+    },
+    "app-secrets-provider-standalone":{
+      "enabled": {
+        "type":"boolean"
+      }
+    }
+  }
+}
