@@ -13,7 +13,6 @@ metadata:
   name: conjur-connect
   labels:
     app.kubernetes.io/name: "conjur-connect-configmap"
-    app.kubernetes.io/component: "conjur-connect-config"
     app.kubernetes.io/instance: "conjur-{{ .Release.Namespace }}-configmap"
     app.kubernetes.io/part-of: "conjur-config"
     conjur.org/name: "conjur-connect-configmap"
@@ -23,4 +22,5 @@ data:
   CONJUR_AUTHN_URL: {{ printf "%s/authn-k8s/%s" (get $g "conjurApplianceUrl") (get $g "authnK8sAuthenticatorID") }}
   CONJUR_SSL_CERTIFICATE: |- 
 {{ get $g "conjurSslCertificate" | indent 4 }}
+  CONJUR_AUTHENTICATOR_ID: {{ get $g "authnK8sAuthenticatorID" }}
 {{- end }}

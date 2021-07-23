@@ -5,177 +5,421 @@ cd "$(dirname "$0")"
 source ./test-workflow/utils.sh
 source ../helm/common/utils.sh
 
-helm_tests_return_code=0
+readonly TESTS=("happy" "incorrect_url" "incorrect_cert" "incorrect_auth_id")
+readonly HELM_CHARTS=("cluster_prep" "namespace_prep")
+readonly DEFAULT_CHART="cluster_prep"
+readonly HELM_INSTALL_TIMEOUT="10s"
 
-tests=(happy incorrect_url incorrect_cert incorrect_auth_id)
+readonly CLUSTER_PREP_RELEASE="cluster-prep"
+readonly CLUSTER_PREP_NAMESPACE="conjur-oss"
+readonly CLUSTER_PREP_VALIDATOR_ID="validator"
+readonly NAMESPACE_PREP_RELEASE="namespace-prep"
+readonly NAMESPACE_PREP_NAMESPACE="app-test"
+readonly APPLIANCE_URL="https://conjur-oss.conjur-oss.svc.cluster.local"
+readonly NAMESPACE_PREP_VALIDATOR_HOST="host/conjur/authn-k8s/my-authenticator-id/app-validator"
 
-print_usage() {
+readonly TEST_WORKFLOW_DIR="./test-workflow"
+readonly CLUSTER_PREP_CHART_DIR="../helm/conjur-config-cluster-prep"
+readonly NAMESPACE_PREP_CHART_DIR="../helm/conjur-config-namespace-prep"
+
+function print_usage() {
   echo "Usage:"
   echo "    This script will validate the helm chart tests"
   echo ""
   echo "Syntax:"
   echo "    $0  [Options]"
   echo "    Options:"
-  echo "    -h            Show help"
-  echo "    -c            Create the Kind cluster"
-  echo "    -d            Delete the Kind cluster"
-  echo "    -t            run one test"
+  echo "    -h              Show help"
+  echo "    -c              Create a Kind cluster and deploy Conjur OSS"
+  echo "    -d              Delete the Kind cluster"
+  echo "    -C <helm-chart> Helm chart for which to validate Helm tests,"
+  echo "                    where <helm-chart> can be one of:"
+  indent="                       "
+  list_chart_options "$indent"
+  echo "    -D              Run Helm test in debug mode"
+  echo "    -t <test>       Run individual test, where <test> can be one of:"
+  list_test_options "$indent"
+  echo "                    (If not selected, all tests will be run)"
 }
 
+function list_chart_options() {
+  local indent="$1"
+
+  for chart in "${HELM_CHARTS[@]}"; do
+    if [ "$chart" = "$DEFAULT_CHART" ]; then
+      echo "$indent" "$chart      (default)"
+    else
+      echo "$indent" "$chart"
+    fi
+  done
+}
+
+function list_test_options() {
+  local indent="$1"
+
+  for test in "${TESTS[@]}"; do
+    echo "$indent" "$test"
+  done
+}
+
+function is_valid_chart_option() {
+  local opt="$1"
+
+  for chart in "${HELM_CHARTS[@]}"; do
+    if [ "$opt" = "$chart" ]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+function is_valid_test_option() {
+  local opt="$1"
+  local test
+
+  for test in "${TESTS[@]}"; do
+    if [ "$opt" = "$test" ]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
 
 function pushd() {
-    command pushd "$@" > /dev/null
+  command pushd "$@" > /dev/null
 }
 
 function popd() {
-    command popd "$@" > /dev/null
+  command popd "$@" > /dev/null
 }
 
-function create_cluster() {
-# Create kind cluster
-    . ./0_prep_env.sh
-    ./1_deploy_conjur.sh
-    ./2_admin_load_conjur_policies.sh
-    ./3_admin_init_conjur_cert_authority.sh
+function create_cluster_and_conjur() {
+# Create KinD cluster and install Conjur OSS
+  pushd "$TEST_WORKFLOW_DIR"
+  announce "Creating a KinD cluster and installing Conjur OSS"
+  . ./0_prep_env.sh
+  ./1_deploy_conjur.sh
+  announce "Loading Conjur policies and initializing Conjur CA"
+  ./2_admin_load_conjur_policies.sh
+  ./3_admin_init_conjur_cert_authority.sh
+  popd
 }
 
 function delete_cluster() {
-
-    kind delete cluster
+  kind delete cluster
 }
 
-readonly APPLIANCE_URL="https://conjur-oss.conjur-oss.svc.cluster.local"
-
-function clone_ws_and_get_cert() {
-    rm -rf conjur-authn-k8s-client
-    git clone https://github.com/cyberark/conjur-authn-k8s-client.git
-    pushd conjur-authn-k8s-client/helm/conjur-config-cluster-prep
-    ./bin/get-conjur-cert.sh -u $APPLIANCE_URL -i -v -s
-    popd
+function get_conjur_cert() {
+  announce "Retrieving CA certificate from Conjur server"
+  pushd "$CLUSTER_PREP_CHART_DIR"
+  ./bin/get-conjur-cert.sh -u "$APPLIANCE_URL" -i -v -s
+  popd
 }
 
-function create_cluster_helm_chart() {
-  test_name=$1
-  auth_enable=false
-  appl_url=$APPLIANCE_URL
-  cert_path="files/conjur-cert.pem"
-  auth_id="my-authenticator-id"
+function ensure_namespace_exists() {
+  local namespace="$1"
 
-  announce "$test_name test"
-
-  if [ "$test_name" = "incorrect_url" ]
-  then
-    appl_url="https://conjer-oss.conjer-oss.svc.cluster.local"
+  if ! kubectl get namespace "$namespace" 2>/dev/null; then
+      kubectl create namespace "$namespace"
   fi
+}
 
-  if [ "$test_name" = "incorrect_cert" ]
-  then
-    auth_enable=true
-    cert_path="tests/test-cert.pem"
-  fi
+# Install the Kubernetes cluster prep Helm chart
+#
+# Helm chart values used for the install operation depend upon the
+# scenario that is being tested (i.e. what errors, if any, are to be
+# injected).
+function install_cluster_prep_helm_chart() {
+  local test_name="$1"
 
-  if [ "$test_name" = "incorrect_auth_id" ]
-  then
-    auth_enable=true
-    auth_id="your-authenticator-id"
-  fi
+  announce "Installing cluster prep Helm chart in '$CLUSTER_PREP_NAMESPACE' Namespace"
 
-  helm upgrade --install "$helm_release" . -n conjur-oss --wait \
-               --set test.authentication.enable="$auth_enable" \
+  ensure_namespace_exists "$CLUSTER_PREP_NAMESPACE"
+
+  # Set default chart values
+  local conjur_account="myConjurAccount"
+  local appl_url="$APPLIANCE_URL"
+  local cert_path="files/conjur-cert.pem"
+  local auth_id="my-authenticator-id"
+
+  # Set test-specific chart values
+  case "$test_name" in
+    "incorrect_url")
+      appl_url="https://incorrect-svc.incorrect-namespace.svc.cluster.local"
+      ;;
+    "incorrect_cert")
+      cert_path="tests/test-cert.pem"
+      ;;
+    "incorrect_auth_id")
+      auth_id="your-authenticator-id"
+      ;;
+  esac
+
+  helm upgrade --install "$CLUSTER_PREP_RELEASE" "$CLUSTER_PREP_CHART_DIR" \
+               -n "$CLUSTER_PREP_NAMESPACE" \
+               --set conjur.account="$conjur_account" \
                --set conjur.applianceUrl="$appl_url" \
                --set conjur.certificateFilePath="$cert_path" \
                --set authnK8s.authenticatorID="$auth_id"
 
-  if [ $? -eq 0 ]
-  then
-      announce "Helm $helm_release installed successfully"
-  else
-       banner "$RED" "Helm install Failed"
-  fi
-  helm get values "$helm_release"
-}
-
-function test_helm_chart() {
-
-  release=$1
-  test_name=$2
-  helm test "$1" --timeout "$test_timeout" --debug
   res=$?
-  if [[ ( "$test_name" = "happy" && $res -eq 0 ) || ( "$test_name" != "happy" && $res -ne 0 ) ]]
-  then
-    banner "$GREEN" "Helm test $release $test_name test returned $res as expected"
+  if [ "$res" -eq 0 ]; then
+    announce "Cluster prep Helm chart installed successfully"
   else
-    banner "$RED" "Helm test $release $test_name test returned $res, expected $expected"
-    helm_tests_return_code=1
+    banner "$RED" "Cluster prep Helm chart install failed"
+  fi
+  return "$res"
+}
+
+# Install the application Namespace prep Helm chart
+function install_namespace_prep_helm_chart() {
+  announce "Installing Namespace prep Helm chart in '$NAMESPACE_PREP_NAMESPACE' Namespace"
+
+  ensure_namespace_exists "$NAMESPACE_PREP_NAMESPACE"
+
+  helm upgrade --install "$NAMESPACE_PREP_RELEASE" "$NAMESPACE_PREP_CHART_DIR" \
+               --namespace "$NAMESPACE_PREP_NAMESPACE" \
+               --set authnK8s.goldenConfigMap="conjur-configmap" \
+               --set authnK8s.namespace="$CLUSTER_PREP_NAMESPACE"
+
+  res=$?
+  if [ "$res" -eq 0 ]; then
+    announce "Namespace prep Helm chart installed successfully"
+  else
+    banner "$RED" "Namespace prep Helm chart install failed"
+  fi
+  return "$res"
+}
+
+# Install required Helm charts. This can be either:
+# - Cluster prep Helm chart only, or...
+# - Both cluster prep and application Namespace prep helm charts (since
+#   Namespace prep depends upon cluster prep helm chart being installed)
+#
+# Usage:
+#   install_helm_charts <chart-to-be-tested> <test-name>
+#
+function install_helm_charts() {
+  local test_chart="$1"
+  local test_name="$2"
+
+  # Always install the cluster prep Helm chart
+  if install_cluster_prep_helm_chart "$test_name"; then
+    # If required, also install the Namespace prep Helm chart
+    if [ "$test_chart" = "namespace_prep" ]; then
+      install_namespace_prep_helm_chart
+    fi
   fi
 }
 
-function delete_cluster_helm_chart() {
+# Run a Helm test to validate a release for the cluster prep Helm chart.
+# Usage:
+#   test_cluster_prep_helm_chart <test-name>
+#
+function test_cluster_prep_helm_chart() {
+  local test_name="$1"
 
-  helm uninstall "$helm_release"
+  announce "Running Helm tests for release $CLUSTER_PREP_RELEASE in Namespace $CLUSTER_PREP_NAMESPACE"
+
+  args=("-r" "$CLUSTER_PREP_RELEASE" \
+        "-v" "$CLUSTER_PREP_VALIDATOR_ID" \
+        "-n" "$CLUSTER_PREP_NAMESPACE")
+  if [ "$test_name" != "incorrect_url" ]; then
+    args+=("-a")
+  fi
+
+  pushd "$CLUSTER_PREP_CHART_DIR"
+  ./test-helm "${args[@]}"
+  res=$?
+  popd
+  return "$res"
+}
+
+# Run a Helm test to validate a release for the Namespace prep Helm chart.
+# Usage:
+#   test_namespace_prep_helm_chart <test-name>
+#
+function test_namespace_prep_helm_chart() {
+  local test_name="$1"
+
+  announce "Running Helm tests for release $NAMESPACE_PREP_RELEASE in Namespace $NAMESPACE_PREP_NAMESPACE"
+
+  args=("-r" "$NAMESPACE_PREP_RELEASE" \
+        "-H" "$NAMESPACE_PREP_VALIDATOR_HOST" \
+        "-n" "$NAMESPACE_PREP_NAMESPACE")
+  if [ "$test_name" != "incorrect_url" ]; then
+    args+=("-a")
+  fi
+
+  pushd "$NAMESPACE_PREP_CHART_DIR"
+  ./test-helm "${args[@]}"
+  res=$?
+  popd
+  return "$res"
+}
+
+# Run a Helm test to validate a Helm release.
+# Usage:
+#   test_helm_chart <chart-to-be-tested> <test-name>
+#
+function test_helm_chart() {
+  local test_chart="$1"
+  local test_name="$2"
+
+  if [ "$test_chart" = "cluster_prep" ]; then
+    output="$(test_cluster_prep_helm_chart "$test_name")"
+  else
+    output="$(test_namespace_prep_helm_chart "$test_name")"
+  fi
+  test_result=$?
+  echo "$output"
+
+  # Set test-specific chart values
+  exp_result="non-zero"
+  case "$test_name" in
+    "happy")
+      exp_result="0"
+      ;;
+    "incorrect_url")
+      exp_error="not ok [0-9]+ Conjur Appliance URL is a reachable address"
+      ;;
+    "incorrect_cert")
+      exp_error="not ok [0-9]+ Conjur authenticator sidecar has successfully retrieved an API token"
+      ;;
+    "incorrect_auth_id")
+      exp_error="not ok [0-9]+ Conjur authenticator sidecar has successfully retrieved an API token"
+      ;;
+  esac
+
+  # Check for expected test result
+  if [[ ( "$exp_result" = "0" && "$test_result" -eq 0 ) || \
+        ( "$exp_result" = "non-zero" && "$test_result" -ne 0 ) ]]; then
+    banner "$GREEN" "Helm test $release $test_name test returned $exp_result as expected"
+  else
+    banner "$RED" "Helm test $release $test_name test returned $test_result, expected $exp_result"
+    return 1
+  fi
+
+  # Check for an expected error message
+  if [ -n "$exp_error" ]; then
+    if [[ "$output" =~ $exp_error ]]; then
+      banner "$GREEN" "Helm test output includes expected error:\n   '${BASH_REMATCH[0]}'"
+    else
+      banner "$RED" "Helm test output does not include expected error pattern\n   '$exp_error'"
+      return 1
+    fi
+  fi
+}
+
+function delete_cluster_prep_helm_chart() {
+  announce "Deleting cluster prep Helm chart from '$CLUSTER_PREP_NAMESPACE' Namespace"
+  helm uninstall "$CLUSTER_PREP_RELEASE" -n "$CLUSTER_PREP_NAMESPACE"
+}
+
+function delete_namespace_prep_helm_chart() {
+  announce "Deleting Namespace prep Helm chart from '$NAMESPACE_PREP_NAMESPACE' Namespace"
+  helm uninstall "$NAMESPACE_PREP_RELEASE" -n "$NAMESPACE_PREP_NAMESPACE"
+}
+
+# Delete either:
+# - Cluster prep Helm chart only
+# - Both cluster prep and application Namespace prep helm charts
+#
+# Usage:
+#   delete_helm_charts <chart-that-was-tested>
+#
+function delete_helm_charts() {
+  test_chart="$1"
+
+  # Always delete the cluster prep Helm chart
+  delete_cluster_prep_helm_chart "$test_name"
+
+  # Delete the Namespace prep Helm chart if selected
+  if [ "$test_chart" = "namespace_prep" ]; then
+    delete_namespace_prep_helm_chart
+  fi
 }
 
 function main() {
-
-  test_timeout="10s"
-  helm_release="cluster-prep"
-  create_kind=false
-  delete_kind=false
+  # Set test defaults
+  local create_kind=false
+  local delete_kind=false
+  local chart="$DEFAULT_CHART"
+  local debug_mode=false
+  local test=""
 
   # Process command line options
   local OPTIND
-  while getopts ':cdht:' flag; do
+  while getopts ':cC:dDht:' flag; do
     case "${flag}" in
       c) create_kind=true ;;
       d) delete_kind=true ;;
+      C) chart="${OPTARG}" ;;
+      D) debug_mode=true ;;
       h) print_usage; exit 0 ;;
-      t) tests=(${OPTARG}) ;;
+      t) test="${OPTARG}" ;;
       *) echo "Invalid argument -${OPTARG}" >&2; echo; print_usage ; exit 1;;
     esac
   done
   shift $((OPTIND-1))
 
-  echo "Validating Helm"
-
-  pushd test-workflow
-
-  echo $(pwd)
-
-  if [ "$create_kind" = true ] ; then
-    create_cluster
+  # Validate chart command line option
+  if ! is_valid_chart_option "$chart"; then
+    banner "$RED" "Invalid Helm chart option '-H $chart'"
+    print_usage
+    exit 1
   fi
-  mkdir -p temp_verify
-  pushd temp_verify
 
-  clone_ws_and_get_cert
-  pushd conjur-authn-k8s-client/helm/conjur-config-cluster-prep
+  # Validate test command line option if it is set
+  if [ -z "$test" ]; then
+    tests=("${TESTS[@]}")
+  elif is_valid_test_option "$test"; then
+    tests=("${test}")
+  else
+    banner "$RED" "Invalid test option '-t $test'"
+    print_usage
+    exit 1
+  fi
 
-  for i in ${tests[@]}
-  do
-    announce "Starting $i tests"
-    create_cluster_helm_chart "$i"
+  # Create the KinD cluster and deploy Conjur OSS if requested
+  if [ "$create_kind" = true ] ; then
+    if ! create_cluster_and_conjur; then
+      banner "$RED" "Failed to create KinD cluster and deploy Conjur"
+      exit 1
+    fi
+  fi
 
-    test_helm_chart $helm_release $i
- 
-    helm list
+  # Get the Conjur cert from the Conjur OSS instance just created
+  if ! get_conjur_cert; then
+    banner "$RED" "Failed to retrieve Conjur certificate"
+    exit 1
+  fi
 
-    delete_cluster_helm_chart
+  # Run each test scenario
+  tests_failed=false
+  for test in ${tests[@]}; do
+    announce "Starting $test test for $chart Helm chart"
 
+    if (! install_helm_charts "$chart" "$test") || \
+       (! test_helm_chart $chart $test); then
+      tests_failed=true
+    fi
+    delete_helm_charts "$chart"
   done
 
+  # Delete the KinD cluster if requested
   if [ "$delete_kind" = true ] ; then
     delete_cluster
   fi
-  popd
-  popd
-  popd
-  if [ "$helm_tests_return_code" -eq 0 ]
-  then
+
+  # Display overall test results
+  if [ "$tests_failed" = false ]; then
     banner "$GREEN" "All Helm tests passed"
-    echo "All Helm tests passed" > passed.txt
   else
     banner "$RED" "One or more Helm tests failed"
+    exit 1
   fi
-  exit "$helm_tests_return_code"
 }
 main "$@"

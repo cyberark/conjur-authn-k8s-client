@@ -1,7 +1,7 @@
 # Define a Helm named template so that this BATS script can be included
 # in a Helm test ConfigMap.
 #
-{{- define "kube-cluster-prep.helm-test.bats" }}
+{{- define "kube-namespace-prep.helm-test.bats" }}
 #!/usr/bin/env bats
 
 # Run out of same directory in which this script resides
@@ -26,15 +26,15 @@ text_color "$MAGENTA"
 ###################################################
 
 function conjur_is_reachable() {
-  curl -s -k --connect-timeout 5 "$conjurApplianceUrl":443 >&2
+  curl -s -k --connect-timeout 5 "$CONJUR_APPLIANCE_URL":443 >&2
 }
 
 function get_conjur_info() {
-  curl -s -k --connect-timeout 5 "$conjurApplianceUrl"/info
+  curl -s -k --connect-timeout 5 "$CONJUR_APPLIANCE_URL"/info
 }
 
 function has_authorization_error() {
-  echo $1 | grep -s -q "Authorization missing"
+  echo "$1" | grep -s -q "Authorization missing"
 }
 
 function conjur_access_token_exists() {
@@ -50,7 +50,7 @@ function conjur_access_token_exists() {
   run conjur_is_reachable
   if [ "$status" -ne 0 ]; then
     display_error "The 'conjur.applianceUrl' chart value is set to\n" \
-                  "$conjurApplianceUrl. This is not reachable via 'curl -k'"
+                  "$CONJUR_APPLIANCE_URL. This is not reachable via 'curl -k'"
   fi
   assert_success
 }
@@ -70,10 +70,10 @@ function conjur_access_token_exists() {
 #   <chart value>: Corresponding Helm chart value, e.g. 'conjur.account'
 #
 function validate_info_endpoint_field() {
-  yaml_path=$1
-  expected_value=$2
-  description=$3
-  chart_value=$4
+  yaml_path="$1"
+  expected_value="$2"
+  description="$3"
+  chart_value="$4"
 
   # First make sure that the Conjur URL is a reachable address
   display_info "Checking whether Conjur URL is a reachable address."
@@ -102,7 +102,7 @@ function validate_info_endpoint_field() {
 
 @test "Conjur Account is valid" {
   yaml_path=".configuration.conjur.account"
-  exp_value="$conjurAccount"
+  exp_value="$CONJUR_ACCOUNT"
   description="Conjur account"
   chart_value="conjur.account"
   validate_info_endpoint_field "$yaml_path" "$exp_value" "$description" "$chart_value"
@@ -110,7 +110,7 @@ function validate_info_endpoint_field() {
 
 @test "Conjur Authenticator ID is valid" {
   yaml_path=".services.authn-k8s.name"
-  exp_value="$authnK8sAuthenticatorID"
+  exp_value="$CONJUR_AUTHENTICATOR_ID"
   description="Authenticator ID"
   chart_value="authnK8s.authenticatorID"
   validate_info_endpoint_field "$yaml_path" "$exp_value" "$description" "$chart_value"
@@ -138,8 +138,16 @@ function validate_info_endpoint_field() {
   if [ "$status" -ne 0 ]; then
     display_error "The authenticator sidecar was not able to authenticate\n" \
                   "with Conjur. Check that your Conjur policy contains the\n" \
-                  "required validator host ID with the command:\n" \
-                  "  conjur list -k host -s conjur/authn-k8s/{{ .Values.authnK8s.authenticatorID }}/{{ .Values.test.authentication.validatorID }}\n"
+                  "expected host ID with the command:\n\n" \
+                  "  conjur list -k host -s {{ .Values.test.authentication.authnLogin }}\n\n" \
+                  "and that it is configured with a Namespace annotation for\n" \
+                  "the '{{ .Release.Namespace }}' Namespace. The Conjur policy\n" \
+                  "host definition should look something like this:\n" \
+                  "  - !host\n" \
+                  "    id: {{ base .Values.test.authentication.authnLogin }}\n" \
+                  "    annotations:\n" \
+                  "      description: Validation host used when configuring cluster or namespace\n" \
+                  "      authn-k8s/namespace: {{ .Release.Namespace }}"
   fi
   assert_success
 }
@@ -161,7 +169,7 @@ function skip_if_authn_successful() {
       "$output\n" \
       "This means that Subject names in the Conjur's SSL certificate\n" \
       "does not include the domain name in the configured Conjur Appliance\n" \
-      "URL: $conjurApplianceUrl\n" \
+      "URL: $CONJUR_APPLIANCE_URL\n" \
       "Please check that the configured Conjur Appliance URL is correct."
   fi
   # Failure of the grep command is success in this case
