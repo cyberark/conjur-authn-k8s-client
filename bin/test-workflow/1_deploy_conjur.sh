@@ -6,21 +6,39 @@ cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 source utils.sh
 
 function setup_conjur_enterprise {
-  check_env_var GCLOUD_PROJECT_NAME
-  check_env_var GCLOUD_ZONE
-  check_env_var GCLOUD_CLUSTER_NAME
-  check_env_var GCLOUD_SERVICE_KEY
-
   docker pull "$CONJUR_APPLIANCE_IMAGE"
 
-  pushd temp > /dev/null
-    git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy "kubernetes-conjur-deploy-$UNIQUE_TEST_ID"
-  popd > /dev/null
+  # deploy Conjur to GKE cluster
+  if [[ "${CONJUR_PLATFORM}" == "gke" ]]; then
+    check_env_var GCLOUD_PROJECT_NAME
+    check_env_var GCLOUD_ZONE
+    check_env_var GCLOUD_CLUSTER_NAME
+    check_env_var GCLOUD_SERVICE_KEY
 
-  announce "Deploying Conjur Enterprise"
+    pushd temp > /dev/null
+      git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy "kubernetes-conjur-deploy-$UNIQUE_TEST_ID"
+    popd > /dev/null
 
-  if [[ "${CLUSTER_TYPE}" == "gke" ]]; then
+    announce "Deploying Conjur Enterprise"
     run_command_with_platform "cd temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
+
+  # deploy Conjur locally
+  elif [[ "${CONJUR_PLATFORM}" == "jenkins" ]]; then
+    check_env_var HOST_IP
+
+    pushd temp > /dev/null
+      git clone --single-branch --branch custom-port-follower git@github.com:conjurdemos/conjur-intro.git "conjur-intro-$UNIQUE_TEST_ID"
+
+      pushd "conjur-intro-$UNIQUE_TEST_ID" > /dev/null
+        echo """
+CONJUR_MASTER_PORT=${CONJUR_MASTER_PORT}
+CONJUR_FOLLOWER_PORT=${CONJUR_FOLLOWER_PORT}
+        """ > .env
+        ./bin/dap --provision-master
+        ./bin/dap --provision-follower
+      popd > /dev/null
+
+    popd > /dev/null
   fi
 }
 

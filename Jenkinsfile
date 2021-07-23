@@ -89,6 +89,15 @@ pipeline {
             sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke'
           }
         }
+        stage('Enterprise deployed locally, test app deployed to GKE') {
+          steps {
+            sh '''
+              HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
+              echo "HOST_IP=${HOST_IP}"
+              cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins
+            '''
+          }
+        }
       }
     }
 

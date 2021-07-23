@@ -9,13 +9,13 @@ export UNIQUE_TEST_ID="$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)"
 # PLATFORM is used to differentiate between general Kubernetes platforms (K8s vs. oc), while
 # CLUSTER_TYPE is used to differentiate between sub-platforms (for vanilla K8s, KinD vs. GKE)
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-  CLUSTER_TYPE="${CLUSTER_TYPE:-kind}"
+  CONJUR_PLATFORM="${CONJUR_PLATFORM:-kind}"
 else
-  CLUSTER_TYPE="${CLUSTER_TYPE:-gke}"
+  CONJUR_PLATFORM="${CONJUR_PLATFORM:-gke}"
 fi
-export CLUSTER_TYPE
+export CONJUR_PLATFORM
 
-if [[ "$CLUSTER_TYPE" == "oc" ]]; then
+if [[ "$CONJUR_PLATFORM" == "oc" ]]; then
   PLATFORM="openshift"
 else
   PLATFORM="kubernetes"
@@ -45,21 +45,31 @@ else
     conjur_service="conjur-master"
     export CONJUR_NAMESPACE_NAME="${CONJUR_NAMESPACE_NAME:-$conjur_service-${UNIQUE_TEST_ID}}"
     export TEST_APP_NAMESPACE_NAME="$TEST_APP_NAMESPACE_NAME-$UNIQUE_TEST_ID"
+    export CONJUR_APPLIANCE_IMAGE="registry2.itci.conjur.net/conjur-appliance:5.0-stable"
+    export CONJUR_ADMIN_PASSWORD="MySecretP@ss1"
 fi
 
 export CONJUR_APPLIANCE_URL=${CONJUR_APPLIANCE_URL:-https://$conjur_service.$CONJUR_NAMESPACE_NAME.svc.cluster.local}
 export SAMPLE_APP_BACKEND_DB_PASSWORD="$(openssl rand -hex 12)"
 
 ### PLATFORM SPECIFIC CONFIG
-if [[ "$CLUSTER_TYPE" == "gke" ]]; then
+if [[ "$CONJUR_PLATFORM" == "gke" ]]; then
     export CONJUR_FOLLOWER_URL="https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local"
-    export CONJUR_ADMIN_PASSWORD="MySecretP@ss1"
-    export CONJUR_APPLIANCE_IMAGE="registry2.itci.conjur.net/conjur-appliance:5.0-stable"
     export CONJUR_FOLLOWER_COUNT=1
     export CONJUR_AUTHN_LOGIN="host/conjur/authn-k8s/${AUTHENTICATOR_ID}/apps/$CONJUR_NAMESPACE_NAME/service_account/conjur-cluster"
     export STOP_RUNNING_ENV=true
     export DEPLOY_MASTER_CLUSTER=true
     export CONFIGURE_CONJUR_MASTER=true
+elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
+    export HOST_IP="${HOST_IP:-$(curl http://169.254.169.254/latest/meta-data/public-ipv4)}"
+    export CONJUR_MASTER_PORT="${CONJUR_MASTER_PORT:-40001}"
+    export CONJUR_FOLLOWER_PORT="${CONJUR_FOLLOWER_PORT:-40002}"
+    export CONJUR_APPLIANCE_URL="https://${HOST_IP}:${CONJUR_MASTER_PORT}"
+    export CONJUR_FOLLOWER_URL="https://${HOST_IP}:${CONJUR_FOLLOWER_PORT}"
+    export CONJUR_ACCOUNT="demo"
+fi
+
+if [[ "$CONJUR_PLATFORM" == "gke" || "$APP_PLATFORM" == "gke" ]]; then
     export PLATFORM_CONTAINER="platform-container"
 
     docker build --tag "$PLATFORM_CONTAINER:$CONJUR_NAMESPACE_NAME" \
