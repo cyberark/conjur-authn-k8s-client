@@ -108,8 +108,10 @@ function main() {
   fi
 
   domain_name="$(get_domain_name $conjur_url)"
-  echo "Retrieving SSL certificate for DNS domain $domain_name"
-  ssl_cmd="openssl s_client -showcerts -connect $domain_name:443 < /dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p'"
+  port="$(get_port $conjur_url)"
+
+  echo "Retrieving SSL certificate for DNS domain $domain_name:$port"
+  ssl_cmd="openssl s_client -showcerts -connect $domain_name:$port < /dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p'"
 
   # Read the certificate from either internal or external Conjur instance
   if [[ "$internal_addr" = false ]]; then
@@ -131,7 +133,7 @@ function main() {
 
     # Verify if desired
     if [ "$verify" = true ] ; then
-      verify_certificate "$cert_filepath" "$domain_name"
+      verify_certificate "$cert_filepath" "$domain_name" "$port"
     fi
 
   else
@@ -190,9 +192,10 @@ function verify_fingerprint() {
 function verify_certificate() {
   cert_filepath="$1"
   domain_name="$2"
+  port="$3"
 
   echo "Verifying the certificate"
-  curl_cmd="curl --cacert $cert_filepath https://$domain_name >/dev/null"
+  curl_cmd="curl --cacert $cert_filepath https://$domain_name:$port >/dev/null"
   status=0
   sh -c "$curl_cmd" || status="$?"
   if [ "$status" -eq 0 ]; then
@@ -203,9 +206,20 @@ function verify_certificate() {
   fi
 }
 
-# Get the domain name from a URL (strips off protocol and endpoints)
-function get_domain_name() {
+# Get the domain name and port from a URL (strips off protocol and endpoints)
+function get_domain_and_port() {
     echo "$1" | sed -e 's|^[^/]*//||' -e 's|/.*$||'
+}
+
+function get_domain_name() {
+    echo "$(get_domain_and_port $1)" | cut -d: -f1
+}
+
+function get_port() {
+    echo "$(get_domain_and_port $1)" | grep : | cut -d: -f2
+    if [[ ${PIPESTATUS[1]} -eq 1 ]]; then
+      echo 443
+    fi
 }
 
 function get_openssl_deployment() {
