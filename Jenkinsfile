@@ -27,8 +27,8 @@ pipeline {
           steps { sh './bin/validate-schema ./helm/conjur-config-namespace-prep/values.schema.json'}
         }
 
-        stage('Helm Charts') {
-          steps { sh './bin/test-helm-in-docker' }
+        stage('Helm Chart Unit Tests') {
+          steps { sh './bin/test-helm-unit-in-docker' }
         }
       }
     }
