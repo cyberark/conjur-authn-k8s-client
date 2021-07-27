@@ -3,9 +3,9 @@
 # Declare variables to be passed into your templates.
 
 conjur:
-  account: "myConjurAccount"
-  applianceUrl: "https://conjur-oss.conjur-oss.svc.cluster.local"
-  certificateFilePath: "files/conjur-cert.pem"
+  account: "<Insert Conjur Account Here>"
+  applianceUrl: "https://insert.conjur.appliance.url.here"
+  certificateBase64: "Insert+Base64+encoded+Conjur+Certificate"
 
 authnK8s:
-  authenticatorID: "myAuthenticatorId"
+  authenticatorID: "<Insert Authenticator ID Here>"
