@@ -59,16 +59,26 @@ CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn
 
 function setup_conjur_open_source {
   pushd temp > /dev/null
+
+    if [ -d "conjur-oss-helm-chart" ]; then
+      rm -rf conjur-oss-helm-chart
+    fi
+
     git clone https://github.com/cyberark/conjur-oss-helm-chart.git
 
     pushd conjur-oss-helm-chart/examples/common > /dev/null
       source ./utils.sh
 
       announce "Setting demo environment variable defaults"
-      source ../kubernetes-in-docker/0_export_env_vars.sh
 
-      announce "Creating a Kubernetes-in-Docker cluster if necessary"
-      ./1_create_kind_cluster.sh
+      if [[ "$PLATFORM" == "openshift" ]]; then
+        announce "Using OpenShift"
+        source ../openshift/0_export_env_vars.sh
+      else
+        source ../kubernetes-in-docker/0_export_env_vars.sh
+        announce "Creating a Kubernetes-in-Docker cluster if necessary"
+        ./1_create_kind_cluster.sh
+       fi
 
       announce "Helm installing/upgrading Conjur OSS cluster"
       ./2_helm_install_or_upgrade_conjur.sh

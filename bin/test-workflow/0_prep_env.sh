@@ -48,7 +48,12 @@ export TEST_APP_DATABASE="${TEST_APP_DATABASE:-postgres}"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   conjur_service="conjur-oss"
-  export CONJUR_NAMESPACE_NAME="${CONJUR_NAMESPACE_NAME:-$conjur_service}"
+  if [[ "$PLATFORM" == "openshift" ]]; then
+    export CONJUR_NAMESPACE_NAME="${CONJUR_NAMESPACE_NAME:-$conjur_service-${UNIQUE_TEST_ID}}"
+    export HELM_RELEASE="${HELM_RELEASE:-conjur-oss-${UNIQUE_TEST_ID}}"
+  else
+    export CONJUR_NAMESPACE_NAME="${CONJUR_NAMESPACE_NAME:-$conjur_service}"
+  fi
 else
   export TEST_APP_NAMESPACE_NAME="$TEST_APP_NAMESPACE_NAME-$UNIQUE_TEST_ID"
   export CONJUR_APPLIANCE_IMAGE="${CONJUR_APPLIANCE_IMAGE:-registry2.itci.conjur.net/conjur-appliance:5.0-stable}"
