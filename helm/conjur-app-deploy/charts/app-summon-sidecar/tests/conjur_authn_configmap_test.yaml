@@ -13,12 +13,10 @@ tests:
     set:
       # Set required values
       <<: *defaultRequired
-      values.conjur.authnConfigMap.create: false
+      conjur.authnConfigMap.create: false
     asserts:
       - hasDocuments:
-          count: 1 # Shouldn't this be 0? 
-      - isKind:
-          of: ConfigMap
+          count: 0 
 
   #=======================================================================
   - it: should use default values when those values are not set explicitly
