@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -eo pipefail
-
-echo "Building helm test image..."
-docker build -f Dockerfile.helm-test -t conjur-k8s-helm-test:dev .
-
-echo "Running helm tests..."
-docker run --rm -t conjur-k8s-helm-test:dev
