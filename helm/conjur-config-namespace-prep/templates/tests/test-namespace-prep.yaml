@@ -11,7 +11,7 @@ metadata:
   labels:
     "app": "namespace-prep-test"
   annotations:
-    "helm.sh/hook": test-success
+    "helm.sh/hook": test
 spec:
   containers:
   {{- if .Values.test.authentication.enable }}
