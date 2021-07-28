@@ -64,7 +64,7 @@ The following table lists the configurable parameters of the Conjur Namespace-pr
 |Parameter|Description|Default|
 |---------|-----------|-------|
 |`authnK8s.goldenConfigMap`|Name for the "Golden Configmap" containing authn-k8s and Conjur credentials (*Required*)|`""`|
-|`authnK8s.NameSpace:`|The NameSpace name where the "Golden Configmap" resides. (*Required*)|`""`|
+|`authnK8s.namespace:`|The NameSpace name where the "Golden Configmap" resides. (*Required*)|`""`|
 |`authnRoleBinding.create`|Flag to generate the authenticator RoleBinding.|`true`|
 |`authnRoleBinding.name`|Name for the RoleBinding generated if the `create` flag is set to `true`.|`"conjur-RoleBinding"`|
 |`authnRoleBinding.create`|Flag to generate the ConfigMap with credentials for accessing Conjur instance.|`true`|
@@ -86,12 +86,12 @@ kubectl create NameSpace my-NameSpace
 ```
 
 - Install the chart in your new NameSpace. Note that we set the values for 
-  `authnK8s.goldenConfigMap` and `authnK8s.NameSpace` to match the name and NameSpace location for our "Golden Configmap", respectively.
+  `authnK8s.goldenConfigMap` and `authnK8s.namespace` to match the name and NameSpace location for our "Golden Configmap", respectively.
 
 ```shell-session
 helm install NameSpace-prep . -n "my-NameSpace" \
   --set authnK8s.goldenConfigMap="conjur-configmap" \
-  --set authnK8s.NameSpace="default"
+  --set authnK8s.namespace="default"
 ```
 
 If successful, this should output the details of your chart installation,
