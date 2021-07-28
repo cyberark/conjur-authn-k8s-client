@@ -67,8 +67,8 @@ function main() {
     app_image_repository_test "my-org/abc_123"
     update_results "$?"
 
-    announce "App image Docker repository with dots is rejected"
-    app_image_repository_test "my-org/abc.123"
+    announce "App image Docker repository with '#' is rejected"
+    app_image_repository_test "my-org/abc#123"
     update_results "$?" "$EXPECT_FAILURE"
 
     announce "App image pullPolicy of 'Always' is accepted"
