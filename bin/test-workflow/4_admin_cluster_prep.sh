@@ -41,6 +41,7 @@ pushd ../../helm/conjur-config-cluster-prep > /dev/null
 
   ./bin/get-conjur-cert.sh $get_cert_options "$conjur_url"
   helm upgrade --install "cluster-prep-$UNIQUE_TEST_ID" . -n "$target_namespace" --debug --wait --timeout "$TIMEOUT" \
+      --create-namespace \
       --set conjur.account="$CONJUR_ACCOUNT" \
       --set conjur.applianceUrl="$conjur_url" \
       --set conjur.certificateFilePath="files/conjur-cert.pem" \
