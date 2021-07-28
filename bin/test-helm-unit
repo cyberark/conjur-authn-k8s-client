@@ -27,5 +27,16 @@ pushd helm
 
     pushd conjur-app-deploy
         ./test-lint
+
+        pushd charts/app-secrets-provider-init
+            ./test-schema
+            ./test-unit
+        popd
+
+        pushd charts/app-summon-sidecar
+            ./test-schema
+            ./test-unit
+        popd
+
     popd
 popd
