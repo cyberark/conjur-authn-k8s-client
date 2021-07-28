@@ -4,6 +4,7 @@ set -o pipefail
 
 ### PLATFORM DETAILS
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
+export UNIQUE_TEST_ID="$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)"
 
 # PLATFORM is used to differentiate between general Kubernetes platforms (K8s vs. oc), while
 # CLUSTER_TYPE is used to differentiate between sub-platforms (for vanilla K8s, KinD vs. GKE)
@@ -11,7 +12,6 @@ if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   CLUSTER_TYPE="${CLUSTER_TYPE:-kind}"
 else
   CLUSTER_TYPE="${CLUSTER_TYPE:-gke}"
-  export UNIQUE_TEST_ID="$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)"
 fi
 export CLUSTER_TYPE
 
