@@ -67,6 +67,10 @@ elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
     export CONJUR_APPLIANCE_URL="https://${HOST_IP}:${CONJUR_MASTER_PORT}"
     export CONJUR_FOLLOWER_URL="https://${HOST_IP}:${CONJUR_FOLLOWER_PORT}"
     export CONJUR_ACCOUNT="demo"
+
+    docker build --tag "custom-certs" \
+      --file Dockerfile.jq \
+      .
 fi
 
 if [[ "$CONJUR_PLATFORM" == "gke" || "$APP_PLATFORM" == "gke" ]]; then
