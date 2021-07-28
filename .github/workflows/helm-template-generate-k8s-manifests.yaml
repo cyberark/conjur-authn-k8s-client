@@ -29,26 +29,10 @@ jobs:
           version: v3.6.2
 
       - name: Generate manifest for cluster-prep
-        run: |
-          pushd helm/conjur-config-cluster-prep > /dev/null
-            mkdir -p generated
-
-            helm template cluster-prep . \
-              -f sample-values.yaml \
-              --render-subchart-notes \
-              --skip-tests | tee generated/conjur-config-cluster-prep.yaml
-          popd > /dev/null
+        run: bin/helm-generate-raw-manifest-cluster-prep.sh
 
       - name: Generate manifest for namespace-prep
-        run: |
-          pushd helm/conjur-config-namespace-prep > /dev/null
-            mkdir -p generated
-
-            helm template namespace-prep . \
-              -f sample-values.yaml \
-              --render-subchart-notes \
-              --skip-tests | tee generated/conjur-config-namespace-prep.yaml
-          popd > /dev/null
+        run: bin/helm-generate-raw-manifest-namespace-prep.sh
 
       - name: Commit generated manifests
         id: commit-generated-manifests
