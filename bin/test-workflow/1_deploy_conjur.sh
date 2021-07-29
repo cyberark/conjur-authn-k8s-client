@@ -44,6 +44,7 @@ function setup_conjur_enterprise {
         echo """
 CONJUR_MASTER_PORT=${CONJUR_MASTER_PORT}
 CONJUR_FOLLOWER_PORT=${CONJUR_FOLLOWER_PORT}
+CONJUR_AUTHENTICATORS=authn-k8s/${AUTHENTICATOR_ID},authn
         """ > .env
         ./bin/dap --provision-master
         ./bin/dap --import-custom-certificates
