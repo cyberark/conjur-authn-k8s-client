@@ -38,6 +38,22 @@
       annotations:
         description: CA key for Kubernetes Pods.
 
+  - !policy
+    id: kubernetes
+    body:
+    - !variable
+      id: service-account-token
+      annotations:
+        description: Kubernetes Service Account token
+    - !variable
+      id: ca-cert
+      annotations:
+        description: Kubernetes API Server CA certificate
+    - !variable
+      id: api-url
+      annotations:
+        description: Kubernetes API Server URL
+
   # define layer of whitelisted authn ids permitted to call authn service
   - !layer users
 
