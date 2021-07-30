@@ -4,14 +4,13 @@ set -uo pipefail
 source utils.sh
 
 if [[ "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
-  $cli delete namespace "$CONJUR_NAMESPACE_NAME"
-  $cli delete namespace "$TEST_APP_NAMESPACE_NAME"
+  ./cleanup_helm.sh
+  ./cleanup_namespaces.sh
 else
   run_command_with_platform "
-    cd temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID &&
-    ./stop &&
-    $cli delete namespace $TEST_APP_NAMESPACE_NAME &&
-    $cli delete clusterrole conjur-clusterrole
+    ./cleanup_helm.sh
+    pushd temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./stop && popd
+    ./cleanup_namespaces.sh
   "
   rm -rf temp/kubernetes-conjur-deploy-"$UNIQUE_TEST_ID"
 fi

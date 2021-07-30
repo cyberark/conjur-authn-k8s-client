@@ -23,7 +23,7 @@ pushd ../../helm/conjur-config-cluster-prep > /dev/null
   if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
     ./bin/get-conjur-cert.sh -v -i -s -u "$CONJUR_APPLIANCE_URL"
 
-    helm upgrade --install cluster-prep . -n "$CONJUR_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
+    helm upgrade --install "cluster-prep-$UNIQUE_TEST_ID" . -n "$CONJUR_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
         --set conjur.account="$CONJUR_ACCOUNT" \
         --set conjur.applianceUrl="$CONJUR_APPLIANCE_URL" \
         --set conjur.certificateFilePath="files/conjur-cert.pem" \
@@ -31,12 +31,13 @@ pushd ../../helm/conjur-config-cluster-prep > /dev/null
   else
     ./bin/get-conjur-cert.sh -v -i -s -u "$CONJUR_FOLLOWER_URL"
 
-    helm upgrade --install cluster-prep . -n "$CONJUR_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
+    helm upgrade --install "cluster-prep-$UNIQUE_TEST_ID" . -n "$CONJUR_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
         --set conjur.account="$CONJUR_ACCOUNT" \
         --set conjur.applianceUrl="$CONJUR_FOLLOWER_URL" \
         --set conjur.certificateFilePath="files/conjur-cert.pem" \
         --set authnK8s.authenticatorID="$AUTHENTICATOR_ID" \
         --set authnK8s.serviceAccount.create=false \
-        --set authnK8s.serviceAccount.name="conjur-cluster"
+        --set authnK8s.serviceAccount.name="conjur-cluster" \
+        --set authnK8s.clusterRole.name="conjur-clusterrole-$UNIQUE_TEST_ID"
   fi
 popd > /dev/null

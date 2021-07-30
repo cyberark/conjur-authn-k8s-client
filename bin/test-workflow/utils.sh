@@ -253,6 +253,7 @@ function run_command_with_platform {
     -e CONJUR_OSS_HELM_INSTALLED \
     -e PLATFORM \
     -e CLUSTER_TYPE \
+    -e UNIQUE_TEST_ID \
     -e USE_DOCKER_LOCAL_REGISTRY \
     -e DOCKER_REGISTRY_URL \
     -e DOCKER_REGISTRY_PATH \
