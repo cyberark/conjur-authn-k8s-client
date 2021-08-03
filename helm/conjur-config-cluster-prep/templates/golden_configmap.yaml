@@ -1,4 +1,7 @@
 {{- if .Values.authnK8s.configMap.create -}}
+# The Golden ConfigMap keeps a reference copy of Conjur configuration information
+# that will be used for subsequent operations such as preparing application Namespaces
+# for using Conjur Kubernetes authentication.
 apiVersion: v1
 kind: ConfigMap
 metadata:

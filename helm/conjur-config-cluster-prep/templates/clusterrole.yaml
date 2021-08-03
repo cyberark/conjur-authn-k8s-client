@@ -1,4 +1,6 @@
 {{- if .Values.authnK8s.clusterRole.create }}
+# This ClusterRole defines the Kubernetes API access permissions that the Conjur
+# authenticator will require in order to validate application identities.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
