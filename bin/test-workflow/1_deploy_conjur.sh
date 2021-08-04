@@ -8,6 +8,8 @@ source utils.sh
 function setup_conjur_enterprise {
   docker pull "$CONJUR_APPLIANCE_IMAGE"
 
+  announce "Deploying Conjur Enterprise"
+
   # deploy Conjur to GKE cluster
   if [[ "${CONJUR_PLATFORM}" == "gke" ]]; then
     check_env_var GCLOUD_PROJECT_NAME
@@ -19,7 +21,6 @@ function setup_conjur_enterprise {
       git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy "kubernetes-conjur-deploy-$UNIQUE_TEST_ID"
     popd > /dev/null
 
-    announce "Deploying Conjur Enterprise"
     run_command_with_platform "cd temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
 
   # deploy Conjur locally
@@ -27,13 +28,14 @@ function setup_conjur_enterprise {
     check_env_var HOST_IP
 
     pushd temp > /dev/null
+      # TODO - once these changes are merged, this branch has to be updated to main
       git clone --single-branch --branch custom-port-follower git@github.com:conjurdemos/conjur-intro.git "conjur-intro-$UNIQUE_TEST_ID"
 
       pushd "conjur-intro-$UNIQUE_TEST_ID" > /dev/null
 
         # add public IP address to custom certificate config as SAN
         docker run --rm \
-          -v ${PWD}:/src \
+          -v "${PWD}":/src \
           -w /src/artifacts/certificate-generator/configuration \
           "custom-certs" \
           ash -c "
@@ -42,9 +44,9 @@ function setup_conjur_enterprise {
           "
 
         echo """
-CONJUR_MASTER_PORT=${CONJUR_MASTER_PORT}
-CONJUR_FOLLOWER_PORT=${CONJUR_FOLLOWER_PORT}
-CONJUR_AUTHENTICATORS=authn-k8s/${AUTHENTICATOR_ID},authn
+CONJUR_MASTER_PORT=\"${CONJUR_MASTER_PORT}\"
+CONJUR_FOLLOWER_PORT=\"${CONJUR_FOLLOWER_PORT}\"
+CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn
         """ > .env
         ./bin/dap --provision-master
         ./bin/dap --import-custom-certificates

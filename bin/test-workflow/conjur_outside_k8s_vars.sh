@@ -14,14 +14,14 @@ source ./utils.sh
 announce "Loading policy values for Conjur-outside-K8s connection."
 
 run_command_with_platform "$cli config view --minify -o json | jq -r '.clusters[0].cluster.server' > kubernetes/api-url"
-run_command_with_platform "$cli get secrets -n \"\$TEST_APP_NAMESPACE_NAME\" | grep 'conjur.*service-account-token' | head -n1 | awk '{print \$1}' > kubernetes/token-name"
-run_command_with_platform "$cli get secret -n \"\$TEST_APP_NAMESPACE_NAME\" $(cat kubernetes/token-name) -o json | jq -r .data.token | base64 --decode > kubernetes/service-account-token"
+run_command_with_platform "$cli get secrets -n \"\$CONJUR_NAMESPACE_NAME\" | grep 'conjur.*service-account-token' | head -n1 | awk '{print \$1}' > kubernetes/token-name"
+run_command_with_platform "$cli get secret -n \"\$CONJUR_NAMESPACE_NAME\" $(cat kubernetes/token-name) -o json | jq -r .data.token | base64 --decode > kubernetes/service-account-token"
 
 host="$(cat kubernetes/api-url | sed 's/https:\/\///')"
 echo -n \
   | openssl s_client -connect "$host:443" -servername "$host" -showcerts 2>/dev/null \
   | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > kubernetes/api-ca.pem
-run_command_with_platform "$cli get secret -n \"\$TEST_APP_NAMESPACE_NAME\" $(cat kubernetes/token-name) -o json | jq -r '.data[\"ca.crt\"]' | base64 --decode >> kubernetes/api-ca.pem"
+run_command_with_platform "$cli get secret -n \"\$CONJUR_NAMESPACE_NAME\" $(cat kubernetes/token-name) -o json | jq -r '.data[\"ca.crt\"]' | base64 --decode >> kubernetes/api-ca.pem"
 
 # conjur variable values add conjur/authn-k8s/<authenticator>/kubernetes/<var> "<value>"
 docker-compose -f "temp/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml" \

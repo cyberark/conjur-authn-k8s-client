@@ -25,22 +25,19 @@ pushd ../../helm/conjur-config-cluster-prep > /dev/null
     conjur_url="$CONJUR_APPLIANCE_URL"
     get_cert_options="-v -i -s -u"
     service_account_options=""
-    target_namespace="$CONJUR_NAMESPACE_NAME"
   else
     conjur_url="$CONJUR_FOLLOWER_URL"
     if [[ "$CONJUR_PLATFORM" == "gke" ]]; then
       get_cert_options="-v -i -s -u"
       service_account_options="--set authnK8s.serviceAccount.create=false --set authnK8s.serviceAccount.name=conjur-cluster"
-      target_namespace="$CONJUR_NAMESPACE_NAME"
     elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
       get_cert_options="-v -s -u"
       service_account_options=""
-      target_namespace="$TEST_APP_NAMESPACE_NAME"
     fi
   fi
 
   ./bin/get-conjur-cert.sh $get_cert_options "$conjur_url"
-  helm upgrade --install "cluster-prep-$UNIQUE_TEST_ID" . -n "$target_namespace" --debug --wait --timeout "$TIMEOUT" \
+  helm upgrade --install "cluster-prep-$UNIQUE_TEST_ID" . -n "$CONJUR_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
       --create-namespace \
       --set conjur.account="$CONJUR_ACCOUNT" \
       --set conjur.applianceUrl="$conjur_url" \
