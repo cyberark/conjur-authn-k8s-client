@@ -2,7 +2,6 @@
 # The Conjur Connection Configmap contains references to Conjur credentials,
 # taken from the "Golden Configmap". These can be used to enable Conjur
 # authentication for applications to retrieve secrets securely.
----
 {{ $config := required "Both authnK8s.namespace and authnK8s.configMap are required" .Values.authnK8s -}}
 
 {{ $g := .Values.test.mock -}}

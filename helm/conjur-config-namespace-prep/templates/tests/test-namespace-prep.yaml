@@ -3,6 +3,8 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: test-namespace-prep
+  annotations:
+    "helm.sh/hook": test
 ---
 apiVersion: v1
 kind: Pod
