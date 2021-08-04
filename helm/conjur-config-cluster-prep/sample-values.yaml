@@ -3,9 +3,9 @@
 # Declare variables to be passed into your templates.
 
 conjur:
-  account: "<Insert Conjur Account Here>"
+  account: "<Insert-Conjur-Account-Here>"
   applianceUrl: "https://insert.conjur.appliance.url.here"
-  certificateBase64: "Insert+Base64+encoded+Conjur+Certificate"
+  certificateBase64: "PEluc2VydC1Db25qdXItU1NMLUNlcnRpZmljYXRlLUhlcmU+"
 
 authnK8s:
-  authenticatorID: "<Insert Authenticator ID Here>"
+  authenticatorID: "<Insert-Authenticator-ID-Here>"
