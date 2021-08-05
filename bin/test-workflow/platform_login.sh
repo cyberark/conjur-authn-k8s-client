@@ -4,7 +4,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 function main {
-  if [[ "$CLUSTER_TYPE" == "gke" ]]; then
+  if [[ "$CONJUR_PLATFORM" == "gke" || "$APP_PLATFORM" == "gke" ]]; then
     gcloud auth activate-service-account \
       --key-file "$GCLOUD_SERVICE_KEY"
     gcloud container clusters get-credentials "$GCLOUD_CLUSTER_NAME" \
@@ -13,7 +13,7 @@ function main {
     docker login "$DOCKER_REGISTRY_URL" \
       -u oauth2accesstoken \
       -p "$(gcloud auth print-access-token)"
-  elif [[ "$CLUSTER_TYPE" == "oc" ]]; then
+  elif [[ "$CONJUR_PLATFORM" == "oc" || "$APP_PLATFORM" == "oc" ]]; then
     oc login "$OPENSHIFT_URL" \
       --username="$OPENSHIFT_USERNAME" \
       --password="$OPENSHIFT_PASSWORD" \

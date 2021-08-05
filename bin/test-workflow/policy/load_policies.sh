@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -eo
 
 if [ "$CONJUR_APPLIANCE_URL" != "" ]; then
-  conjur init -u $CONJUR_APPLIANCE_URL -a $CONJUR_ACCOUNT
+  yes yes | conjur init -u $CONJUR_APPLIANCE_URL -a $CONJUR_ACCOUNT
 fi
 
 # check for unset vars after checking for appliance url

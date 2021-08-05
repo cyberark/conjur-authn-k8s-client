@@ -96,37 +96,54 @@ pushd policy > /dev/null
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".authn-any-policy-branch.yml
 popd > /dev/null
 
-set_namespace "$CONJUR_NAMESPACE_NAME"
+if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
+  docker-compose -f "temp/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml" \
+    run --rm \
+    -v "${PWD}/policy":/policy \
+    -w /src/cli \
+    --entrypoint /bin/bash \
+    client -c "
+      conjur_appliance_url=${CONJUR_APPLIANCE_URL} \
+      CONJUR_ACCOUNT=${CONJUR_ACCOUNT} \
+      CONJUR_ADMIN_PASSWORD=${CONJUR_ADMIN_PASSWORD} \
+      DB_PASSWORD=${SAMPLE_APP_BACKEND_DB_PASSWORD} \
+      TEST_APP_NAMESPACE_NAME=${TEST_APP_NAMESPACE_NAME} \
+      TEST_APP_DATABASE=${TEST_APP_DATABASE} \
+      /policy/load_policies.sh
+    "
+else
+  set_namespace "$CONJUR_NAMESPACE_NAME"
 
-announce "Finding or creating a Conjur CLI pod"
-conjur_cli_pod="$(get_conjur_cli_pod_name)"
-if [ -z "$conjur_cli_pod" ]; then
-  prepare_conjur_cli_image
-  deploy_conjur_cli
+  announce "Finding or creating a Conjur CLI pod"
   conjur_cli_pod="$(get_conjur_cli_pod_name)"
+  if [ -z "$conjur_cli_pod" ]; then
+    prepare_conjur_cli_image
+    deploy_conjur_cli
+    conjur_cli_pod="$(get_conjur_cli_pod_name)"
+  fi
+
+  if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+    ensure_conjur_cli_initialized "$conjur_cli_pod"
+  fi
+
+  announce "Loading Conjur policy."
+
+  $cli exec "$conjur_cli_pod" -- rm -rf /policy
+  $cli cp ./policy "$conjur_cli_pod:/policy"
+
+  wait_for_it 300 "$cli exec $conjur_cli_pod -- \
+    bash -c \"
+      conjur_appliance_url=${CONJUR_APPLIANCE_URL}
+      CONJUR_ACCOUNT=${CONJUR_ACCOUNT} \
+      CONJUR_ADMIN_PASSWORD=${CONJUR_ADMIN_PASSWORD} \
+      DB_PASSWORD=${SAMPLE_APP_BACKEND_DB_PASSWORD} \
+      TEST_APP_NAMESPACE_NAME=${TEST_APP_NAMESPACE_NAME} \
+      TEST_APP_DATABASE=${TEST_APP_DATABASE} \
+      /policy/load_policies.sh
+    \"
+  "
+
+  $cli exec "$conjur_cli_pod" -- rm -rf ./policy
 fi
-
-if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-  ensure_conjur_cli_initialized "$conjur_cli_pod"
-fi
-
-announce "Loading Conjur policy."
-
-$cli exec "$conjur_cli_pod" -- rm -rf /policy
-$cli cp ./policy "$conjur_cli_pod:/policy"
-
-wait_for_it 300 "$cli exec $conjur_cli_pod -- \
-  bash -c \"
-  conjur_appliance_url=${CONJUR_APPLIANCE_URL}
-    CONJUR_ACCOUNT=${CONJUR_ACCOUNT} \
-    CONJUR_ADMIN_PASSWORD=${CONJUR_ADMIN_PASSWORD} \
-    DB_PASSWORD=${SAMPLE_APP_BACKEND_DB_PASSWORD} \
-    TEST_APP_NAMESPACE_NAME=${TEST_APP_NAMESPACE_NAME} \
-    TEST_APP_DATABASE=${TEST_APP_DATABASE} \
-    /policy/load_policies.sh
-  \"
-"
-
-$cli exec "$conjur_cli_pod" -- rm -rf ./policy
 
 echo "Conjur policy loaded."

@@ -7,20 +7,28 @@ export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
 export UNIQUE_TEST_ID="$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)"
 
 # PLATFORM is used to differentiate between general Kubernetes platforms (K8s vs. oc), while
-# CLUSTER_TYPE is used to differentiate between sub-platforms (for vanilla K8s, KinD vs. GKE)
+# CONJUR_PLATFORM is used to differentiate between sub-platforms (for vanilla K8s, KinD vs. GKE) for the Conjur deployment
+# APP_PLATFORM serves the same purpose as CONJUR_PLATFORM, but for the test app deployment
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-  CLUSTER_TYPE="${CLUSTER_TYPE:-kind}"
+  CONJUR_PLATFORM="${CONJUR_PLATFORM:-kind}"
 else
-  CLUSTER_TYPE="${CLUSTER_TYPE:-gke}"
+  CONJUR_PLATFORM="${CONJUR_PLATFORM:-gke}"
 fi
-export CLUSTER_TYPE
+export CONJUR_PLATFORM
 
-if [[ "$CLUSTER_TYPE" == "oc" ]]; then
+if [[ "$CONJUR_PLATFORM" == "oc" ]]; then
   PLATFORM="openshift"
 else
   PLATFORM="kubernetes"
 fi
 export PLATFORM
+
+if [[ "$CONJUR_PLATFORM" != "jenkins" ]]; then
+  APP_PLATFORM="$CONJUR_PLATFORM"
+else
+  APP_PLATFORM="gke"
+fi
+export APP_PLATFORM
 
 ### DOCKER CONFIG
 export USE_DOCKER_LOCAL_REGISTRY="${USE_DOCKER_LOCAL_REGISTRY:-true}"
@@ -39,31 +47,50 @@ export TEST_APP_NAMESPACE_NAME="${TEST_APP_NAMESPACE_NAME:-app-test}"
 export TEST_APP_DATABASE="${TEST_APP_DATABASE:-postgres}"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-    conjur_service="conjur-oss"
-    export CONJUR_NAMESPACE_NAME="${CONJUR_NAMESPACE_NAME:-$conjur_service}"
+  conjur_service="conjur-oss"
+  export CONJUR_NAMESPACE_NAME="${CONJUR_NAMESPACE_NAME:-$conjur_service}"
 else
+  export TEST_APP_NAMESPACE_NAME="$TEST_APP_NAMESPACE_NAME-$UNIQUE_TEST_ID"
+  export CONJUR_APPLIANCE_IMAGE="${CONJUR_APPLIANCE_IMAGE:-registry2.itci.conjur.net/conjur-appliance:5.0-stable}"
+  export CONJUR_ADMIN_PASSWORD="MySecretP@ss1"
+
+  if [[ "$CONJUR_PLATFORM" == "gke" ]]; then
     conjur_service="conjur-master"
-    export CONJUR_NAMESPACE_NAME="${CONJUR_NAMESPACE_NAME:-$conjur_service-${UNIQUE_TEST_ID}}"
-    export TEST_APP_NAMESPACE_NAME="$TEST_APP_NAMESPACE_NAME-$UNIQUE_TEST_ID"
+  else
+    conjur_service="conjur-authentication"
+  fi
+  export CONJUR_NAMESPACE_NAME="${CONJUR_NAMESPACE_NAME:-$conjur_service-${UNIQUE_TEST_ID}}"
 fi
 
 export CONJUR_APPLIANCE_URL=${CONJUR_APPLIANCE_URL:-https://$conjur_service.$CONJUR_NAMESPACE_NAME.svc.cluster.local}
 export SAMPLE_APP_BACKEND_DB_PASSWORD="$(openssl rand -hex 12)"
 
 ### PLATFORM SPECIFIC CONFIG
-if [[ "$CLUSTER_TYPE" == "gke" ]]; then
-    export CONJUR_FOLLOWER_URL="https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local"
-    export CONJUR_ADMIN_PASSWORD="MySecretP@ss1"
-    export CONJUR_APPLIANCE_IMAGE="registry2.itci.conjur.net/conjur-appliance:5.0-stable"
-    export CONJUR_FOLLOWER_COUNT=1
-    export CONJUR_AUTHN_LOGIN="host/conjur/authn-k8s/${AUTHENTICATOR_ID}/apps/$CONJUR_NAMESPACE_NAME/service_account/conjur-cluster"
-    export STOP_RUNNING_ENV=true
-    export DEPLOY_MASTER_CLUSTER=true
-    export CONFIGURE_CONJUR_MASTER=true
-    export PLATFORM_CONTAINER="platform-container"
+if [[ "$CONJUR_PLATFORM" == "gke" ]]; then
+  export CONJUR_FOLLOWER_URL="https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local"
+  export CONJUR_FOLLOWER_COUNT=1
+  export CONJUR_AUTHN_LOGIN="host/conjur/authn-k8s/${AUTHENTICATOR_ID}/apps/$CONJUR_NAMESPACE_NAME/service_account/conjur-cluster"
+  export STOP_RUNNING_ENV=true
+  export DEPLOY_MASTER_CLUSTER=true
+  export CONFIGURE_CONJUR_MASTER=true
+elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
+  export HOST_IP="${HOST_IP:-$(curl http://169.254.169.254/latest/meta-data/public-ipv4)}"
+  export CONJUR_MASTER_PORT="${CONJUR_MASTER_PORT:-40001}"
+  export CONJUR_FOLLOWER_PORT="${CONJUR_FOLLOWER_PORT:-40002}"
+  export CONJUR_APPLIANCE_URL="https://${HOST_IP}:${CONJUR_MASTER_PORT}"
+  export CONJUR_FOLLOWER_URL="https://${HOST_IP}:${CONJUR_FOLLOWER_PORT}"
+  export CONJUR_ACCOUNT="demo"
 
-    docker build --tag "$PLATFORM_CONTAINER:$CONJUR_NAMESPACE_NAME" \
-        --file Dockerfile \
-        --build-arg KUBECTL_VERSION="$KUBECTL_VERSION" \
-        .
+  docker build --tag "custom-certs" \
+    --file Dockerfile.jq \
+    .
+fi
+
+if [[ "$CONJUR_PLATFORM" == "gke" || "$APP_PLATFORM" == "gke" ]]; then
+  export PLATFORM_CONTAINER="platform-container"
+
+  docker build --tag "$PLATFORM_CONTAINER:$CONJUR_NAMESPACE_NAME" \
+      --file Dockerfile \
+      --build-arg KUBECTL_VERSION="$KUBECTL_VERSION" \
+      .
 fi

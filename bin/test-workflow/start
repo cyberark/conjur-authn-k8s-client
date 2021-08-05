@@ -17,6 +17,7 @@ Usage: ./start [options]:
                                 - Defaults to 'kind'
                               For Enterprise workflow:
                                 - Defaults to 'gke'
+                                - Supports 'jenkins'
                               All other selections are rejected
     -h, --help                Show the help message
 EOF
@@ -35,7 +36,7 @@ while true; do
       shift
       ;;
     -p|--platform )
-      CLUSTER_TYPE="$2"
+      CONJUR_PLATFORM="$2"
       shift
       shift
       ;;
@@ -55,24 +56,34 @@ while true; do
 done
 
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
+
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-  if [[ -z "$CLUSTER_TYPE" ]]; then
-    CLUSTER_TYPE="kind"
-  elif [[ "$CLUSTER_TYPE" != "kind" ]]; then
-    echo "Conjur Open Source workflow not compatible with platform \"$CLUSTER_TYPE\""
+  if [[ -z "$CONJUR_PLATFORM" ]]; then
+    CONJUR_PLATFORM="kind"
+  elif [[ "$CONJUR_PLATFORM" != "kind" ]]; then
+    echo "Conjur Open Source workflow not compatible with platform \"$CONJUR_PLATFORM\""
     echo "Workflow currently only compatible with \"kind\""
     exit
   fi
 else
-  if [[ -z "$CLUSTER_TYPE" ]]; then
-    CLUSTER_TYPE="gke"
-  elif [[ "$CLUSTER_TYPE" != "gke" ]]; then
-    echo "Conjur Enterprise workflow not compatible with platform \"$CLUSTER_TYPE\""
-    echo "Workflow currently only compatible with \"gke\""
+  if [[ -z "$CONJUR_PLATFORM" ]]; then
+    CONJUR_PLATFORM="gke"
+  elif [[ "$CONJUR_PLATFORM" != "gke" && "$CONJUR_PLATFORM" != "jenkins" ]]; then
+    echo "Conjur Enterprise workflow not compatible with platform \"$CONJUR_PLATFORM\""
+    echo "Accepts \"gke\" and \"jenkins\""
     exit
   fi
 fi
-export CLUSTER_TYPE
+
+if [[ -z "$APP_PLATFORM" ]]; then
+  APP_PLATFORM="$CONJUR_PLATFORM"
+  if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
+    APP_PLATFORM="gke"
+  fi
+fi
+
+export CONJUR_PLATFORM
+export APP_PLATFORM
 
 trap cleanup EXIT
 source ./utils.sh
@@ -80,19 +91,28 @@ source ./utils.sh
 source ./0_prep_env.sh
 ./1_deploy_conjur.sh
 
-workflow="
+conjur_prep="
 ./2_admin_load_conjur_policies.sh &&
-./3_admin_init_conjur_cert_authority.sh &&
-./4_admin_cluster_prep.sh &&
+./3_admin_init_conjur_cert_authority.sh"
+cluster_prep="./4_admin_cluster_prep.sh"
+test_app_workflow="
 ./5_app_namespace_prep.sh &&
 ./6_app_build_and_push_containers.sh &&
 ./7_app_deploy_backend.sh &&
 ./8_app_deploy.sh &&
-./9_app_verify_authentication.sh
-"
+./9_app_verify_authentication.sh"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-  eval "$workflow"
-else
-  run_command_with_platform "$workflow"
+  eval "$conjur_prep"
+  eval "$cluster_prep"
+  eval "$test_app_workflow"
+elif [[ "$CONJUR_PLATFORM" == "gke" ]]; then
+  run_command_with_platform "$conjur_prep"
+  run_command_with_platform "$cluster_prep"
+  run_command_with_platform "$test_app_workflow"
+elif [[ "$CONJUR_PLATFORM" == "jenkins" && "$APP_PLATFORM" == "gke" ]]; then
+  eval "$conjur_prep"
+  run_command_with_platform "$cluster_prep"
+  ./conjur_outside_k8s_vars.sh
+  run_command_with_platform "$test_app_workflow"
 fi
