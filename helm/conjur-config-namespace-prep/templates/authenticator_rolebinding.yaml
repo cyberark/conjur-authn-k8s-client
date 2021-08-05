@@ -2,7 +2,6 @@
 # The Authenticator RoleBinding grants permissions to the Conjur Authenticator ServiceAccount
 # for the authenticator ClusterRole, which provides a list of Kubernetes API access permissions.
 # This is required to validate application identities.
----
 {{ $config := required "Both authnK8s.namespace and authnK8s.configMap are required" .Values.authnK8s -}}
 
 {{ $g := .Values.test.mock -}}

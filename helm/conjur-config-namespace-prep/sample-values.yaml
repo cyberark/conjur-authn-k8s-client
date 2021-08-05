@@ -1,0 +1,16 @@
+# User-supplied values for the conjur-config-namespace-prep Helm chart:
+# This is a YAML-formatted file:
+# Declare variables to be passed into your templates:
+
+authnK8s:
+  goldenConfigMap: "conjur-configmap"
+  namespace: "conjur-oss"
+test:
+  mock:
+    enable: true
+    conjurAccount: "<Insert-Conjur-Account-Here>"
+    conjurApplianceUrl: "https://insert.conjur.appliance.url.here"
+    conjurSslCertificate: "<Insert-Conjur-SSL-Certificate-Here>"
+    authnK8sAuthenticatorID: "<Insert-Authenticator-ID-Here>"
+    authnK8sClusterRole: "conjur-clusterrole"
+    authnK8sServiceAccount: "conjur-serviceaccount"

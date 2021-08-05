@@ -5,7 +5,7 @@ metadata:
   labels:
     "app": "cluster-prep-test"
   annotations:
-    "helm.sh/hook": test-success
+    "helm.sh/hook": test
 spec:
   containers:
   {{- if .Values.test.authentication.enable }}

@@ -1,0 +1,22 @@
+name: Upload Raw K8S Manifests as Release Artifacts
+
+on:
+  # Run this on tagged releases
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            helm/conjur-config-cluster-prep/generated/*.yaml
+            helm/conjur-config-namespace-prep/generated/*.yaml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
