@@ -42,6 +42,7 @@ data:
   conjurAccount: <Insert-Conjur-Account-Here>
   conjurApplianceUrl: https://insert.conjur.appliance.url.here
   conjurSslCertificate: "<Insert-Conjur-SSL-Certificate-Here>"
+  conjurSomeExtraMetadata: "Sample value delete me!"
 ---
 # Source: conjur-config-cluster-prep/templates/clusterrole.yaml
 # This ClusterRole defines the Kubernetes API access permissions that the Conjur
