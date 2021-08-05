@@ -1,0 +1,74 @@
+---
+# Source: conjur-config-cluster-prep/templates/serviceaccount.yaml
+# This ServiceAccount provides the Kubernetes RBAC identity for the Conjur Kubernetes authenticator
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: conjur-serviceaccount
+  labels:
+    release: cluster-prep
+    heritage: Helm
+    app.kubernetes.io/name: "conjur-serviceaccount"
+    app.kubernetes.io/component: "conjur-kubernetes-identity"
+    app.kubernetes.io/instance: "conjur-serviceaccount"
+    app.kubernetes.io/part-of: "conjur-config"
+    conjur.org/name: "conjur-serviceaccount"
+    helm.sh/chart: conjur-config-cluster-prep-0.1.0
+---
+# Source: conjur-config-cluster-prep/templates/golden_configmap.yaml
+# The Golden ConfigMap keeps a reference copy of Conjur configuration information
+# that will be used for subsequent operations such as preparing application Namespaces
+# for using Conjur Kubernetes authentication.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: conjur-configmap
+  labels:
+    release: cluster-prep
+    heritage: Helm
+    app.kubernetes.io/name: "conjur-golden-configmap"
+    app.kubernetes.io/component: "conjur-reference-config"
+    app.kubernetes.io/instance: "conjur-golden-configmap"
+    app.kubernetes.io/part-of: "conjur-config"
+    conjur.org/name: "conjur-golden-configmap"
+    helm.sh/chart: conjur-config-cluster-prep-0.1.0
+data:
+  # authn-k8s Configuration 
+  authnK8sAuthenticatorID: <Insert-Authenticator-ID-Here>
+  authnK8sClusterRole: conjur-clusterrole
+  authnK8sNamespace: default
+  authnK8sServiceAccount: conjur-serviceaccount
+  # Conjur Configuration 
+  conjurAccount: <Insert-Conjur-Account-Here>
+  conjurApplianceUrl: https://insert.conjur.appliance.url.here
+  conjurSslCertificate: "<Insert-Conjur-SSL-Certificate-Here>"
+---
+# Source: conjur-config-cluster-prep/templates/clusterrole.yaml
+# This ClusterRole defines the Kubernetes API access permissions that the Conjur
+# authenticator will require in order to validate application identities.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: conjur-clusterrole
+  labels:
+    release: cluster-prep
+    heritage: Helm
+    app.kubernetes.io/name: "conjur-clusterrole"
+    app.kubernetes.io/component: "conjur-permissions"
+    app.kubernetes.io/instance: "conjur-clusterrole"
+    app.kubernetes.io/part-of: "conjur-config"
+    conjur.org/name: "conjur-clusterrole"
+    helm.sh/chart: conjur-config-cluster-prep-0.1.0
+rules:
+  - apiGroups: [""] # "" indicates the core API group
+    resources: ["pods", "serviceaccounts"]
+    verbs: ["get", "list"]
+  - apiGroups: ["extensions"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "replicasets"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create", "get"]
