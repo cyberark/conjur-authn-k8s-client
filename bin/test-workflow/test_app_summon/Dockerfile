@@ -17,7 +17,7 @@ ENV PATH="/usr/local/lib/summon:${PATH}"
 
 # ============= MAIN CONTAINER ============== #
 
-FROM cyberark/demo-app
+FROM cyberark/demo-app:1.1.0
 ARG namespace
 MAINTAINER CyberArk
 
