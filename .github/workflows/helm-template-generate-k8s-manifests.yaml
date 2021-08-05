@@ -33,6 +33,13 @@ jobs:
         uses: azure/setup-helm@v1
         with:
           version: v3.6.2
+      
+      - name: Install Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Install yq
+        run: brew install yq
 
       - name: Generate manifest for cluster-prep
         run: bin/helm-generate-raw-manifest-cluster-prep.sh

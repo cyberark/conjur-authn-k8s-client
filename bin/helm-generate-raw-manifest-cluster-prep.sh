@@ -10,9 +10,10 @@ pushd helm/conjur-config-cluster-prep > /dev/null
     helm template cluster-prep . \
         -f sample-values.yaml \
         --render-subchart-notes \
-        --skip-tests > conjur-config-cluster-prep.yaml
+        --skip-tests > generated/conjur-config-cluster-prep.yaml
 
-    kubectl kustomize . | tee generated/conjur-config-cluster-prep.yaml
+    yq eval -i \
+        'del(.data.conjurSslCertificateBase64)' \
+        generated/conjur-config-cluster-prep.yaml
 
-    rm conjur-config-cluster-prep.yaml
 popd > /dev/null
