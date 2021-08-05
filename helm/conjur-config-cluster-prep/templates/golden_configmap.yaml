@@ -43,4 +43,5 @@ data:
     conjurSslCertificateBase64: {{ required "Either conjur.certificateFilePath or conjur.certificateBase64 are required!" .Values.conjur.certificateBase64 | quote }}
     conjurSslCertificate: {{ .Values.conjur.certificateBase64 | b64dec | quote }}
     {{- end }}
+    conjurSomeExtraMetadata: "Sample value delete me!"
 {{- end }}
