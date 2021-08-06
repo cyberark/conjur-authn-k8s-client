@@ -18,7 +18,7 @@ app-summon-init:
 app-summon-sidecar:
   enabled: false
 
-app-secretless-broker:
+app-secretless:
   enabled: false
 
 app-secrets-provider-init:
