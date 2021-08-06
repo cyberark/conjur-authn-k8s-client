@@ -21,6 +21,7 @@ fi
 
 pushd ../../helm/conjur-app-deploy > /dev/null
   helm install app-summon-sidecar . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
+      --render-subchart-notes \
       --set global.conjur.conjurConnConfigMap="conjur-connect" \
       --set app-summon-sidecar.enabled=true \
       --set app-summon-sidecar.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar" \
@@ -38,6 +39,7 @@ fi
 
 pushd ../../helm/conjur-app-deploy > /dev/null
   helm install app-secretless-broker . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
+      --render-subchart-notes \
       --set global.conjur.conjurConnConfigMap="conjur-connect" \
       --set app-secretless-broker.enabled=true \
       --set app-secretless-broker.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secretless-broker" \
