@@ -112,8 +112,8 @@ check_urls(){
   (
     # $curl_cmd -sS --connect-timeout 3 "$init_url" &&
     # $curl_cmd -sS --connect-timeout 3 "$init_url_with_host_outside_apps" &&
-    $curl_cmd -sS --connect-timeout 3 "$sidecar_url" # &&
-    # $curl_cmd -sS --connect-timeout 3 "$secretless_url"
+    $curl_cmd -sS --connect-timeout 3 "$sidecar_url" &&
+    $curl_cmd -sS --connect-timeout 3 "$secretless_url"
   ) > /dev/null
 }
 
@@ -138,10 +138,10 @@ $curl_cmd \
   "$sidecar_url"/pet
 
 # echo -e "Adding entry to the secretless app\n"
-# $curl_cmd \
-#   -d '{"name": "Mr. Secretless"}' \
-#   -H "Content-Type: application/json" \
-#   "$secretless_url"/pet
+$curl_cmd \
+  -d '{"name": "Mr. Secretless"}' \
+  -H "Content-Type: application/json" \
+  "$secretless_url"/pet
 
 # echo -e "Querying init app\n"
 # $curl_cmd "$init_url"/pets
@@ -152,5 +152,5 @@ $curl_cmd \
 echo -e "\n\nQuerying sidecar app\n"
 $curl_cmd "$sidecar_url"/pets
 
-# echo -e "\n\nQuerying secretless app\n"
-# $curl_cmd "$secretless_url"/pets
+echo -e "\n\nQuerying secretless app\n"
+$curl_cmd "$secretless_url"/pets

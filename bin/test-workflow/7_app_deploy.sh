@@ -26,7 +26,23 @@ pushd ../../helm/conjur-app-deploy > /dev/null
       --set app-summon-sidecar.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar" \
       --set app-summon-sidecar.app.image.tag="$TEST_APP_TAG" \
       --set app-summon-sidecar.app.image.repository="$TEST_APP_REPO"
+      --set app-summon-sidecar.conjur.authnConfigMap.name="conjur-authn-configmap-summon-sidecar"
+popd > /dev/null
 
+announce "Deploying secretless-sidecar test app in $TEST_APP_NAMESPACE_NAME."
+
+# Uninstall sample app if it exists
+if [ "$(helm list -q -n $TEST_APP_NAMESPACE_NAME | grep "^app-secretless-sidecar$")" = "app-secretless-sidecar" ]; then
+    helm uninstall app-secretless -n "$TEST_APP_NAMESPACE_NAME"
+fi
+
+kubectl create configmap secretless-config -n "$TEST_APP_NAMESPACE_NAME" --from-file=secretless-config.yml
+pushd ../../helm/conjur-app-deploy > /dev/null
+  helm install app-secretless . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
+      --set global.conjur.conjurConnConfigMap="conjur-connect" \
+      --set app-secretless.enabled=true \
+      --set app-secretless.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secretless" \
+      --set app-secretless.conjur.authnConfigMap.name="conjur-authn-configmap-secretless"
 popd > /dev/null
 
 echo "Test app/sidecar deployed."
