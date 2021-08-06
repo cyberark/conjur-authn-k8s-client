@@ -19,6 +19,12 @@ Usage: ./start [options]:
                                 - Defaults to 'gke'
                                 - Supports 'jenkins'
                               All other selections are rejected
+    -a, --apps <app>          Specify which test apps to install
+                              Excluding this flag runs all supported apps
+                              Currently supports:
+                                - summon-sidecar
+                                - secretless-broker
+                              All other selections are rejected
     -h, --help                Show the help message
 EOF
   exit
@@ -29,8 +35,26 @@ function cleanup {
   ./stop
 }
 
+declare -a supported_apps=("summon-sidecar" "secretless-broker")
+declare -a install_apps=()
+
 while true; do
   case "$1" in
+    -a|--apps )
+      while [[ "${2:0:1}" != "-" ]] && [[ -n "$2" ]] ; do
+        if [[ ! " ${supported_apps[@]} " =~ " $2 " ]]; then
+          echo "$2 is not a supported test app!"
+          echo "Supported test apps include:"
+          echo "  - summon-sidecar"
+          echo "  - secretless-broker"
+          exit 1
+        else
+          install_apps+=("$2")
+          shift
+        fi
+      done
+      shift
+      ;;
     -e|--enterprise )
       CONJUR_OSS_HELM_INSTALLED="false"
       shift
@@ -54,6 +78,14 @@ while true; do
       ;;
   esac
 done
+
+if [ ${#install_apps[@]} -eq 0 ]; then
+  install_apps=("${supported_apps[@]}")
+fi
+# Bash arrays cannot be exported to the environment for use between scripts.
+# Here, export a version that complies with the bash envrionment,
+# and can be reassembled when it's needed
+export INSTALL_APPS=$(IFS='|'; echo "${install_apps[*]}")
 
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
 

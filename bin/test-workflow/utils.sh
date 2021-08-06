@@ -255,6 +255,7 @@ function run_command_with_platform {
     -e UNIQUE_TEST_ID \
     -e CONJUR_PLATFORM \
     -e APP_PLATFORM \
+    -e INSTALL_APPS \
     -e USE_DOCKER_LOCAL_REGISTRY \
     -e DOCKER_REGISTRY_URL \
     -e DOCKER_REGISTRY_PATH \

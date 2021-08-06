@@ -108,49 +108,35 @@ fi
 
 echo "Waiting for urls to be ready"
 
-check_urls(){
-  (
-    # $curl_cmd -sS --connect-timeout 3 "$init_url" &&
-    # $curl_cmd -sS --connect-timeout 3 "$init_url_with_host_outside_apps" &&
-    $curl_cmd -sS --connect-timeout 3 "$sidecar_url" &&
-    $curl_cmd -sS --connect-timeout 3 "$secretless_url"
-  ) > /dev/null
+check_url(){
+  ( $curl_cmd -sS --connect-timeout 3 "$1" ) > /dev/null
 }
 
-bl_retry_constant "${RETRIES}" "${RETRY_WAIT}" check_urls
+# restore array of apps to run
+IFS='|' read -r -a install_apps <<< "$INSTALL_APPS"; unset IFS
 
-# echo -e "\nAdding entry to the init app\n"
-# $curl_cmd \
-#   -d '{"name": "Mr. Init"}' \
-#   -H "Content-Type: application/json" \
-#   "$init_url"/pet
+# declare associative arrays of app urls and pet names
+declare -A app_urls
+app_urls[summon-sidecar]="$sidecar_url"
+app_urls[secretless-broker]="$secretless_url"
 
-# echo -e "Adding entry to the init app with host outside apps\n"
-# $curl_cmd \
-#   -d '{"name": "Mr. Init"}' \
-#   -H "Content-Type: application/json" \
-#   "$init_url_with_host_outside_apps"/pet
+declare -A app_pets
+app_pets[summon-sidecar]="Mr. Sidecar"
+app_pets[secretless-broker]="Mr. Secretless"
 
-echo -e "Adding entry to the sidecar app\n"
-$curl_cmd \
-  -d '{"name": "Mr. Sidecar"}' \
-  -H "Content-Type: application/json" \
-  "$sidecar_url"/pet
+# check connection to each installed test app
+for app in "${install_apps[@]}"; do
+  bl_retry_constant "${RETRIES}" "${RETRY_WAIT}" check_url "${app_urls[$app]}"
+done
 
-# echo -e "Adding entry to the secretless app\n"
-$curl_cmd \
-  -d '{"name": "Mr. Secretless"}' \
-  -H "Content-Type: application/json" \
-  "$secretless_url"/pet
+# add pet to and query pets from each installed test app
+for app in "${install_apps[@]}"; do
+  echo -e "\nAdding entry with $app app\n"
+  $curl_cmd \
+    -d "{\"name\": \"${app_pets[$app]}\"}" \
+    -H "Content-Type: application/json" \
+    "${app_urls[$app]}"/pet
 
-# echo -e "Querying init app\n"
-# $curl_cmd "$init_url"/pets
-
-# echo -e "\n\nQuerying init app with hosts outside apps\n"
-# $curl_cmd "$init_url_with_host_outside_apps"/pets
-
-echo -e "\n\nQuerying sidecar app\n"
-$curl_cmd "$sidecar_url"/pets
-
-echo -e "\n\nQuerying secretless app\n"
-$curl_cmd "$secretless_url"/pets
+  echo -e "\n\nQuerying $app app\n"
+  $curl_cmd "${app_urls[$app]}"/pets
+done

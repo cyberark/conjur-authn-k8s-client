@@ -10,40 +10,41 @@ source utils.sh
 check_env_var TEST_APP_NAMESPACE_NAME
 check_env_var CONJUR_AUTHN_LOGIN_PREFIX
 
-announce "Deploying summon-sidecar test app in $TEST_APP_NAMESPACE_NAME."
-
 set_namespace "$TEST_APP_NAMESPACE_NAME"
 
-# Uninstall sample app if it exists
-if [ "$(helm list -q -n $TEST_APP_NAMESPACE_NAME | grep "^app-summon-sidecar$")" = "app-summon-sidecar" ]; then
-    helm uninstall app-summon-sidecar -n "$TEST_APP_NAMESPACE_NAME"
-fi
-
 pushd ../../helm/conjur-app-deploy > /dev/null
-  helm install app-summon-sidecar . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
-      --render-subchart-notes \
-      --set global.conjur.conjurConnConfigMap="conjur-connect" \
-      --set app-summon-sidecar.enabled=true \
-      --set app-summon-sidecar.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar" \
-      --set app-summon-sidecar.app.image.tag="$TEST_APP_TAG" \
-      --set app-summon-sidecar.app.image.repository="$TEST_APP_REPO"
-      --set app-summon-sidecar.conjur.authnConfigMap.name="conjur-authn-configmap-summon-sidecar"
-popd > /dev/null
 
-announce "Deploying secretless-sidecar test app in $TEST_APP_NAMESPACE_NAME."
+  # Uninstall sample app with summon and authenticator sidecar if it exists
+  if [ "$(helm list -q -n $TEST_APP_NAMESPACE_NAME | grep "^test-apps$")" = "test-apps" ]; then
+    helm uninstall test-apps -n "$TEST_APP_NAMESPACE_NAME"
+  fi
 
-# Uninstall sample app if it exists
-if [ "$(helm list -q -n $TEST_APP_NAMESPACE_NAME | grep "^app-secretless-broker$")" = "app-secretless-sidecar" ]; then
-    helm uninstall app-secretless-broker -n "$TEST_APP_NAMESPACE_NAME"
-fi
+  summon_sidecar_options="--set app-summon-sidecar.enabled=true \
+    --set app-summon-sidecar.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar \
+    --set app-summon-sidecar.app.image.tag=$TEST_APP_TAG \
+    --set app-summon-sidecar.app.image.repository=$TEST_APP_REPO \
+    --set app-summon-sidecar.conjur.authnConfigMap.name=conjur-authn-configmap-summon-sidecar"
+  secretless_broker_options="--set app-secretless-broker.enabled=true \
+    --set app-secretless-broker.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secretless-broker \
+    --set app-secretless-broker.conjur.authnConfigMap.name=conjur-authn-configmap-secretless"
 
-pushd ../../helm/conjur-app-deploy > /dev/null
-  helm install app-secretless-broker . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
-      --render-subchart-notes \
-      --set global.conjur.conjurConnConfigMap="conjur-connect" \
-      --set app-secretless-broker.enabled=true \
-      --set app-secretless-broker.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secretless-broker" \
-      --set app-secretless-broker.conjur.authnConfigMap.name="conjur-authn-configmap-secretless"
+  declare -A app_options
+  app_options[summon-sidecar]="$summon_sidecar_options"
+  app_options[secretless-broker]="$secretless_broker_options"
+
+  # restore array of apps to install
+  IFS='|' read -r -a install_apps <<< "$INSTALL_APPS"; unset IFS
+  options_string=""
+  for app in "${install_apps[@]}"; do
+    options_string+="${app_options[$app]} "
+  done
+
+  announce "Deploying test apps in $TEST_APP_NAMESPACE_NAME"
+  helm install test-apps . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
+    --render-subchart-notes \
+    --set global.conjur.conjurConnConfigMap="conjur-connect" \
+    $options_string
+
 popd > /dev/null
 
 echo "Test app/sidecar deployed."
