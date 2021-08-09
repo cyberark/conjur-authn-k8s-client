@@ -95,8 +95,13 @@ function main() {
   else
     helm test "$helm_release" \
         --namespace "$app_namespace" \
-        --timeout "$TEST_TIMEOUT" \
-        --logs
+        --timeout "$TEST_TIMEOUT"
+
+    # `helm test --logs` fails if the first resource in the test hook is not a Pod
+    # We create a test ConfigMap which causes the log output to fail
+    # Get the pod logs manually until helm issue #8342 or #6348 is fixed
+    kubectl logs -l app=namespace-prep-test -n "$app_namespace" --tail=-1
+    kubectl get pod -l app=namespace-prep-test -o yaml -n "$app_namespace" | grep "exitCode: 0"
   fi
 }
 
