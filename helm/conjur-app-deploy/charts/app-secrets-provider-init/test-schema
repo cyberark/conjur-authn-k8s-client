@@ -71,17 +71,12 @@ function main() {
     app_image_repository_test "my-org/abc#123"
     update_results "$?" "$EXPECT_FAILURE"
 
-    announce "App image pullPolicy of 'Always' is accepted"
-    app_image_pull_policy_test "Always"
-    update_results "$?"
-
-    announce "App image pullPolicy of 'Never' is accepted"
-    app_image_pull_policy_test "Never"
-    update_results "$?"
-
-    announce "App image pullPolicy of 'IfNotPresent' is accepted"
-    app_image_pull_policy_test "Never"
-    update_results "$?"
+    declare -a pull_policy_types=("Always" "Never" "IfNotPresent")
+    for policy in "${pull_policy_types[@]}"; do
+        announce "App image pullPolicy of $policy is accepted"
+        app_image_pull_policy_test "$policy"
+        update_results "$?"
+    done
 
     announce "App image pullPolicy of lower case 'always' is rejected"
     app_image_pull_policy_test "always"

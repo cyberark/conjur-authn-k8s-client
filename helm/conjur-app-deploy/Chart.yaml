@@ -28,3 +28,7 @@ dependencies:
       repository: "file://charts/app-secretless-broker"
       version: ">= 0.0.1"
       condition: app-secretless-broker.enabled
+    - name: app-secrets-provider-standalone
+      repository: "file://charts/app-secrets-provider-standalone"
+      version: ">= 0.0.1"
+      condition: app-secrets-provider-standalone.enabled

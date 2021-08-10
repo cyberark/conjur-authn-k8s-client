@@ -1,0 +1,9 @@
+The Application deployment is complete.
+The following have been deployed:
+- A sample "Pet Store" application that uses a Kubernetes Secret to configure
+  its backend database credentials.
+- A CyberArk Secrets Provider Job that, upon startup, updates the Kubernetes
+  Secret that is used by the "Pet Store" application with backend database
+  credentials that the Secrets Provider has retrieved from Conjur.
+
+Application is now available at test-app-secrets-provider-standalone.{{ .Release.Namespace }}.svc.cluster.local

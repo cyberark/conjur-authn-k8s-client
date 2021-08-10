@@ -1,0 +1,30 @@
+# Default values for the Application Namespace Prep Helm chart
+# This is a YAML-formatted file.
+
+global:
+  # Supported values: "ClusterIP", "NodePort", "LoadBalancer", "ExternalName"
+  appServiceType: "NodePort"
+  
+app:
+  image:
+    repository: "cyberark/demo-app"
+    tag: "latest"
+    # Supported values: "Always", "IfNotPresent", "Never"
+    pullPolicy: "Always"
+  platform: "kubernetes"
+
+secrets-provider:
+  environment:
+    conjur:
+      # conjurConnConfigMap must match the following parent chart's Global setting:
+      #      'global.conjur.conjurConnConfigMap'
+      conjurConnConfigMap: "conjur-connect"
+
+      # Set 'authnLogin' to the authentication host ID for this test app,
+      # as defined in Conjur security policy. For example:
+      #   authnLogin: "host/conjur/authn-k8s/my-authenticator-id/apps/test-app-secrets-provider-standalone"
+      # This is a required value.
+      #
+      # authnLogin:
+
+    k8sSecrets: ["test-app-secrets-provider-standalone-secret"]

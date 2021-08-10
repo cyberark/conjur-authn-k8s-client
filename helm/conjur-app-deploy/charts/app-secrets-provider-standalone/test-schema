@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# This script tests the restrictions on chart values
+# as defined in the 'values.schema.json' file.
+#
+# Requirements:
+#   - Helm v3.5.3 or later
+
+# Run this script from the directory in which this script resides
+# regardless of where it is invoked.
+cd "$(dirname "$0")"
+chart_dir="$(pwd)"
+
+source ../../../common/utils.sh
+
+# Default required settings
+declare -a DEFAULT_SETTINGS="--set secrets-provider.environment.conjur.authnLogin=host/conjur/authn-k8s/my-id/my-group/my-app \
+    --set secrets-provider.environment.conjur.conjurConnConfigMap=conjur-connect"
+
+# Global test state
+num_passed=0
+num_failed=0
+test_failed=false
+
+function global_app_service_type_test() {
+    helm lint . --strict $DEFAULT_SETTINGS --set "global.appServiceType=$1"
+}
+
+function app_image_repository_test() {
+    helm lint . --strict $DEFAULT_SETTINGS --set "app.image.repository=$1"
+}
+
+function app_image_pull_policy_test() {
+    helm lint . --strict $DEFAULT_SETTINGS --set "app.image.pullPolicy=$1"
+}
+
+function main() {
+    banner $BOLD "Running Helm schema tests for chart\n" \
+        "\"$chart_dir\""
+    check_helm_version
+
+    announce "Updating Helm dependencies to ensure that Secrets Provider\n" \
+        "Helm chart has been downloaded"
+    helm dependency update .
+
+    declare -a svc_types=("ClusterIP" "NodePort" "LoadBalancer" "ExternalName")
+    for type in "${svc_types[@]}"; do
+        announce "Application ServiceType of $type is accepted"
+        global_app_service_type_test "$type"
+        update_results "$?"
+    done
+
+    announce "Application ServiceType of nodePort (begins w/ lower case) is rejected"
+    global_app_service_type_test "nodePort"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    announce "Valid app image Docker repository accepted"
+    app_image_repository_test "my-org/abc_123"
+    update_results "$?"
+
+    announce "App image Docker repository with '#' is rejected"
+    app_image_repository_test "my-org/abc#123"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    declare -a pull_policy_types=("Always" "Never" "IfNotPresent")
+    for policy in "${pull_policy_types[@]}"; do
+        announce "App image pullPolicy of $policy is accepted"
+        app_image_pull_policy_test "$policy"
+        update_results "$?"
+    done
+
+    announce "App image pullPolicy of lower case 'always' is rejected"
+    app_image_pull_policy_test "always"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    display_final_results
+    if [ "$num_failed" -ne 0 ]; then
+        exit 1
+    fi
+}
+
+main "$@"
