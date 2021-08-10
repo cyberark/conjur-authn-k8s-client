@@ -25,7 +25,7 @@ pushd ../../helm/conjur-app-deploy > /dev/null
       --set app-summon-sidecar.enabled=true \
       --set app-summon-sidecar.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar" \
       --set app-summon-sidecar.app.image.tag="$TEST_APP_TAG" \
-      --set app-summon-sidecar.app.image.repository="$DOCKER_REGISTRY_PATH/$TEST_APP_REPO
+      --set app-summon-sidecar.app.image.repository="$TEST_APP_REPO"
 
 popd > /dev/null
 

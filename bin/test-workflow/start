@@ -97,10 +97,9 @@ conjur_prep="
 cluster_prep="./4_admin_cluster_prep.sh"
 test_app_workflow="
 ./5_app_namespace_prep.sh &&
-./6_app_build_and_push_containers.sh &&
-./7_app_deploy_backend.sh &&
-./8_app_deploy.sh &&
-./9_app_verify_authentication.sh"
+./6_app_deploy_backend.sh &&
+./7_app_deploy.sh &&
+./8_app_verify_authentication.sh"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   eval "$conjur_prep"
