@@ -38,6 +38,7 @@ spec:
       containers:
       - image: {{ printf "%s:%s" .Values.app.image.repository .Values.app.image.tag }}
         imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+        command: ["summon", "--provider", "summon-conjur", "-f", "/etc/conjur/secrets.yml", "java", "-jar", "/app.jar"]
         name: test-app
         ports:
         - name: http
@@ -57,6 +58,9 @@ spec:
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
+            readOnly: true
+          - mountPath: /etc/conjur
+            name: secrets-config
             readOnly: true
       - image: {{ printf "%s:%s" .Values.authnClient.image.repository .Values.authnClient.image.tag }}
         imagePullPolicy: {{ .Values.authnClient.image.pullPolicy }}
@@ -93,3 +97,9 @@ spec:
         - name: conjur-access-token
           emptyDir:
             medium: Memory
+        - name: secrets-config
+          configMap:
+            name: secrets-configmap
+            items:
+            - key: "secrets.yml"
+              path: "secrets.yml"

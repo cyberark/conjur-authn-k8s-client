@@ -18,11 +18,9 @@ RETRIES=150
 # Seconds
 RETRY_WAIT=2
 
-# Dump some kubernetes resources and Conjur authentication policy if this
-# script exits prematurely
-DETAILED_DUMP_ON_EXIT=true
-
 function finish {
+  exit_code=$?
+
   readonly PIDS=(
     "SIDECAR_PORT_FORWARD_PID"
     "INIT_PORT_FORWARD_PID"
@@ -30,7 +28,8 @@ function finish {
     "SECRETLESS_PORT_FORWARD_PID"
   )
 
-  if [[ "$DETAILED_DUMP_ON_EXIT" == "true" ]]; then
+  # Upon error, dump some kubernetes resources and Conjur authentication policy
+  if [ $exit_code -ne 0 ]; then
     dump_kubernetes_resources
     dump_authentication_policy
   fi
@@ -44,6 +43,12 @@ function finish {
       kill "${!pid}" > /dev/null 2>&1
     fi
   done
+
+if [ $exit_code -eq 0 ]; then
+    announce "Test PASSED!!!!"
+  else
+    announce "Test FAILED!!!!"
+  fi
 }
 trap finish EXIT
 
@@ -149,5 +154,3 @@ $curl_cmd "$sidecar_url"/pets
 
 # echo -e "\n\nQuerying secretless app\n"
 # $curl_cmd "$secretless_url"/pets
-
-DETAILED_DUMP_ON_EXIT=false

@@ -283,6 +283,8 @@ function run_command_with_platform {
     -e OSHIFT_CONJUR_ADMIN_USERNAME \
     -e OSHIFT_CLUSTER_ADMIN_USERNAME \
     -e CONJUR_LOG_LEVEL \
+    -e TEST_APP_TAG \
+    -e TEST_APP_REPO \
     -e TEST_APP_LOADBALANCER_SVCS \
     -e GCLOUD_SERVICE_KEY=/tmp"$GCLOUD_SERVICE_KEY" \
     "$GCLOUD_INCLUDES" \
