@@ -88,8 +88,10 @@ spec:
         volumeMounts:
           - mountPath: /run/conjur
             name: conjur-access-token
+      {{- if eq .Values.app.platform "kubernetes" }}
       imagePullSecrets:
         - name: dockerpullsecret
+      {{- end }}
       volumes:
         - name: conjur-access-token
           emptyDir:

@@ -23,10 +23,12 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-summon-sidecar.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-summon-sidecar \
     --set app-summon-sidecar.app.image.tag=$TEST_APP_TAG \
     --set app-summon-sidecar.app.image.repository=$TEST_APP_REPO \
-    --set app-summon-sidecar.conjur.authnConfigMap.name=conjur-authn-configmap-summon-sidecar"
+    --set app-summon-sidecar.conjur.authnConfigMap.name=conjur-authn-configmap-summon-sidecar \
+    --set app-summon-sidecar.app.platform=$PLATFORM"
   secretless_broker_options="--set app-secretless-broker.enabled=true \
     --set app-secretless-broker.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secretless-broker \
-    --set app-secretless-broker.conjur.authnConfigMap.name=conjur-authn-configmap-secretless"
+    --set app-secretless-broker.conjur.authnConfigMap.name=conjur-authn-configmap-secretless \
+    --set app-secretless-broker.app.platform=$PLATFORM"
 
   declare -A app_options
   app_options[summon-sidecar]="$summon_sidecar_options"

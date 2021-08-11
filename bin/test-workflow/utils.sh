@@ -30,8 +30,10 @@ announce() {
 }
 
 platform_image_for_pull() {
+  local image=$1
+  local namespace=$2
   if [[ ${PLATFORM} = "openshift" ]]; then
-    echo "${PULL_DOCKER_REGISTRY_PATH}/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
+    echo "${PULL_DOCKER_REGISTRY_PATH}/$namespace/$1:$namespace"
   elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
     echo "${PULL_DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE_NAME"
   else
@@ -40,8 +42,10 @@ platform_image_for_pull() {
 }
 
 platform_image_for_push() {
+  local image=$1
+  local namespace=$2
   if [[ ${PLATFORM} = "openshift" ]]; then
-    echo "${DOCKER_REGISTRY_PATH}/$TEST_APP_NAMESPACE_NAME/$1:$TEST_APP_NAMESPACE_NAME"
+    echo "${DOCKER_REGISTRY_PATH}/$namespace/$1:$namespace"
   elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
     echo "${DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE_NAME"
   else
