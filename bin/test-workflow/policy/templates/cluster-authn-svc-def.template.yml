@@ -27,7 +27,7 @@
       authn-k8s/namespace: {{ APP_VALIDATOR_NAMESPACE_NAME }}
 
   - !policy
-    id: ca 
+    id: ca
     body:
     - !variable
       id: cert

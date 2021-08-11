@@ -9,6 +9,6 @@
 
  # add authn identities to application layer so authn roles inherit app's permissions
   - !grant
-    role: !layer 
+    role: !layer
     members:
     - !layer /conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps
