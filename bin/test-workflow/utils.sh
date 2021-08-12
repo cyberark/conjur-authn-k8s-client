@@ -243,6 +243,13 @@ function get_admin_password {
                 -- conjurctl role retrieve-key "$CONJUR_ACCOUNT":user:admin | tail -1)"
 }
 
+function split_on_comma_delimiter {
+  # given a comma-delimited string, return a bash array of the string's parts
+  # "summon-sidecar,secretless-broker" -> (summon-sidecar secretless-broker)
+  IFS=',' read -r -a array <<< "$1"; unset IFS
+  echo "${array[@]}"
+}
+
 function run_command_with_platform {
   GCLOUD_INCLUDES=""
   if [[ ! -z "${GCLOUD_SERVICE_KEY}" ]]; then

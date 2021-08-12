@@ -14,7 +14,7 @@ set_namespace "$TEST_APP_NAMESPACE_NAME"
 
 pushd ../../helm/conjur-app-deploy > /dev/null
 
-  # Uninstall sample app with summon and authenticator sidecar if it exists
+  # Uninstall any existing sample apps
   if [ "$(helm list -q -n $TEST_APP_NAMESPACE_NAME | grep "^test-apps$")" = "test-apps" ]; then
     helm uninstall test-apps -n "$TEST_APP_NAMESPACE_NAME"
   fi
@@ -33,7 +33,7 @@ pushd ../../helm/conjur-app-deploy > /dev/null
   app_options[secretless-broker]="$secretless_broker_options"
 
   # restore array of apps to install
-  IFS='|' read -r -a install_apps <<< "$INSTALL_APPS"; unset IFS
+  declare -a install_apps=($(split_on_comma_delimiter $INSTALL_APPS))
   options_string=""
   for app in "${install_apps[@]}"; do
     options_string+="${app_options[$app]} "

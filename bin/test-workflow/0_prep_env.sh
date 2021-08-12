@@ -47,7 +47,7 @@ export TEST_APP_NAMESPACE_NAME="${TEST_APP_NAMESPACE_NAME:-app-test}"
 export TEST_APP_DATABASE="${TEST_APP_DATABASE:-postgres}"
 export TEST_APP_REPO="${TEST_APP_REPO:-cyberark/demo-app}"
 export TEST_APP_TAG="${TEST_APP_TAG:-latest}"
-export INSTALL_APPS="${INSTALL_APPS:-summon-sidecar}"
+export INSTALL_APPS="${INSTALL_APPS:-summon-sidecar,secretless-broker}"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   conjur_service="conjur-oss"

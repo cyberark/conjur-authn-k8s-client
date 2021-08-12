@@ -3,6 +3,8 @@
 set -eo pipefail
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
+source ./utils.sh
+
 function print_help {
   cat << EOF
 Runs the end-to-end workflow for testing Conjur Kubernetes authentication.
@@ -19,7 +21,8 @@ Usage: ./start [options]:
                                 - Defaults to 'gke'
                                 - Supports 'jenkins'
                               All other selections are rejected
-    -a, --apps <app>          Specify which test apps to install
+    -a, --apps <app>[,<app>]  Specify which test apps to install
+                              Multiple apps should be specified as a single comma-delimited string
                               Excluding this flag runs all supported apps
                               Currently supports:
                                 - summon-sidecar
@@ -41,18 +44,18 @@ declare -a install_apps=()
 while true; do
   case "$1" in
     -a|--apps )
-      while [[ "${2:0:1}" != "-" ]] && [[ -n "$2" ]] ; do
-        if [[ ! " ${supported_apps[@]} " =~ " $2 " ]]; then
-          echo "$2 is not a supported test app!"
+      declare -a apps=($(split_on_comma_delimiter "$2"))
+      for app in "${apps[@]}"; do
+        if [[ ! " ${supported_apps[@]} " =~ " $app " ]]; then
+          echo "$app is not a supported test app!"
           echo "Supported test apps include:"
           echo "  - summon-sidecar"
           echo "  - secretless-broker"
           exit 1
-        else
-          install_apps+=("$2")
-          shift
         fi
       done
+      install_apps=("${apps[@]}")
+      shift
       shift
       ;;
     -e|--enterprise )
@@ -83,9 +86,9 @@ if [ ${#install_apps[@]} -eq 0 ]; then
   install_apps=("${supported_apps[@]}")
 fi
 # Bash arrays cannot be exported to the environment for use between scripts.
-# Here, export a version that complies with the bash envrionment,
+# Here, export a version that complies with the bash environment,
 # and can be reassembled when it's needed
-export INSTALL_APPS=$(IFS='|'; echo "${install_apps[*]}")
+export INSTALL_APPS=$(IFS=','; echo "${install_apps[*]}")
 
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
 
@@ -118,7 +121,6 @@ export CONJUR_PLATFORM
 export APP_PLATFORM
 
 trap cleanup EXIT
-source ./utils.sh
 
 source ./0_prep_env.sh
 ./1_deploy_conjur.sh

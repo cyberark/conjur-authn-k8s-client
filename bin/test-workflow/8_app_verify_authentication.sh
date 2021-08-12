@@ -113,7 +113,7 @@ check_url(){
 }
 
 # restore array of apps to run
-IFS='|' read -r -a install_apps <<< "$INSTALL_APPS"; unset IFS
+declare -a install_apps=($(split_on_comma_delimiter $INSTALL_APPS))
 
 # declare associative arrays of app urls and pet names
 declare -A app_urls
