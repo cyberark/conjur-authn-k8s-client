@@ -36,7 +36,7 @@ tests:
 
       # Confirm that default values have been used
       - equal:
-          path: data.conjurAuthnLogin
+          path: data.CONJUR_AUTHN_LOGIN
           value: "host/conjur/authn-k8s/my-authn-id/my-conjur-policy/my-host-id"
 
       - equal:

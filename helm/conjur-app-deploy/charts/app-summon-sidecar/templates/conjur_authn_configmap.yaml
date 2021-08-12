@@ -14,5 +14,5 @@ metadata:
       helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 data:
     # authn-k8s Configuration 
-    conjurAuthnLogin: {{ required "A valid conjur.authnLogin is required!" .Values.conjur.authnLogin }}
+    CONJUR_AUTHN_LOGIN: {{ required "A valid conjur.authnLogin is required!" .Values.conjur.authnLogin }}
 {{- end }}

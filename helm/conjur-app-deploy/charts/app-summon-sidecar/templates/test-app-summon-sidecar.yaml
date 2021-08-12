@@ -80,12 +80,9 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
-          - name: CONJUR_AUTHN_LOGIN
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Values.conjur.authnConfigMap.name }}
-                key: conjurAuthnLogin
         envFrom:
+        - configMapRef:
+            name: {{ .Values.conjur.authnConfigMap.name }}
         - configMapRef:
             name: {{ .Values.global.conjur.conjurConnConfigMap }}
         volumeMounts:
