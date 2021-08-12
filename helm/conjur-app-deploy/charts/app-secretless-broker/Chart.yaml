@@ -1,0 +1,17 @@
+apiVersion: v2
+name: app-secretless-broker
+home: https://www.conjur.org
+version: 0.1.0
+description: A Helm chart deploying an application with a Secretless Broker sidecar
+icon: https://www.cyberark.com/wp-content/uploads/2015/12/cybr-aim.jpg
+keywords:
+  - security
+  - "secrets management"
+sources:
+  - https://github.com/cyberark/conjur-authn-k8s-client
+  - https://github.com/cyberark/secretless-broker
+  - https://github.com/cyberark/conjur-oss-helm-chart
+  - https://github.com/cyberark/conjur
+maintainers:
+  - name: Conjur Maintainers
+    email: conj_maintainers@cyberark.com

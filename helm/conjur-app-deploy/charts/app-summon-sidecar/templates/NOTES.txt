@@ -1,8 +1,8 @@
 The Application deployment is complete.
 The following have been deployed:
-{{ if .Values.conjur.authnConfigMap.create }}
+{{ if .Values.conjur.authnConfigMap.create -}}
 - A Conjur authentication configmap
-{{ end }}
-{{ if .Values.create }}
+{{ end -}}
 - An authnK8s application with a summon sidecar
-{{ end }}
+
+Application is now available at test-app-summon-sidecar.{{ .Release.Namespace }}.svc.cluster.local

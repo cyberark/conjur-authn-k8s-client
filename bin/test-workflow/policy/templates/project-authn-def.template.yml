@@ -29,11 +29,11 @@
         authn-k8s/authentication-container-name: authenticator
         kubernetes: "{{ IS_KUBERNETES }}"
     - !host
-      id: test-app-secretless
+      id: test-app-secretless-broker
       annotations:
         authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
-        authn-k8s/service-account: test-app-secretless
-        authn-k8s/deployment: test-app-secretless
+        authn-k8s/service-account: test-app-secretless-broker
+        authn-k8s/deployment: test-app-secretless-broker
         authn-k8s/authentication-container-name: secretless
         kubernetes: "{{ IS_KUBERNETES }}"
     - !host
