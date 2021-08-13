@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Security
+- Upgrades Alpine to v3.14 to resolve CVE-2021-36159.
+  [cyberark/conjur-authn-k8s-client#374](https://github.com/cyberark/conjur-authn-k8s-client/issues/374)
 
 ## [0.21.0] - 2021-06-25
 ### Added

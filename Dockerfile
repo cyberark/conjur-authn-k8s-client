@@ -33,7 +33,7 @@ RUN sh -c "go tool nm authenticator | grep '_Cfunc__goboringcrypto_' 1> /dev/nul
 FROM busybox
 
 # =================== MAIN CONTAINER ===================
-FROM alpine:latest as authenticator-client
+FROM alpine:3.14 as authenticator-client
 MAINTAINER CyberArk Software Ltd.
 
 # copy a few commands from busybox
@@ -124,7 +124,7 @@ LABEL description="The authentication client required to expose secrets from a C
 
 # =================== CONTAINER FOR HELM TEST ===================
 
-FROM alpine:3.12 as k8s-cluster-test
+FROM alpine:3.14 as k8s-cluster-test
 
 # Install packages for testing
 RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl
