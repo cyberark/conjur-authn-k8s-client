@@ -13,6 +13,7 @@ app:
     tag: "conjur-oss"
     # supported values: "Always", "IfNotPresent", "Never"
     pullPolicy: "Always"
+  platform: "kubernetes"
  
 authnClient:
   image:

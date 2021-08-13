@@ -28,7 +28,7 @@ prepare_conjur_cli_image() {
 
   docker pull cyberark/conjur-cli:"$CONJUR_VERSION"-latest
 
-  cli_app_image="$(platform_image_for_push conjur-cli)"
+  cli_app_image="$(platform_image_for_push conjur-cli $CONJUR_NAMESPACE_NAME)"
   docker tag cyberark/conjur-cli:"$CONJUR_VERSION"-latest "$cli_app_image"
 
   docker push "$cli_app_image"
@@ -39,7 +39,7 @@ deploy_conjur_cli() {
 
   IMAGE_PULL_POLICY='Always'
 
-  cli_app_image=$(platform_image_for_pull conjur-cli)
+  cli_app_image="$(platform_image_for_pull conjur-cli $CONJUR_NAMESPACE_NAME)"
   sed -e "s#{{ CONJUR_SERVICE_ACCOUNT }}#$(conjur_service_account)#g" ./$PLATFORM/conjur-cli.yml |
     sed -e "s#{{ DOCKER_IMAGE }}#$cli_app_image#g" |
     sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
@@ -67,6 +67,7 @@ pushd policy > /dev/null
   if [[ "$PLATFORM" == "openshift" ]]; then
     is_openshift=true
     is_kubernetes=false
+    oc adm policy add-scc-to-user anyuid system:serviceaccount:$CONJUR_NAMESPACE_NAME:conjur-oss
   else
     is_openshift=false
     is_kubernetes=true
