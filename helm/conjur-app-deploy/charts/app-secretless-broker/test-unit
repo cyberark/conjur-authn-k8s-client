@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Runs a Helm unit test using the 'helm-unittest' Helm plugin.
+# Reference: https://github.com/quintush/helm-unittest/blob/master/DOCUMENT.md
+
+# Run this script from the directory in which this script resides
+# regardless of where it is invoked.
+cd "$(dirname "$0")"
+chart_dir="$(pwd)"
+
+source ../../../common/utils.sh
+
+banner $BOLD "Running Helm unit tests for chart \"$chart_dir\""
+run_helm_unittest
