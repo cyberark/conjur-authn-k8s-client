@@ -6,14 +6,15 @@ global:
     # name of the ConfigMap created by the conjur-config-namespace-prep chart
     conjurConnConfigMap: "conjur-connect"
   appServiceType: "NodePort"
-  
+
 app:
   image:
     repository: "cyberark/demo-app"
     tag: "latest"
     # supported values: "Always", "IfNotPresent", "Never"
     pullPolicy: "Always"
- 
+  platform: "kubernetes"
+
 secretsProvider:
   image:
     repository: "cyberark/secrets-provider-for-k8s"
