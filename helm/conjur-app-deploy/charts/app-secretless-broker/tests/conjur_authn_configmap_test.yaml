@@ -1,0 +1,50 @@
+suite: test conjur_authn_configmap
+
+templates:
+  - conjur_authn_configmap.yaml
+
+defaults: &defaultRequired
+  conjur.authnLogin: "host/conjur/authn-k8s/my-authn-id/my-conjur-policy/my-host-id"
+
+tests:
+  #=======================================================================
+  - it: should not create a authnConfigMap if ConfigMap creation is disabled
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+      conjur.authnConfigMap.create: false
+    asserts:
+      - hasDocuments:
+          count: 0 
+
+  #=======================================================================
+  - it: should use default values when those values are not set explicitly
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+      
+    asserts:
+      # Confirm that a ConfigMap has been created
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ConfigMap
+
+      # Confirm that default values have been used
+      - equal:
+          path: data.CONJUR_AUTHN_LOGIN
+          value: "host/conjur/authn-k8s/my-authn-id/my-conjur-policy/my-host-id"
+
+      - equal:
+          path: metadata.name
+          value: "conjur-authn-configmap"
+
+  #=======================================================================
+  - it: should fail if conjur.authnLogin is not set
+  #=======================================================================
+    set:
+    asserts:
+      - failedTemplate:
+          errorMessage: "A valid conjur.authnLogin is required!"

@@ -1,0 +1,112 @@
+#!/bin/bash
+
+# This script tests the restrictions on chart values
+# as defined in the 'values.schema.json' file.
+#
+# Requirements:
+#   - Helm v3.5.3 or later
+
+# Run this script from the directory in which this script resides
+# regardless of where it is invoked.
+cd "$(dirname "$0")"
+chart_dir="$(pwd)"
+
+source ../../../common/utils.sh
+
+# Default required settings
+readonly DEFAULT_AUTHN_LOGIN="conjur.authnLogin=host/conjur/authn-k8s/my-id/my-group/my-app"
+
+# Global test state
+num_passed=0
+num_failed=0
+test_failed=false
+
+function global_conjur_conn_configmap_name_test() {
+    helm lint . --strict \
+        --set "$DEFAULT_AUTHN_LOGIN" \
+        --set "global.conjur.conjurConnConfigMap=$1"
+}
+
+function global_app_service_type_test() {
+    helm lint . --strict \
+        --set "$DEFAULT_AUTHN_LOGIN" \
+        --set "global.appServiceType=$1"
+}
+
+function app_image_repository_test() {
+    helm lint . --strict \
+        --set "$DEFAULT_AUTHN_LOGIN" \
+        --set "app.image.repository=$1"
+}
+
+function app_image_pull_policy_test() {
+    helm lint . --strict \
+        --set "$DEFAULT_AUTHN_LOGIN" \
+        --set "app.image.pullPolicy=$1"
+}
+
+function conjur_authn_configmap_name_test() {
+    helm lint . --strict \
+        --set "$DEFAULT_AUTHN_LOGIN" \
+        --set "conjur.authnConfigMap.name=$1"
+}
+
+function main() {
+    banner $BOLD "Running Helm schema tests for chart \"$chart_dir\""
+    check_helm_version
+
+    announce "Conjur Connect ConfigMap name with dashes is accepted"
+    global_conjur_conn_configmap_name_test "name-with-dashes"
+    update_results "$?"
+
+    announce "Conjur Connect ConfigMap name with dotted name is accepted"
+    global_conjur_conn_configmap_name_test "dotted.serviceaccount.name"
+    update_results "$?"
+
+    announce "Valid app image Docker repository accepted"
+    app_image_repository_test "my-org/abc_123"
+    update_results "$?"
+
+    announce "App image Docker repository with '%' is rejected"
+    app_image_repository_test "my-org/abc%123"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    announce "App image pullPolicy of 'Always' is accepted"
+    app_image_pull_policy_test "Always"
+    update_results "$?"
+
+    announce "App image pullPolicy of 'Never' is accepted"
+    app_image_pull_policy_test "Never"
+    update_results "$?"
+
+    announce "App image pullPolicy of 'IfNotPresent' is accepted"
+    app_image_pull_policy_test "Never"
+    update_results "$?"
+
+    announce "App image pullPolicy of lower case 'always' is rejected"
+    app_image_pull_policy_test "always"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    announce "Conjur Authn ConfigMap name with underscores is rejected"
+    conjur_authn_configmap_name_test "name_with_underscores"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    announce "Conjur Authn ConfigMap name with upper case characters is rejected"
+    conjur_authn_configmap_name_test "NameWithUpperCase"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    announce "Conjur Authn ConfigMap name with less than 253 characters is accepted"
+    conjur_authn_configmap_name_test "name-with-253-chars----------30--------40--------50--------60--------70--------80--------90--------100-------110-------120--------130-------140-------150-------160-------170-------180-------190-------200-------210-------220-------230-------240-------250"
+    update_results "$?"
+
+    announce "ServiceAccount name with 253 characters is rejected"
+    conjur_authn_configmap_name_test "name-with-more-than-253-chars----------40--------50--------60--------70--------80--------90--------100-------110-------120--------130-------140-------150-------160-------170-------180-------190-------200-------210-------220-------230-------240-------2503"
+    update_results "$?" "$EXPECT_FAILURE"
+
+    display_final_results
+    if [ "$num_failed" -ne 0 ]; then
+        exit 1
+    fi
+}
+
+main "$@"
