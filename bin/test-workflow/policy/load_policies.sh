@@ -34,6 +34,7 @@ readonly APPS=(
   "test-summon-sidecar-app"
   "test-secretless-app"
   "test-secrets-provider-init-app"
+  "test-secrets-provider-standalone-app"
 )
 
 for app_name in "${APPS[@]}"; do

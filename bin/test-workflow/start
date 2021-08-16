@@ -27,6 +27,7 @@ Usage: ./start [options]:
                               Currently supports:
                                 - summon-sidecar
                                 - secretless-broker
+                                - secrets-provider-standalone
                               All other selections are rejected
     -h, --help                Show the help message
 EOF
@@ -38,8 +39,9 @@ function cleanup {
   ./stop
 }
 
-declare -a supported_apps=("summon-sidecar" "secretless-broker")
-declare -a install_apps=()
+declare -a supported_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" )
+# Default: Test all applications
+declare -a install_apps=("${supported_apps[@]}")
 
 while true; do
   case "$1" in
@@ -82,9 +84,6 @@ while true; do
   esac
 done
 
-if [ ${#install_apps[@]} -eq 0 ]; then
-  install_apps=("${supported_apps[@]}")
-fi
 # Bash arrays cannot be exported to the environment for use between scripts.
 # Here, export a version that complies with the bash environment,
 # and can be reassembled when it's needed

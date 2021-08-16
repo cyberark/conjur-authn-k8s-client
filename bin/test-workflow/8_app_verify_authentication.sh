@@ -26,6 +26,7 @@ function finish {
     "INIT_PORT_FORWARD_PID"
     "INIT_WITH_HOST_OUTSIDE_APPS_PORT_FORWARD_PID"
     "SECRETLESS_PORT_FORWARD_PID"
+    "SECRETS_PROVIDER_STANDALONE_PID"
   )
 
   # Upon error, dump some kubernetes resources and Conjur authentication policy
@@ -44,7 +45,7 @@ function finish {
     fi
   done
 
-if [ $exit_code -eq 0 ]; then
+  if [ $exit_code -eq 0 ]; then
     announce "Test PASSED!!!!"
   else
     announce "Test FAILED!!!!"
@@ -81,6 +82,7 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   init_pod=$(get_pod_name test-app-summon-init)
   init_pod_with_host_outside_apps=$(get_pod_name test-app-with-host-outside-apps-branch-summon-init)
   secretless_pod=$(get_pod_name test-app-secretless)
+  secrets_provider_standalone_pod=$(get_pod_name test-app-secrets-provider-standalone)
 
   # Routes are defined, but we need to do port-mapping to access them
   oc port-forward "$sidecar_pod" 8081:8080 > /dev/null 2>&1 &
@@ -89,14 +91,17 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   INIT_PORT_FORWARD_PID=$!
   oc port-forward "$secretless_pod" 8083:8080 > /dev/null 2>&1 &
   SECRETLESS_PORT_FORWARD_PID=$!
-  oc port-forward "$init_pod_with_host_outside_apps" 8084:8080 > /dev/null 2>&1 &
+  oc port-forward "$secrets_provider_standalone_pod" 8084:8080 > /dev/null 2>&1 &
+  SECRETS_PROVIDER_STANDALONE_PID=$!
+  oc port-forward "$init_pod_with_host_outside_apps" 8085:8080 > /dev/null 2>&1 &
   INIT_WITH_HOST_OUTSIDE_APPS_PORT_FORWARD_PID=$!
 
   curl_cmd=curl
   sidecar_url="localhost:8081"
   init_url="localhost:8082"
   secretless_url="localhost:8083"
-  init_url_with_host_outside_apps="localhost:8084"
+  secrets_provider_standalone_url="localhost:8084"
+  init_url_with_host_outside_apps="localhost:8085"
 else
   # Test by curling from a pod that is inside the KinD cluster.
   curl_cmd=pod_curl
@@ -104,6 +109,7 @@ else
   init_url_with_host_outside_apps="test-app-with-host-outside-apps-branch-summon-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   sidecar_url="test-app-summon-sidecar.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secretless_url="test-app-secretless-broker.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
+  secrets_provider_standalone_url="test-app-secrets-provider-standalone.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
 fi
 
 echo "Waiting for urls to be ready"
@@ -119,10 +125,12 @@ declare -a install_apps=($(split_on_comma_delimiter $INSTALL_APPS))
 declare -A app_urls
 app_urls[summon-sidecar]="$sidecar_url"
 app_urls[secretless-broker]="$secretless_url"
+app_urls[secrets-provider-standalone]="$secrets_provider_standalone_url"
 
 declare -A app_pets
 app_pets[summon-sidecar]="Mr. Sidecar"
 app_pets[secretless-broker]="Mr. Secretless"
+app_pets[secrets-provider-standalone]="Mr. Standalone"
 
 # check connection to each installed test app
 for app in "${install_apps[@]}"; do
