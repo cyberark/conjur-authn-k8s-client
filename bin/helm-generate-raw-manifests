@@ -16,4 +16,17 @@ pushd helm/conjur-config-cluster-prep > /dev/null
         'del(.data.conjurSslCertificateBase64)' \
         generated/conjur-config-cluster-prep.yaml
 
+    yq eval -i \
+        'del(.data.authnK8sNamespace)' \
+        generated/conjur-config-cluster-prep.yaml
+
+popd > /dev/null
+
+pushd helm/conjur-config-namespace-prep > /dev/null
+    mkdir -p generated
+
+    helm template namespace-prep . \
+        -f sample-values.yaml \
+        --render-subchart-notes \
+        --skip-tests > generated/conjur-config-namespace-prep.yaml
 popd > /dev/null
