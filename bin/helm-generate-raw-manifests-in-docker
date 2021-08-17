@@ -41,6 +41,7 @@ docker rm conjur-k8s-helm-generate-manifests
 if [[ "$diff_only" = true ]];
 then
     set -eo pipefail
+    echo -e "\n*** If generated files have changed please run \"bin/helm-generate-raw-manifests-in-docker\" and commit the new manifests ***"
 fi
 
 echo -e "\nDiffing generated/conjur-config-cluster-prep.yaml..."
