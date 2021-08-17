@@ -3,10 +3,19 @@ set -uo pipefail
 
 source utils.sh
 
-if [[ "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
-  ./cleanup_helm.sh
-  ./cleanup_namespaces.sh
+check_env_var RUN_CLIENT_CONTAINER
 
+if [[ "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
+  if [[ "$RUN_CLIENT_CONTAINER" == "true" ]]; then
+    run_command_with_platform "
+    ./cleanup_helm.sh
+    ./cleanup_namespaces.sh
+    rm -rf temp
+    "
+  else 
+    ./cleanup_helm.sh
+    ./cleanup_namespaces.sh
+  fi
 elif [[ "$CONJUR_PLATFORM" == "gke" ]]; then
   run_command_with_platform "
     ./cleanup_helm.sh

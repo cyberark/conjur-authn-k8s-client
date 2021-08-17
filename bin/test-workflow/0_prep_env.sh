@@ -22,6 +22,9 @@ else
   PLATFORM="kubernetes"
 fi
 export PLATFORM
+if [[ "$CONJUR_PLATFORM" == "kind" ]]; then
+    RUN_CLIENT_CONTAINER="false"
+fi
 
 if [[ "$CONJUR_PLATFORM" != "jenkins" ]]; then
   APP_PLATFORM="$CONJUR_PLATFORM"
@@ -43,7 +46,6 @@ export AUTHENTICATOR_ID="${AUTHENTICATOR_ID:-my-authenticator-id}"
 export CONJUR_AUTHN_LOGIN_RESOURCE="${CONJUR_AUTHN_LOGIN_RESOURCE:-service_account}"
 export CONJUR_AUTHN_LOGIN_PREFIX="${CONJUR_AUTHN_LOGIN_PREFIX:-host/conjur/authn-k8s/$AUTHENTICATOR_ID/apps}"
 export CONJUR_VERSION="${CONJUR_VERSION:-5}"
-export TEST_APP_NAMESPACE_NAME="${TEST_APP_NAMESPACE_NAME:-app-test}"
 export TEST_APP_DATABASE="${TEST_APP_DATABASE:-postgres}"
 export TEST_APP_REPO="${TEST_APP_REPO:-cyberark/demo-app}"
 export TEST_APP_TAG="${TEST_APP_TAG:-latest}"
@@ -54,11 +56,13 @@ if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   if [[ "$PLATFORM" == "openshift" ]]; then
     export CONJUR_NAMESPACE_NAME="${CONJUR_NAMESPACE_NAME:-$conjur_service-${UNIQUE_TEST_ID}}"
     export HELM_RELEASE="${HELM_RELEASE:-conjur-oss-${UNIQUE_TEST_ID}}"
+    export TEST_APP_NAMESPACE_NAME="${TEST_APP_NAMESPACE_NAME:-app-test-$UNIQUE_TEST_ID}"
   else
     export CONJUR_NAMESPACE_NAME="${CONJUR_NAMESPACE_NAME:-$conjur_service}"
+    export TEST_APP_NAMESPACE_NAME="${TEST_APP_NAMESPACE_NAME:-app-test}"
   fi
 else
-  export TEST_APP_NAMESPACE_NAME="$TEST_APP_NAMESPACE_NAME-$UNIQUE_TEST_ID"
+  export TEST_APP_NAMESPACE_NAME="${TEST_APP_NAMESPACE_NAME:-app-test-$UNIQUE_TEST_ID}"
   export CONJUR_APPLIANCE_IMAGE="${CONJUR_APPLIANCE_IMAGE:-registry2.itci.conjur.net/conjur-appliance:5.0-stable}"
   export CONJUR_ADMIN_PASSWORD="MySecretP@ss1"
 
@@ -94,11 +98,12 @@ elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
     .
 fi
 
-if [[ "$CONJUR_PLATFORM" == "gke" || "$APP_PLATFORM" == "gke" ]]; then
+if [[ "$RUN_CLIENT_CONTAINER" == "true" ]]; then
   export PLATFORM_CONTAINER="platform-container"
 
   docker build --tag "$PLATFORM_CONTAINER:$CONJUR_NAMESPACE_NAME" \
       --file Dockerfile \
       --build-arg KUBECTL_VERSION="$KUBECTL_VERSION" \
+      --build-arg OPENSHIFT_CLI_URL="$OPENSHIFT_CLI_URL" \
       .
 fi

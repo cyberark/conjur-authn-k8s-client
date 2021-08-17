@@ -3,6 +3,24 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+source utils.sh
+
+if [[ "$CONJUR_PLATFORM" == "gke" || "$APP_PLATFORM" == "gke" ]]; then
+  check_env_var GCLOUD_SERVICE_KEY
+  check_env_var GCLOUD_CLUSTER_NAME
+  check_env_var GCLOUD_ZONE
+  check_env_var GCLOUD_PROJECT_NAME
+fi
+
+if [[ "$CONJUR_PLATFORM" == "oc" || "$APP_PLATFORM" == "oc" ]]; then
+  check_env_var CONJUR_PLATFORM
+  check_env_var APP_PLATFORM
+  check_env_var OPENSHIFT_URL
+  check_env_var OPENSHIFT_USERNAME
+  check_env_var OPENSHIFT_PASSWORD
+  check_env_var DOCKER_REGISTRY_PATH
+fi
+
 function main {
   if [[ "$CONJUR_PLATFORM" == "gke" || "$APP_PLATFORM" == "gke" ]]; then
     gcloud auth activate-service-account \

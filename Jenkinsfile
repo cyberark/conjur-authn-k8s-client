@@ -95,6 +95,11 @@ pipeline {
             sh './bin/helm-dependency-update-in-docker'
           }
         }
+        stage('Openshift E2E Workflow Tests') {
+          steps {
+            sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform oc'
+          }
+        }
         stage('Run E2E Tests') {
           parallel {
             stage('Enterprise and test app deployed to GKE') {
