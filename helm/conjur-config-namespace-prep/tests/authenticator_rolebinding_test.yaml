@@ -58,3 +58,17 @@ tests:
       - failedTemplate:
           errorMessage: "Both authnK8s.namespace and authnK8s.configMap are required"
 
+  #=======================================================================
+  - it: should allow RoleBinding name to be set explicitly
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+
+      # Set explicit RoleBinding name
+      authnRoleBinding.name: "my-awesome-rolebinding"
+
+    asserts:
+      - equal:
+          path: metadata.name
+          value: "my-awesome-rolebinding"
