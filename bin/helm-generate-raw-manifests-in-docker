@@ -1,66 +1,75 @@
 #!/bin/bash
 
-set -eo pipefail
+set -e
 
-diff_only=false
+DIFF_ONLY=false
+readonly REPO_ROOT="$(git rev-parse --show-toplevel)"
+readonly HELM_CHARTS=("conjur-config-cluster-prep" "conjur-config-namespace-prep")
 
-while true; do
-  case "$1" in
-    -d|--diff-only )
-      diff_only=true
-      shift
-      ;;
-    * )
-      if [ -z "$1" ]; then
-        break
-      else
-        echo "$1 is not a valid option"
-        exit 1
+function main() {
+  while true; do
+    case "$1" in
+      -d|--diff-only )
+        DIFF_ONLY=true
+        shift
+        ;;
+      * )
+        if [ -z "$1" ]; then
+            break
+        else
+            echo "$1 is not a valid option"
+            exit 1
+        fi
+        ;;
+    esac
+  done
+
+  # Backup old manifests
+  for chart in "${HELM_CHARTS[@]}"; do
+    mv "helm/$chart/generated/$chart.yaml" "helm/$chart/generated/$chart.old.yaml"
+  done
+  
+  echo "Building utility image with helm and yq..."
+  docker build -f Dockerfile.helm-unit-test -t conjur-k8s-helm-generate-manifests:dev .
+
+  echo "Generating raw k8s manifests..."
+  docker run --rm \
+    --name conjur-k8s-helm-generate-manifests \
+    -v "$REPO_ROOT:/conjur-authn-k8s-client" \
+    --entrypoint "/conjur-authn-k8s-client/bin/helm-generate-raw-manifests" \
+    conjur-k8s-helm-generate-manifests:dev
+
+  manifests_changed=false
+  for chart in "${HELM_CHARTS[@]}"; do
+    echo -e "\nDiffing generated/$chart.yaml..."
+    set +e
+      diff -cs helm/$chart/generated/$chart.old.yaml helm/$chart/generated/$chart.yaml
+      ret_val=$?
+    set -e
+
+    if [[ "$ret_val" != 0 ]]; then
+      manifests_changed=true
+      if [[ "$DIFF_ONLY" = true ]]; then
+        # restore old manifest - no changes
+        mv -f helm/$chart/generated/$chart.old.yaml helm/$chart/generated/$chart.yaml
+        continue
       fi
-      ;;
-  esac
-done
 
-echo "Building utility image with helm and yq..."
-docker build -f Dockerfile.helm-unit-test -t conjur-k8s-helm-generate-manifests:dev .
+      echo -e "\nUpdating helm/$chart/generated/$chart.yaml..."
+    fi
 
-echo "Generating raw k8s manifests..."
-docker run --name conjur-k8s-helm-generate-manifests --entrypoint "/conjur-authn-k8s-client/bin/helm-generate-raw-manifests" \
-            conjur-k8s-helm-generate-manifests:dev
+    rm -f helm/$chart/generated/$chart.old.yaml
+  done
 
-set +eo pipefail
+  if [[ "$manifests_changed" = true ]]; then
+    echo -e "\n*** Generated files have changed! ***"
+    if [[ "$DIFF_ONLY" = true ]]; then
+      echo -e "*** Please run \"bin/helm-generate-raw-manifests-in-docker\" and commit the new manifests ***"
+    fi
+    exit 1
+  else
+    exit 0
+  fi
+}
 
-docker cp conjur-k8s-helm-generate-manifests:/conjur-authn-k8s-client/helm/conjur-config-cluster-prep/generated/conjur-config-cluster-prep.yaml \
-            helm/conjur-config-cluster-prep/generated/conjur-config-cluster-prep.new.yaml
-
-docker cp conjur-k8s-helm-generate-manifests:/conjur-authn-k8s-client/helm/conjur-config-namespace-prep/generated/conjur-config-namespace-prep.yaml \
-            helm/conjur-config-namespace-prep/generated/conjur-config-namespace-prep.new.yaml
-
-docker rm conjur-k8s-helm-generate-manifests
-
-if [[ "$diff_only" = true ]];
-then
-    set -eo pipefail
-    echo -e "\n*** If generated files have changed please run \"bin/helm-generate-raw-manifests-in-docker\" and commit the new manifests ***"
-fi
-
-echo -e "\nDiffing generated/conjur-config-cluster-prep.yaml..."
-diff -cs helm/conjur-config-cluster-prep/generated/conjur-config-cluster-prep.yaml \
-            helm/conjur-config-cluster-prep/generated/conjur-config-cluster-prep.new.yaml
-
-echo -e "\nDiffing generated/conjur-config-namespace-prep.yaml..."
-diff -cs helm/conjur-config-namespace-prep/generated/conjur-config-namespace-prep.yaml \
-            helm/conjur-config-namespace-prep/generated/conjur-config-namespace-prep.new.yaml
-
-if [[ "$diff_only" = false ]];
-then
-    echo -e "\nOverwriting old manifests..."
-
-    rm helm/conjur-config-cluster-prep/generated/conjur-config-cluster-prep.yaml
-    mv helm/conjur-config-cluster-prep/generated/conjur-config-cluster-prep.new.yaml \
-            helm/conjur-config-cluster-prep/generated/conjur-config-cluster-prep.yaml
-
-    rm helm/conjur-config-namespace-prep/generated/conjur-config-namespace-prep.yaml
-    mv helm/conjur-config-namespace-prep/generated/conjur-config-namespace-prep.new.yaml \
-            helm/conjur-config-namespace-prep/generated/conjur-config-namespace-prep.yaml
-fi
+main "$@"
