@@ -34,7 +34,6 @@ function main() {
 
   echo "Generating raw k8s manifests..."
   docker run --rm \
-    --name conjur-k8s-helm-generate-manifests \
     -v "$REPO_ROOT:/conjur-authn-k8s-client" \
     --entrypoint "/conjur-authn-k8s-client/bin/helm-generate-raw-manifests" \
     conjur-k8s-helm-generate-manifests:dev
@@ -42,10 +41,9 @@ function main() {
   manifests_changed=false
   for chart in "${HELM_CHARTS[@]}"; do
     echo -e "\nDiffing generated/$chart.yaml..."
-    set +e
-      diff -cs helm/$chart/generated/$chart.old.yaml helm/$chart/generated/$chart.yaml
-      ret_val=$?
-    set -e
+
+    ret_val=0
+    diff -cs helm/$chart/generated/$chart.old.yaml helm/$chart/generated/$chart.yaml || ret_val=$?
 
     if [[ "$ret_val" != 0 ]]; then
       manifests_changed=true
