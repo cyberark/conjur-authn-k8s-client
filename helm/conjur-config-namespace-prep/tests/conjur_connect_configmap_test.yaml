@@ -69,3 +69,17 @@ tests:
       - failedTemplate:
           errorMessage: "Both authnK8s.namespace and authnK8s.configMap are required"
 
+  #=======================================================================
+  - it: should allow ConfigMap name to be set explicitly
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+
+      # Set explicit ConfigMap name
+      conjurConfigMap.name: "my-awesome-configmap"
+
+    asserts:
+      - equal:
+          path: metadata.name
+          value: "my-awesome-configmap"

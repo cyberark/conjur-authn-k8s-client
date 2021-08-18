@@ -12,7 +12,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: conjur-connect
+  name: {{ .Values.conjurConfigMap.name }}
   labels:
     app.kubernetes.io/name: "conjur-connect-configmap"
     app.kubernetes.io/instance: "conjur-{{ .Release.Namespace }}-configmap"
