@@ -1,0 +1,73 @@
+#!/bin/bash
+
+set -e
+
+DIFF_ONLY=false
+readonly REPO_ROOT="$(git rev-parse --show-toplevel)"
+readonly HELM_CHARTS=("conjur-config-cluster-prep" "conjur-config-namespace-prep")
+
+function main() {
+  while true; do
+    case "$1" in
+      -d|--diff-only )
+        DIFF_ONLY=true
+        shift
+        ;;
+      * )
+        if [ -z "$1" ]; then
+            break
+        else
+            echo "$1 is not a valid option"
+            exit 1
+        fi
+        ;;
+    esac
+  done
+
+  # Backup old manifests
+  for chart in "${HELM_CHARTS[@]}"; do
+    mv "helm/$chart/generated/$chart.yaml" "helm/$chart/generated/$chart.old.yaml"
+  done
+  
+  echo "Building utility image with helm and yq..."
+  docker build -f Dockerfile.helm-unit-test -t conjur-k8s-helm-generate-manifests:dev .
+
+  echo "Generating raw k8s manifests..."
+  docker run --rm \
+    -v "$REPO_ROOT:/conjur-authn-k8s-client" \
+    --entrypoint "/conjur-authn-k8s-client/bin/helm-generate-raw-manifests" \
+    conjur-k8s-helm-generate-manifests:dev
+
+  manifests_changed=false
+  for chart in "${HELM_CHARTS[@]}"; do
+    echo -e "\nDiffing generated/$chart.yaml..."
+
+    ret_val=0
+    diff -cs helm/$chart/generated/$chart.old.yaml helm/$chart/generated/$chart.yaml || ret_val=$?
+
+    if [[ "$ret_val" != 0 ]]; then
+      manifests_changed=true
+      if [[ "$DIFF_ONLY" = true ]]; then
+        # restore old manifest - no changes
+        mv -f helm/$chart/generated/$chart.old.yaml helm/$chart/generated/$chart.yaml
+        continue
+      fi
+
+      echo -e "\nUpdating helm/$chart/generated/$chart.yaml..."
+    fi
+
+    rm -f helm/$chart/generated/$chart.old.yaml
+  done
+
+  if [[ "$manifests_changed" = true ]]; then
+    echo -e "\n*** Generated files have changed! ***"
+    if [[ "$DIFF_ONLY" = true ]]; then
+      echo -e "*** Please run \"bin/helm-generate-raw-manifests-in-docker\" and commit the new manifests ***"
+    fi
+    exit 1
+  else
+    exit 0
+  fi
+}
+
+main "$@"

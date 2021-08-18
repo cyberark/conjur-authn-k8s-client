@@ -1,0 +1,22 @@
+name: Diff Generated K8S Manifests
+
+on:
+  # When PR operations are done
+  pull_request:
+    types: [ opened, synchronize, reopened, edited ]
+
+jobs:
+  diff-generated-k8s-manifests:
+    name: Check if raw k8s manifests generated from Helm charts need to be updated
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        kube-tag:
+          - v1.18.2
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Generate and diff raw manifests
+        run: ./bin/helm-generate-raw-manifests-in-docker --diff-only
