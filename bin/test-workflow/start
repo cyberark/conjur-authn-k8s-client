@@ -39,7 +39,7 @@ function cleanup {
   ./stop
 }
 
-declare -a supported_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" )
+declare -a supported_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init")
 # Default: Test all applications
 declare -a install_apps=("${supported_apps[@]}")
 
@@ -53,6 +53,7 @@ while true; do
           echo "Supported test apps include:"
           echo "  - summon-sidecar"
           echo "  - secretless-broker"
+          echo "  - secrets-provider-init"
           exit 1
         fi
       done

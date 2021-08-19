@@ -34,11 +34,16 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-secrets-provider-standalone.app.image.tag="$TEST_APP_TAG" \
     --set app-secrets-provider-standalone.app.image.repository="$TEST_APP_REPO" \
     --set app-secrets-provider-standalone.app.platform=$PLATFORM"
+  secrets_provider_init_options="--set app-secrets-provider-init.enabled=true \
+    --set app-secrets-provider-init.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-init \
+    --set app-secrets-provider-init.conjur.authnConfigMap.name=conjur-authn-configmap-secrets-provider-init \
+    --set app-secrets-provider-init.app.platform=$PLATFORM"
 
   declare -A app_options
   app_options[summon-sidecar]="$summon_sidecar_options"
   app_options[secretless-broker]="$secretless_broker_options"
   app_options[secrets-provider-standalone]="$secrets_provider_standalone_options"
+  app_options[secrets-provider-init]="$secrets_provider_init_options"
 
   # restore array of apps to install
   declare -a install_apps=($(split_on_comma_delimiter $INSTALL_APPS))

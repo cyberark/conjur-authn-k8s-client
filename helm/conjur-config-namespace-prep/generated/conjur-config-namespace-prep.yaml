@@ -28,7 +28,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: conjur-rolebinding
-  labels: 
+  labels:
     app.kubernetes.io/name: "conjur-rolebinding"
     app.kubernetes.io/component: "conjur-namespace-access"
     app.kubernetes.io/instance: "conjur-default-rolebinding"
