@@ -43,4 +43,9 @@ data:
     conjurSslCertificateBase64: {{ required "Either conjur.certificateFilePath or conjur.certificateBase64 are required!" .Values.conjur.certificateBase64 | quote }}
     conjurSslCertificate: {{ .Values.conjur.certificateBase64 | b64dec | quote }}
     {{- end }}
+
+    # Some other stuff
+    foo: foo_value
+    bar: bar_value
+    baz: baz_value
 {{- end }}
