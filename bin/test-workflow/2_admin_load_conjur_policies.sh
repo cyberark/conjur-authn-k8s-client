@@ -43,7 +43,7 @@ deploy_conjur_cli() {
   sed -e "s#{{ CONJUR_SERVICE_ACCOUNT }}#$(conjur_service_account)#g" ./$PLATFORM/conjur-cli.yml |
     sed -e "s#{{ DOCKER_IMAGE }}#$cli_app_image#g" |
     sed -e "s#{{ IMAGE_PULL_POLICY }}#$IMAGE_PULL_POLICY#g" |
-    $cli create -f -
+    "$cli" create -f -
 
   # Wait until pod appears otherwise $conjur_cli_pod could be empty and we would wait forever
   wait_for_it 300 "has_resource 'app=conjur-cli'"
@@ -54,9 +54,9 @@ deploy_conjur_cli() {
 ensure_conjur_cli_initialized() {
   announce "Ensure that Conjur CLI pod has a connection with Conjur initialized."
 
-  $cli exec $1 -- bash -c "yes yes | conjur init -a $CONJUR_ACCOUNT -u $CONJUR_APPLIANCE_URL"
+  "$cli" exec "$1" -- bash -c "yes yes | conjur init -a '$CONJUR_ACCOUNT' -u '$CONJUR_APPLIANCE_URL'"
   # Flaky with 500 Internal Server Error, mitigate with retry
-  wait_for_it 300 "$cli exec $1 -- conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD"
+  wait_for_it 300 "$cli exec $1 -- conjur authn login -u admin -p '$CONJUR_ADMIN_PASSWORD'"
 }
 
 pushd policy > /dev/null
@@ -104,12 +104,12 @@ if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
     -w /src/cli \
     --entrypoint /bin/bash \
     client -c "
-      conjur_appliance_url=${CONJUR_APPLIANCE_URL} \
-      CONJUR_ACCOUNT=${CONJUR_ACCOUNT} \
-      CONJUR_ADMIN_PASSWORD=${CONJUR_ADMIN_PASSWORD} \
-      DB_PASSWORD=${SAMPLE_APP_BACKEND_DB_PASSWORD} \
-      TEST_APP_NAMESPACE_NAME=${TEST_APP_NAMESPACE_NAME} \
-      TEST_APP_DATABASE=${TEST_APP_DATABASE} \
+      conjur_appliance_url='${CONJUR_APPLIANCE_URL}' \
+      CONJUR_ACCOUNT='${CONJUR_ACCOUNT}' \
+      CONJUR_ADMIN_PASSWORD='${CONJUR_ADMIN_PASSWORD}' \
+      DB_PASSWORD='${SAMPLE_APP_BACKEND_DB_PASSWORD}' \
+      TEST_APP_NAMESPACE_NAME='${TEST_APP_NAMESPACE_NAME}' \
+      TEST_APP_DATABASE='${TEST_APP_DATABASE}' \
       /policy/load_policies.sh
     "
 else
@@ -129,22 +129,22 @@ else
 
   announce "Loading Conjur policy."
 
-  $cli exec "$conjur_cli_pod" -- rm -rf /policy
-  $cli cp ./policy "$conjur_cli_pod:/policy"
+  "$cli" exec "$conjur_cli_pod" -- rm -rf /policy
+  "$cli" cp ./policy "$conjur_cli_pod:/policy"
 
   wait_for_it 300 "$cli exec $conjur_cli_pod -- \
     bash -c \"
-      conjur_appliance_url=${CONJUR_APPLIANCE_URL}
-      CONJUR_ACCOUNT=${CONJUR_ACCOUNT} \
-      CONJUR_ADMIN_PASSWORD=${CONJUR_ADMIN_PASSWORD} \
-      DB_PASSWORD=${SAMPLE_APP_BACKEND_DB_PASSWORD} \
-      TEST_APP_NAMESPACE_NAME=${TEST_APP_NAMESPACE_NAME} \
-      TEST_APP_DATABASE=${TEST_APP_DATABASE} \
+      conjur_appliance_url='${CONJUR_APPLIANCE_URL}' \
+      CONJUR_ACCOUNT='${CONJUR_ACCOUNT}' \
+      CONJUR_ADMIN_PASSWORD='${CONJUR_ADMIN_PASSWORD}' \
+      DB_PASSWORD='${SAMPLE_APP_BACKEND_DB_PASSWORD}' \
+      TEST_APP_NAMESPACE_NAME='${TEST_APP_NAMESPACE_NAME}' \
+      TEST_APP_DATABASE='${TEST_APP_DATABASE}' \
       /policy/load_policies.sh
     \"
   "
 
-  $cli exec "$conjur_cli_pod" -- rm -rf ./policy
+  "$cli" exec "$conjur_cli_pod" -- rm -rf ./policy
 fi
 
 echo "Conjur policy loaded."

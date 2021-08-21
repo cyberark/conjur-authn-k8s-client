@@ -30,8 +30,8 @@ announce() {
 }
 
 platform_image_for_pull() {
-  local image=$1
-  local namespace=$2
+  local image="$1"
+  local namespace="$2"
   if [[ ${PLATFORM} = "openshift" ]]; then
     echo "${PULL_DOCKER_REGISTRY_PATH}/$namespace/$1:$namespace"
   elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
@@ -42,8 +42,8 @@ platform_image_for_pull() {
 }
 
 platform_image_for_push() {
-  local image=$1
-  local namespace=$2
+  local image="$1"
+  local namespace="$2"
   if [[ ${PLATFORM} = "openshift" ]]; then
     echo "${DOCKER_REGISTRY_PATH}/$namespace/$1:$namespace"
   elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
@@ -54,7 +54,7 @@ platform_image_for_push() {
 }
 
 has_namespace() {
-  if $cli get namespace  "$1" &>/dev/null; then
+  if "$cli" get namespace  "$1" &>/dev/null; then
     true
   else
     false
@@ -62,8 +62,8 @@ has_namespace() {
 }
 
 has_resource() {
-  local selector=$1
-  local num_matching_resources=$($cli get pods -n "$CONJUR_NAMESPACE_NAME" --selector $selector --no-headers 2>/dev/null | wc -l)
+  local selector="$1"
+  local num_matching_resources=$("$cli" get pods -n "$CONJUR_NAMESPACE_NAME" --selector "$selector" --no-headers 2>/dev/null | wc -l)
   if [ $num_matching_resources -gt 0 ]; then
     return 0
   else
@@ -72,15 +72,15 @@ has_resource() {
 }
 
 get_pod_name() {
-  local pod_identifier=$1
+  local pod_identifier="$1"
 
   # Query to get the pod name, ignoring temp "deploy" pods
-  pod_name=$($cli get pods | grep "$pod_identifier" | grep -v "deploy" | awk '{ print $1 }')
+  pod_name=$("$cli" get pods | grep "$pod_identifier" | grep -v "deploy" | awk '{ print $1 }')
   echo "$pod_name"
 }
 
 get_pods() {
-  $cli get pods --selector "$1" --no-headers | awk '{ print $1 }'
+  "$cli" get pods --selector "$1" --no-headers | awk '{ print $1 }'
 }
 
 get_master_pod_name() {
@@ -93,12 +93,12 @@ get_master_pod_name() {
 }
 
 get_conjur_cli_pod_name() {
-  pod_list=$($cli get pods -n "$CONJUR_NAMESPACE_NAME" --selector app=conjur-cli --no-headers | awk '{ print $1 }')
-  echo $pod_list | awk '{print $1}'
+  pod_list="$($cli get pods -n $CONJUR_NAMESPACE_NAME --selector app=conjur-cli --no-headers | awk '{ print $1 }')"
+  echo "$pod_list" | awk '{print $1}'
 }
 
 run_conjur_cmd_as_admin() {
-  local command=$(cat $@)
+  local command="$(cat $@)"
 
   conjur authn logout > /dev/null
   conjur authn login -u admin -p "$CONJUR_ADMIN_PASSWORD" > /dev/null
@@ -119,11 +119,11 @@ conjur_service_account() {
 
 set_namespace() {
   if [[ $# != 1 ]]; then
-    printf "Error in %s/%s - expecting 1 arg.\n" $(pwd) $0
+    printf "Error in %s/%s - expecting 1 arg.\n" "$(pwd)" "$0"
     exit -1
   fi
 
-  $cli config set-context $($cli config current-context) --namespace="$1" > /dev/null
+  "$cli" config set-context "$($cli config current-context)" --namespace="$1" > /dev/null
 }
 
 load_policy() {
@@ -138,7 +138,7 @@ rotate_host_api_key() {
   local host=$1
 
   run_conjur_cmd_as_admin <<CMD
-conjur host rotate_api_key -h $host
+conjur host rotate_api_key -h "$host"
 CMD
 }
 
@@ -171,7 +171,7 @@ function wait_for_it() {
 }
 
 function external_ip() {
-  local service=$1
+  local service="$1"
 
   echo "$($cli get svc $service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')"
 }
@@ -184,9 +184,9 @@ function deployment_status() {
 }
 
 function pods_ready() {
-  local app_label=$1
+  local app_label="$1"
 
-  $cli describe pod --selector "app=$app_label" | awk '/Ready/{if ($2 != "True") exit 1}'
+  "$cli" describe pod --selector "app=$app_label" | awk '/Ready/{if ($2 != "True") exit 1}'
 }
 
 function urlencode() {
@@ -209,34 +209,34 @@ function urlencode() {
 
 function dump_kubernetes_resources() {
   echo "Status of pods in namespace $TEST_APP_NAMESPACE_NAME:"
-  $cli get -n $TEST_APP_NAMESPACE_NAME pods
+  "$cli" get -n "$TEST_APP_NAMESPACE_NAME" pods
   echo "Display pods in namespace $TEST_APP_NAMESPACE_NAME:"
-  $cli get -n $TEST_APP_NAMESPACE_NAME pods -o yaml
+  "$cli" get -n "$TEST_APP_NAMESPACE_NAME" pods -o yaml
   echo "Describe pods in namespace $TEST_APP_NAMESPACE_NAME:"
-  $cli describe -n $TEST_APP_NAMESPACE_NAME pods
+  "$cli" describe -n "$TEST_APP_NAMESPACE_NAME" pods
   echo "Services:in namespace $TEST_APP_NAMESPACE_NAME:"
-  $cli get -n $TEST_APP_NAMESPACE_NAME svc
+  "$cli" get -n "$TEST_APP_NAMESPACE_NAME" svc
   echo "ServiceAccounts:in namespace $TEST_APP_NAMESPACE_NAME:"
-  $cli get -n $TEST_APP_NAMESPACE_NAME serviceaccounts
+  "$cli" get -n "$TEST_APP_NAMESPACE_NAME" serviceaccounts
   echo "Deployments in namespace $TEST_APP_NAMESPACE_NAME:"
-  $cli get -n $TEST_APP_NAMESPACE_NAME deployments
+  "$cli" get -n "$TEST_APP_NAMESPACE_NAME" deployments
   if [[ "$PLATFORM" == "openshift" ]]; then
     echo "DeploymentConfigs in namespace $TEST_APP_NAMESPACE_NAME:"
-    $cli get -n $TEST_APP_NAMESPACE_NAME deploymentconfigs
+    "$cli" get -n "$TEST_APP_NAMESPACE_NAME" deploymentconfigs
   fi
   echo "Roles in namespace $TEST_APP_NAMESPACE_NAME:"
-  $cli get -n $TEST_APP_NAMESPACE_NAME roles
+  "$cli" get -n "$TEST_APP_NAMESPACE_NAME" roles
   echo "RoleBindings in namespace $TEST_APP_NAMESPACE_NAME:"
-  $cli get -n $TEST_APP_NAMESPACE_NAME rolebindings
+  "$cli" get -n "$TEST_APP_NAMESPACE_NAME" rolebindings
   echo "ClusterRoles in the cluster:"
-  $cli get clusterroles
+  "$cli" get clusterroles
   echo "ClusterRoleBindings in the cluster:"
-  $cli get clusterrolebindings
+  "$cli" get clusterrolebindings
 }
 
 function dump_authentication_policy {
   announce "Authentication policy:"
-  cat policy/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml
+  cat "policy/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml"
 }
 
 function get_admin_password {
