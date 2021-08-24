@@ -83,19 +83,34 @@ pipeline {
     }
 
     stage('E2E Workflow Tests') {
-      parallel {
-        stage('Enterprise and test app deployed to GKE') {
+      stages {
+        stage('Update Helm dependencies') {
+          /*
+           * Helm dependency update is done before running E2E tests in parallel
+           * since this is not currently thread-safe (Helm chart downloads use
+           * a non-uniquely named 'tmpcharts' directory and fail if the directory
+           * already exists).
+           */
           steps {
-            sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke'
+            sh './bin/helm-dependency-update-in-docker'
           }
         }
-        stage('Enterprise deployed locally, test app deployed to GKE') {
-          steps {
-            sh '''
-              HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
-              echo "HOST_IP=${HOST_IP}"
-              cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins
-            '''
+        stage('Run E2E Tests') {
+          parallel {
+            stage('Enterprise and test app deployed to GKE') {
+              steps {
+                sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke'
+              }
+            }
+            stage('Enterprise deployed locally, test app deployed to GKE') {
+              steps {
+                sh '''
+                  HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
+                  echo "HOST_IP=${HOST_IP}"
+                  cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins
+                '''
+              }
+            }
           }
         }
       }

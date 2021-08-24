@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Runs a 'helm dependency update ...' to update Helm dependencies for all
+# charts listed in the 'HELM_CHARTS' variable below.
+# 
+set -e
+
+readonly REPO_ROOT="$(git rev-parse --show-toplevel)"
+readonly HELM_CHART_ROOT="$REPO_ROOT/helm"
+readonly HELM_CHARTS=("conjur-app-deploy/charts/app-secrets-provider-standalone")
+
+cd "$REPO_ROOT"
+
+helm repo add cyberark https://cyberark.github.io/helm-charts
+helm repo update
+
+for chart in "${HELM_CHARTS[@]}"; do
+  echo "Updating chart $HELM_CHART_ROOT/$chart"
+  helm dependency update --skip-refresh "$HELM_CHART_ROOT/$chart"
+done
