@@ -47,7 +47,9 @@ COPY --from=busybox /bin/mkdir /bin/mkdir
 COPY --from=busybox /bin/chmod /bin/chmod
 COPY --from=busybox /bin/cat /bin/cat
 
-RUN apk add -u shadow libc6-compat && \
+RUN apk update && \
+    apk upgrade libcrypto1.1 && \
+    apk add -u shadow libc6-compat && \
     # Add Limited user
     groupadd -r authenticator \
              -g 777 && \

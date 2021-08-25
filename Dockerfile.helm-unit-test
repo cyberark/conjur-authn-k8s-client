@@ -2,6 +2,9 @@
 
 FROM alpine:3.14 as conjur-k8s-helm-unit-test
 
+RUN apk update && \
+    apk upgrade libcrypto1.1
+
 # Install packages for installing Helm and Helm unittest plugin
 RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl
 
