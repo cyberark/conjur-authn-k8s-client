@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Security
+- Upgrades Openssl in Alpine to resolve CVE-2021-3711.
+  [cyberark/conjur-authn-k8s-client#392](https://github.com/cyberark/conjur-authn-k8s-client/issues/392)
 - Upgrades Alpine to v3.14 to resolve CVE-2021-36159.
   [cyberark/conjur-authn-k8s-client#374](https://github.com/cyberark/conjur-authn-k8s-client/issues/374)
 

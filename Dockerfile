@@ -69,6 +69,9 @@ RUN apk add -u shadow libc6-compat && \
     chmod 770 /etc/conjur/ssl \
               /run/conjur
 
+# Ensure openssl development libraries are always up to date
+RUN apk add --no-cache openssl-dev
+
 USER authenticator
 
 VOLUME /run/conjur
@@ -127,7 +130,7 @@ LABEL description="The authentication client required to expose secrets from a C
 FROM alpine:3.14 as k8s-cluster-test
 
 # Install packages for testing
-RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl
+RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl-dev
 
 # Install bats-core in /usr/local
 RUN curl -#L https://github.com/bats-core/bats-core/archive/master.zip | unzip - && \
