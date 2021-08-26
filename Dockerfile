@@ -130,7 +130,7 @@ LABEL description="The authentication client required to expose secrets from a C
 FROM alpine:3.14 as k8s-cluster-test
 
 # Install packages for testing
-RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl-dev
+RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl openssl-dev
 
 # Install bats-core in /usr/local
 RUN curl -#L https://github.com/bats-core/bats-core/archive/master.zip | unzip - && \
