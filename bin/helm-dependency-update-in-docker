@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+# Run from the repository root regardless of from where this script is invoked.
+readonly REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+echo "Building Helm utility image..."
+docker build -f Dockerfile.helm-unit-test -t conjur-k8s-helm-dependency-update:dev .
+
+echo "Updating Helm dependencies..."
+docker run --rm \
+  -v "$REPO_ROOT:/conjur-authn-k8s-client" \
+  --entrypoint "/conjur-authn-k8s-client/bin/helm-dependency-update" \
+  conjur-k8s-helm-dependency-update:dev

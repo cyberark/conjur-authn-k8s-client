@@ -53,7 +53,14 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     # make sure that the Secrets Provider Helm chart has been downloaded as a
     # dependency for that application's subchart.
     if [ "$app" = "secrets-provider-standalone" ]; then
-      helm dependency update charts/app-secrets-provider-standalone
+      pushd charts/app-secrets-provider-standalone > /dev/null
+        if ! ls charts/*.tgz 1>/dev/null 2>&1; then
+          announce "Downloading Secrets Provider Helm chart"
+          helm repo add cyberark https://cyberark.github.io/helm-charts
+          helm repo update
+          helm dependency update . --skip-refresh
+        fi
+      popd
     fi
     options_string+="${app_options[$app]} "
   done
