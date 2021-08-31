@@ -61,6 +61,7 @@ ensure_conjur_cli_initialized() {
 
 pushd policy > /dev/null
   mkdir -p ./generated > /dev/null
+  chmod 777 ./generated || true
 
   # NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
 

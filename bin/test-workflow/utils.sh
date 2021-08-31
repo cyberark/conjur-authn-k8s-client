@@ -254,11 +254,28 @@ function split_on_comma_delimiter {
   echo "${array[@]}"
 }
 
-function run_command_with_platform {
-  GCLOUD_INCLUDES=""
-  if [[ ! -z "${GCLOUD_SERVICE_KEY}" ]]; then
-    GCLOUD_INCLUDES="-v$GCLOUD_SERVICE_KEY:/tmp$GCLOUD_SERVICE_KEY"
+function uninstall_helm_release {
+  release_name=i"$1"
+  namespace="$2"
+
+  if [ "$(helm list -q -n "$namespace" | grep "^$release_name$")" = "$release_name" ]; then
+    helm uninstall "$release_name" -n "$namespace"
   fi
+}
+
+function run_command_with_platform {
+
+  GCLOUD_INCLUDES="-i"
+  if [[ "$PLATFORM" == "openshift" ]]; then
+    GCLOUD_CLUSTER_NAME="gke"
+    GCLOUD_ZONE="gke"
+    GCLOUD_PROJECT_NAME="gke"
+  else
+    if [[ ! -z "${GCLOUD_SERVICE_KEY}" ]]; then
+      GCLOUD_INCLUDES="-v$GCLOUD_SERVICE_KEY:/tmp$GCLOUD_SERVICE_KEY"
+    fi
+  fi
+
   docker run --rm \
     -i \
     -e CONJUR_OSS_HELM_INSTALLED \
@@ -285,6 +302,7 @@ function run_command_with_platform {
     -e CONJUR_APPLIANCE_IMAGE \
     -e CONJUR_FOLLOWER_URL \
     -e DEPLOY_MASTER_CLUSTER \
+    -e HELM_RELEASE \
     -e GCLOUD_CLUSTER_NAME \
     -e GCLOUD_ZONE \
     -e GCLOUD_PROJECT_NAME \

@@ -93,11 +93,11 @@ spec:
       {{- if eq .Values.app.platform "kubernetes" }}
       imagePullSecrets:
         - name: dockerpullsecret
-      {{- end }}
       securityContext:
         fsGroup: 65534
         runAsGroup: 65534
         runAsUser: 65534
+      {{- end }}
       volumes:
         - name: conjur-access-token
           emptyDir:

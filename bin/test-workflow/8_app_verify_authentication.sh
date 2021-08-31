@@ -23,8 +23,6 @@ function finish {
 
   readonly PIDS=(
     "SIDECAR_PORT_FORWARD_PID"
-    "INIT_PORT_FORWARD_PID"
-    "INIT_WITH_HOST_OUTSIDE_APPS_PORT_FORWARD_PID"
     "SECRETLESS_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_STANDALONE_PID"
     "SECRETS_PROVIDER_INIT_PORT_FORWARD_PID"
@@ -80,8 +78,6 @@ echo "Waiting for pods to become available"
 
 if [[ "$PLATFORM" == "openshift" ]]; then
   sidecar_pod=$(get_pod_name test-app-summon-sidecar)
-  init_pod=$(get_pod_name test-app-summon-init)
-  init_pod_with_host_outside_apps=$(get_pod_name test-app-with-host-outside-apps-branch-summon-init)
   secretless_pod=$(get_pod_name test-app-secretless)
   secrets_provider_standalone_pod=$(get_pod_name test-app-secrets-provider-standalone)
   secrets_provider_init_pod=$(get_pod_name test-app-secrets-provider-init)
@@ -89,29 +85,21 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   # Routes are defined, but we need to do port-mapping to access them
   oc port-forward "$sidecar_pod" 8081:8080 > /dev/null 2>&1 &
   SIDECAR_PORT_FORWARD_PID=$!
-  oc port-forward "$init_pod" 8082:8080 > /dev/null 2>&1 &
-  INIT_PORT_FORWARD_PID=$!
   oc port-forward "$secretless_pod" 8083:8080 > /dev/null 2>&1 &
   SECRETLESS_PORT_FORWARD_PID=$!
   oc port-forward "$secrets_provider_standalone_pod" 8084:8080 > /dev/null 2>&1 &
   SECRETS_PROVIDER_STANDALONE_PID=$!
-  oc port-forward "$init_pod_with_host_outside_apps" 8085:8080 > /dev/null 2>&1 &
-  INIT_WITH_HOST_OUTSIDE_APPS_PORT_FORWARD_PID=$!
   oc port-forward "$secrets_provider_init_pod" 8086:8080 > /dev/null 2>&1 &
   SECRETS_PROVIDER_INIT_PORT_FORWARD_PID=$!
 
   curl_cmd=curl
   sidecar_url="localhost:8081"
-  init_url="localhost:8082"
   secretless_url="localhost:8083"
   secrets_provider_standalone_url="localhost:8084"
-  init_url_with_host_outside_apps="localhost:8085"
   secrets_provider_init_url="localhost:8086"
 else
   # Test by curling from a pod that is inside the KinD cluster.
   curl_cmd=pod_curl
-  init_url="test-app-summon-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
-  init_url_with_host_outside_apps="test-app-with-host-outside-apps-branch-summon-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   sidecar_url="test-app-summon-sidecar.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secretless_url="test-app-secretless-broker.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secrets_provider_standalone_url="test-app-secrets-provider-standalone.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"

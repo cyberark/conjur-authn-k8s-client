@@ -66,5 +66,11 @@ if [[ "$PLATFORM" == "openshift" ]]; then
 fi
 
 echo "helm" "${args[@]}"
-helm "${args[@]}"
-
+ret_val=0
+helm "${args[@]}" || ret_val=$?
+if [[ "$ret_val" != 0 ]]; then
+  announce "checking stateful set test-app-backend"
+  $cli version
+  $cli get statefulset -n "$TEST_APP_NAMESPACE_NAME"
+  $cli describe statefulset test-app-backend -n "$TEST_APP_NAMESPACE_NAME"
+fi
