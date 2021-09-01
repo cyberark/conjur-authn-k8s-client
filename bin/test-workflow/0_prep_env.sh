@@ -6,9 +6,9 @@ set -o pipefail
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
 export UNIQUE_TEST_ID="$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)"
 
-# PLATFORM is used to differentiate between general Kubernetes platforms (K8s vs. oc), while
-# CONJUR_PLATFORM is used to differentiate between sub-platforms (for vanilla K8s, KinD vs. GKE) for the Conjur deployment
-# APP_PLATFORM serves the same purpose as CONJUR_PLATFORM, but for the test app deployment
+# PLATFORM is used to differentiate between general Kubernetes platforms (kubernetes, openshift), while
+# CONJUR_PLATFORM is used to differentiate between sub-platforms (kind, gke, jenkins, openshift) for the Conjur deployment
+# APP_PLATFORM serves the same purpose as CONJUR_PLATFORM, but for the test app deployment (kind, gke, openshift)
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   CONJUR_PLATFORM="${CONJUR_PLATFORM:-kind}"
 else
@@ -16,20 +16,27 @@ else
 fi
 export CONJUR_PLATFORM
 
-if [[ "$CONJUR_PLATFORM" == "oc" ]]; then
-  PLATFORM="openshift"
+if [[ "$CONJUR_PLATFORM" == "openshift" ]]; then
+  PLATFORM="${PLATFORM:-openshift}"
 else
-  PLATFORM="kubernetes"
+  PLATFORM="${PLATFORM:-kubernetes}"
 fi
 export PLATFORM
+
 if [[ "$CONJUR_PLATFORM" == "kind" ]]; then
-    RUN_CLIENT_CONTAINER="false"
+  RUN_CLIENT_CONTAINER="false"
+else
+  RUN_CLIENT_CONTAINER="true"
 fi
 
-if [[ "$CONJUR_PLATFORM" != "jenkins" ]]; then
-  APP_PLATFORM="$CONJUR_PLATFORM"
-else
-  APP_PLATFORM="gke"
+if [[ "$CONJUR_PLATFORM" != "kind" ]]; then
+  if [[ "$CONJUR_PLATFORM" != "jenkins" ]]; then
+    APP_PLATFORM="$CONJUR_PLATFORM"
+  elif [[ "$PLATFORM" == "kubernetes" ]]; then
+    APP_PLATFORM="gke"
+  elif [[ "$PLATFORM" == "openshift" ]]; then
+    APP_PLATFORM="openshift"
+  fi
 fi
 export APP_PLATFORM
 
@@ -39,6 +46,7 @@ export DOCKER_REGISTRY_URL="${DOCKER_REGISTRY_URL:-localhost:5000}"
 export DOCKER_REGISTRY_PATH="${DOCKER_REGISTRY_PATH:-localhost:5000}"
 export PULL_DOCKER_REGISTRY_URL="${PULL_DOCKER_REGISTRY_URL:-${DOCKER_REGISTRY_URL}}"
 export PULL_DOCKER_REGISTRY_PATH="${PULL_DOCKER_REGISTRY_PATH:-${DOCKER_REGISTRY_PATH}}"
+export PLATFORM_CONTAINER="platform-container"
 
 ### CONJUR AND TEST APP CONFIG
 export CONJUR_ACCOUNT="${CONJUR_ACCOUNT:-myConjurAccount}"
@@ -99,8 +107,6 @@ elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
 fi
 
 if [[ "$RUN_CLIENT_CONTAINER" == "true" ]]; then
-  export PLATFORM_CONTAINER="platform-container"
-
   docker build --tag "$PLATFORM_CONTAINER:$CONJUR_NAMESPACE_NAME" \
       --file Dockerfile \
       --build-arg KUBECTL_VERSION="$KUBECTL_VERSION" \

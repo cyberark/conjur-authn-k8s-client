@@ -68,7 +68,9 @@ pushd policy > /dev/null
   if [[ "$PLATFORM" == "openshift" ]]; then
     is_openshift=true
     is_kubernetes=false
-    oc adm policy add-scc-to-user anyuid system:serviceaccount:$CONJUR_NAMESPACE_NAME:conjur-oss
+    if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+      oc adm policy add-scc-to-user anyuid system:serviceaccount:$CONJUR_NAMESPACE_NAME:conjur-oss
+    fi
   else
     is_openshift=false
     is_kubernetes=true

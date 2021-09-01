@@ -59,14 +59,9 @@ CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn
 
 function setup_conjur_open_source {
   pushd temp > /dev/null
+    git clone --single-branch --branch main https://github.com/cyberark/conjur-oss-helm-chart.git "conjur-oss-helm-chart-$UNIQUE_TEST_ID"
 
-    if [ -d "conjur-oss-helm-chart" ]; then
-      rm -rf conjur-oss-helm-chart
-    fi
-
-    git clone https://github.com/cyberark/conjur-oss-helm-chart.git
-
-    pushd conjur-oss-helm-chart/examples/common > /dev/null
+    pushd "conjur-oss-helm-chart-$UNIQUE_TEST_ID/examples/common" > /dev/null
       source ./utils.sh
 
       announce "Setting demo environment variable defaults"
@@ -91,8 +86,6 @@ function setup_conjur_open_source {
       announce "Enabling the Conjur Kubernetes authenticator if necessary"
       ./4_ensure_authn_k8s_enabled.sh
     popd > /dev/null
-
-    rm -rf conjur-oss-helm-chart
   popd > /dev/null
 }
 

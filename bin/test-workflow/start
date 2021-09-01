@@ -18,7 +18,7 @@ Usage: ./start [options]:
     -p, --platform <pform>    Platform on which to deploy Conjur
                               For Open Source workflow:
                                 - Defaults to 'kind'
-                                - Supports 'oc'
+                                - Supports 'openshift'
                               For Enterprise workflow:
                                 - Defaults to 'gke'
                                 - Supports 'jenkins'
@@ -105,9 +105,9 @@ export RUN_CLIENT_CONTAINER="${RUN_CLIENT_CONTAINER:-true}"
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   if [[ -z "$CONJUR_PLATFORM" ]]; then
     CONJUR_PLATFORM="kind"
-  elif [[ "$CONJUR_PLATFORM" != "kind" && "$CONJUR_PLATFORM" != "oc" ]]; then
+  elif [[ "$CONJUR_PLATFORM" != "kind" && "$CONJUR_PLATFORM" != "openshift" ]]; then
     echo "Conjur Open Source workflow not compatible with platform \"$CONJUR_PLATFORM\""
-    echo "Workflow currently only compatible with \"kind\" or \"oc\""
+    echo "Workflow currently only compatible with \"kind\" or \"openshift\""
     exit
   fi
 else
@@ -123,7 +123,7 @@ fi
 if [[ -z "$APP_PLATFORM" ]]; then
   APP_PLATFORM="$CONJUR_PLATFORM"
   if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
-    APP_PLATFORM="gke"
+    APP_PLATFORM="openshift"
   fi
 fi
 
@@ -149,14 +149,14 @@ test_app_workflow="
 ./8_app_verify_authentication.sh"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-  if [[ "$CONJUR_PLATFORM" == "oc" && "$RUN_CLIENT_CONTAINER" == "true" ]]; then
+  if [[ "$CONJUR_PLATFORM" == "openshift" && "$RUN_CLIENT_CONTAINER" == "true" ]]; then
     source "./0_prep_env.sh"
     run_command_with_platform "./1_deploy_conjur.sh"
     run_command_with_platform "$conjur_prep"
     run_command_with_platform "$cluster_prep"
     run_command_with_platform "$test_app_workflow"
   else
-    if [[ "$CONJUR_PLATFORM" == "oc" ]]; then
+    if [[ "$CONJUR_PLATFORM" == "openshift" ]]; then
       ./platform_login.sh
     fi
     eval "$conjur_init"
@@ -169,7 +169,7 @@ elif [[ "$CONJUR_PLATFORM" == "gke" ]]; then
   run_command_with_platform "$conjur_prep"
   run_command_with_platform "$cluster_prep"
   run_command_with_platform "$test_app_workflow"
-elif [[ "$CONJUR_PLATFORM" == "jenkins" && "$APP_PLATFORM" == "gke" ]]; then
+elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
   eval "$conjur_init"
   eval "$conjur_prep"
   run_command_with_platform "$cluster_prep"

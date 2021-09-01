@@ -266,14 +266,14 @@ function uninstall_helm_release {
 function run_command_with_platform {
 
   GCLOUD_INCLUDES="-i"
-  if [[ "$PLATFORM" == "openshift" ]]; then
-    GCLOUD_CLUSTER_NAME="gke"
-    GCLOUD_ZONE="gke"
-    GCLOUD_PROJECT_NAME="gke"
-  else
+  if [[ "$CONJUR_PLATFORM" == "gke" || "$APP_PLATFORM" == "gke" ]]; then
     if [[ ! -z "${GCLOUD_SERVICE_KEY}" ]]; then
       GCLOUD_INCLUDES="-v$GCLOUD_SERVICE_KEY:/tmp$GCLOUD_SERVICE_KEY"
     fi
+  else
+    GCLOUD_CLUSTER_NAME="gke"
+    GCLOUD_ZONE="gke"
+    GCLOUD_PROJECT_NAME="gke"
   fi
 
   docker run --rm \
