@@ -1,6 +1,33 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+
+function log_k8s() {
+  echo "BEGIN DEBUGGING PODS"
+  pods=$($cli get pods --namespace=$TEST_APP_NAMESPACE_NAME -o json | jq -r ".items[].metadata.name")
+
+  while true
+  do
+    echo "LISTING DEPLOYMENTS"
+    $cli get deployments -n "$TEST_APP_NAMESPACE_NAME"
+    $cli get pods -n "$TEST_APP_NAMESPACE_NAME"
+
+    echo "LISTING EVENTS"
+    $cli get events -n "$TEST_APP_NAMESPACE_NAME"
+
+    echo "BEGIN LOGGING PODS AND CONTAINERS"
+    for p in $pods; do
+      echo "DESCRIBING POD $p"
+      $cli describe pod $p
+      echo "LOGGING POD $p"
+      $cli logs $p --prefix=true --all-containers -n "$TEST_APP_NAMESPACE_NAME"
+      sleep 1
+    done
+    echo "Sleeping 30s"
+    sleep 30
+  done
+}
+
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
 TIMEOUT="${TIMEOUT:-5m0s}"
@@ -66,6 +93,9 @@ pushd ../../helm/conjur-app-deploy > /dev/null
   done
 
   announce "Deploying test apps in $TEST_APP_NAMESPACE_NAME"
+
+  log_k8s &
+
   helm install test-apps . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
     --render-subchart-notes \
     --set global.conjur.conjurConnConfigMap="conjur-connect" \
