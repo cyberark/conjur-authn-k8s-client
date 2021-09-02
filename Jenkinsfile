@@ -12,6 +12,13 @@ pipeline {
     cron(getDailyCronString())
   }
 
+  parameters { 
+    booleanParam(
+      name: 'TEST_OCP_NEXT',
+      description: 'Whether or not to run the pipeline against the next OCP version',
+      defaultValue: true) 
+  }
+
   stages {
     stage('Validate') {
       parallel {
@@ -96,28 +103,40 @@ pipeline {
           }
         }
         stage('Openshift E2E Workflow Tests') {
-          steps {
-            sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform oc'
-          }
-        }
-        stage('Run E2E Tests') {
           parallel {
-            stage('Enterprise and test app deployed to GKE') {
+            stage('OpenShift v(current)') {
               steps {
-                sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke'
+                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform oc'
               }
             }
-            stage('Enterprise deployed locally, test app deployed to GKE') {
+            stage('OpenShift v(next)') {
+              when {
+                expression { params.TEST_OCP_NEXT }
+              }
               steps {
-                sh '''
-                  HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
-                  echo "HOST_IP=${HOST_IP}"
-                  cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins
-                '''
+                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform oc'
               }
             }
           }
         }
+        // stage('Run E2E Tests') {
+        //   parallel {
+        //     stage('Enterprise and test app deployed to GKE') {
+        //       steps {
+        //         sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke'
+        //       }
+        //     }
+        //     stage('Enterprise deployed locally, test app deployed to GKE') {
+        //       steps {
+        //         sh '''
+        //           HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
+        //           echo "HOST_IP=${HOST_IP}"
+        //           cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins
+        //         '''
+        //       }
+        //     }
+        //   }
+        // }
       }
     }
 
