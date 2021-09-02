@@ -17,7 +17,7 @@ app:
 
 secretless:
   image:
-    repository: "cyberark/secretless-broker"
+    repository: "docker.io/cyberark/secretless-broker"
     tag: "latest"
     # supported values: "Always", "IfNotPresent", "Never"
     pullPolicy: "Always"

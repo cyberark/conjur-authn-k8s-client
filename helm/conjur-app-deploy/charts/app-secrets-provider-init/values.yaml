@@ -17,7 +17,7 @@ app:
 
 secretsProvider:
   image:
-    repository: "cyberark/secrets-provider-for-k8s"
+    repository: "docker.io/cyberark/secrets-provider-for-k8s"
     tag: "latest"
     # supported values: "Always", "IfNotPresent", "Never"
     pullPolicy: "Always"
