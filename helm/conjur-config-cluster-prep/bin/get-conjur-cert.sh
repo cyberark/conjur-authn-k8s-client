@@ -21,10 +21,11 @@ set -euo pipefail
 user_dir=$(pwd)
 cd "$(dirname "$0")"
 
-# Default destination filepath for certificate file and default test
-# deployment name for openssl testing.
+# Default destination filepath for certificate file, default test deployment
+# name for openssl testing, and default test container image tag.
 DEFAULT_FILEPATH="../files/conjur-cert.pem"
 DEFAULT_TEST_DEPLOYMENT="openssl-test"
+DEFAULT_TEST_IMAGE_TAG="edge"
 
 # Keep track if we created an openssl test deployment. If we created one,
 # we should clean it up when done.
@@ -51,6 +52,10 @@ print_usage() {
   echo "                                   cluster internal address."
   echo "    -s                             Display the fingerprint but skip prompting"
   echo "                                   the user to acknowledge it is trusted."
+  echo "    -t <test container tag>        Image tag to use for test container"
+  echo "                                   'cyberark/conjur-k8s-cluster-test'"
+  echo "                                   Defaults to 'edge' (built on latest"
+  echo "                                   merge to master branch)."
   echo "    -u <Conjur appliance URL>      Conjur appliance URL (required)."
   echo "    -v                             Verify the certificate."
 }
@@ -63,16 +68,18 @@ function main() {
   conjur_url=""
   skip_fingerprint_check=false
   verify=false
+  test_image_tag="$DEFAULT_TEST_IMAGE_TAG"
  
   # Process command line options
   local OPTIND
-  while getopts ':f:hid:su:v' flag; do
+  while getopts ':f:hid:st:u:v' flag; do
     case "${flag}" in
       f) filepath=${OPTARG} ;;
       h) print_usage; exit 0 ;;
       i) internal_addr=true ;;
       d) openssl_deployment=${OPTARG} ;;
       s) skip_fingerprint_check=true ;;
+      t) test_image_tag=${OPTARG} ;;
       u) conjur_url=${OPTARG} ;;
       v) verify=true ;;
       *) echo "Invalid argument -${OPTARG}" >&2; echo; print_usage ; exit 1;;
@@ -241,8 +248,9 @@ function ensure_openssl_pod_created() {
     existing_deployment="$(get_openssl_pod $openssl_deployment)"
     if [ -z "$existing_deployment" ]; then
         echo "Creating SSL deployment $openssl_deployment"
+        echo "Using image cyberark/conjur-k8s-cluster-test:$test_image_tag"
         kubectl create deployment "$openssl_deployment" \
-            --image cyberark/conjur-k8s-cluster-test:edge
+            --image cyberark/conjur-k8s-cluster-test:"$test_image_tag"
         # Remember that we need to clean up the deployment that we just created
         deployment_was_created=true
         # Wait for Pod to be ready

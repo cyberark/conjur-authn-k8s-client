@@ -23,6 +23,7 @@ fi
 
 function main {
   if [[ "$CONJUR_PLATFORM" == "gke" || "$APP_PLATFORM" == "gke" ]]; then
+    announce "Logging into GKE platform, cluster $GCLOUD_CLUSTER_NAME"
     gcloud auth activate-service-account \
       --key-file "$GCLOUD_SERVICE_KEY"
     gcloud container clusters get-credentials "$GCLOUD_CLUSTER_NAME" \
@@ -32,6 +33,7 @@ function main {
       -u oauth2accesstoken \
       -p "$(gcloud auth print-access-token)"
   elif [[ "$CONJUR_PLATFORM" == "oc" || "$APP_PLATFORM" == "oc" ]]; then
+    announce "Logging into OpenShift platform at $OPENSHIFT_URL"
     oc login "$OPENSHIFT_URL" \
       --username="$OPENSHIFT_USERNAME" \
       --password="$OPENSHIFT_PASSWORD" \

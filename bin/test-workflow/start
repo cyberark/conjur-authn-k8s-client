@@ -30,6 +30,10 @@ Usage: ./start [options]:
                                 - summon-sidecar
                                 - secretless-broker
                                 - secrets-provider-standalone
+    -t, --tag <test tag>      Image tag to use for test container
+                              'cyberark/conjur-k8s-cluster-test'. Defaults to
+                              'edge' (built on latest merge to master branch).
+                              Set to 'dev' to test with just-built image.
     -n, --nocleanup           Do not run the cleanup scripts, all resources are maintained.
                               All other selections are rejected
     -h, --help                Show the help message
@@ -44,7 +48,12 @@ function cleanup {
   fi
 }
 
-declare -a supported_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init")
+declare -a supported_apps=(
+  "summon-sidecar"
+  "secretless-broker"
+  "secrets-provider-standalone"
+  "secrets-provider-init"
+)
 # Default: Test all applications
 declare -a install_apps=("${supported_apps[@]}")
 
@@ -56,9 +65,9 @@ while true; do
         if [[ ! " ${supported_apps[@]} " =~ " $app " ]]; then
           echo "$app is not a supported test app!"
           echo "Supported test apps include:"
-          echo "  - summon-sidecar"
-          echo "  - secretless-broker"
-          echo "  - secrets-provider-init"
+          for s in ${supported_apps[@]}; do
+            echo "  - $s"
+          done
           exit 1
         fi
       done
@@ -72,6 +81,11 @@ while true; do
       ;;
     -p|--platform )
       CONJUR_PLATFORM="$2"
+      shift
+      shift
+      ;;
+    -t|--tag )
+      TEST_CLIENT_IMAGE_TAG="$2"
       shift
       shift
       ;;
@@ -101,6 +115,7 @@ export INSTALL_APPS=$(IFS=','; echo "${install_apps[*]}")
 
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
 export RUN_CLIENT_CONTAINER="${RUN_CLIENT_CONTAINER:-true}"
+export TEST_CLIENT_IMAGE_TAG="${TEST_CLIENT_IMAGE_TAG:-edge}"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   if [[ -z "$CONJUR_PLATFORM" ]]; then
@@ -149,8 +164,8 @@ test_app_workflow="
 ./8_app_verify_authentication.sh"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-  if [[ "$CONJUR_PLATFORM" == "oc" && "$RUN_CLIENT_CONTAINER" == "true" ]]; then
-    source "./0_prep_env.sh"
+  source "./0_prep_env.sh"
+  if [[ "$RUN_CLIENT_CONTAINER" == "true" ]]; then
     run_command_with_platform "./1_deploy_conjur.sh"
     run_command_with_platform "$conjur_prep"
     run_command_with_platform "$cluster_prep"
@@ -159,6 +174,7 @@ if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
     if [[ "$CONJUR_PLATFORM" == "oc" ]]; then
       ./platform_login.sh
     fi
+    ./1_deploy_conjur.sh
     eval "$conjur_init"
     eval "$conjur_prep"
     eval "$cluster_prep"

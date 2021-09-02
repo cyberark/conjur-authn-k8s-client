@@ -7,9 +7,8 @@ REDHAT_IMAGE='scan.connect.redhat.com/ospid-1c46a2de-1d88-40e6-a433-7114ad0099cb
 readonly REGISTRY="cyberark"
 
 if [[ $1 = "--edge" ]]; then
-    tag=edge
-    push_conjur-k8s-cluster-test
-    exit 0
+  push_conjur-k8s-cluster-test "edge"
+  exit 0
 fi
 
 # We take the version from the TAG_NAME variable - removing the "v" prefix
@@ -58,6 +57,5 @@ else
 fi
 
 for tag in "${TAGS[@]}" $(gen_versions "$VERSION"); do
-    push_conjur-k8s-cluster-test
+  push_conjur-k8s-cluster-test "$tag"
 done
-
