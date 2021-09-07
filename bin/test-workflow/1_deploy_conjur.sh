@@ -17,17 +17,17 @@ function setup_conjur_enterprise {
     check_env_var GCLOUD_CLUSTER_NAME
     check_env_var GCLOUD_SERVICE_KEY
 
-    pushd temp > /dev/null
+    pushd "$UNIQUE_TEST_DIR" > /dev/null
       git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy "kubernetes-conjur-deploy-$UNIQUE_TEST_ID"
     popd > /dev/null
 
-    run_command_with_platform "cd temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
+    run_command_with_platform "cd $UNIQUE_TEST_DIR/kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
 
   # deploy Conjur locally
   elif [[ "${CONJUR_PLATFORM}" == "jenkins" ]]; then
     check_env_var HOST_IP
 
-    pushd temp > /dev/null
+    pushd "$UNIQUE_TEST_DIR" > /dev/null
       # TODO - once these changes are merged, this branch has to be updated to main
       git clone --single-branch --branch custom-port-follower git@github.com:conjurdemos/conjur-intro.git "conjur-intro-$UNIQUE_TEST_ID"
 
@@ -58,7 +58,7 @@ CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn
 }
 
 function setup_conjur_open_source {
-  pushd temp > /dev/null
+  pushd "$UNIQUE_TEST_DIR" > /dev/null
 
     if [ -d "conjur-oss-helm-chart" ]; then
       rm -rf conjur-oss-helm-chart
@@ -96,7 +96,8 @@ function setup_conjur_open_source {
   popd > /dev/null
 }
 
-mkdir -p temp
+echo "QQQ $UNIQUE_TEST_DIR | $UNIQUE_TEST_ID"
+mkdir -p "$UNIQUE_TEST_DIR"
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   setup_conjur_open_source
 else

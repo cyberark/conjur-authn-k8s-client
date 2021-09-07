@@ -5,6 +5,7 @@ set -o pipefail
 ### PLATFORM DETAILS
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
 export UNIQUE_TEST_ID="$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)"
+export UNIQUE_TEST_DIR="temp-$UNIQUE_TEST_ID"
 
 # PLATFORM is used to differentiate between general Kubernetes platforms (K8s vs. oc), while
 # CONJUR_PLATFORM is used to differentiate between sub-platforms (for vanilla K8s, KinD vs. GKE) for the Conjur deployment
@@ -107,3 +108,5 @@ if [[ "$RUN_CLIENT_CONTAINER" == "true" ]]; then
       --build-arg OPENSHIFT_CLI_URL="$OPENSHIFT_CLI_URL" \
       .
 fi
+
+echo "ZZZ $UNIQUE_TEST_DIR | $UNIQUE_TEST_ID"

@@ -3,7 +3,7 @@
 
 test
 
-temp
+temp*
 
 helm/conjur-config-cluster-prep/files/conjur-cert.pem
 helm/conjur-app-deploy/charts/app-secrets-provider-standalone/Chart.lock

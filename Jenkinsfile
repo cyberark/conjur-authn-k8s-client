@@ -104,11 +104,11 @@ pipeline {
         }
         stage('Openshift E2E Workflow Tests') {
           parallel {
-            // stage('OpenShift v(current)') {
-            //   steps {
-            //     sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform oc'
-            //   }
-            // }
+            stage('OpenShift v(current)') {
+              steps {
+                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform oc'
+              }
+            }
             stage('OpenShift v(next)') {
               when {
                 expression { params.TEST_OCP_NEXT }

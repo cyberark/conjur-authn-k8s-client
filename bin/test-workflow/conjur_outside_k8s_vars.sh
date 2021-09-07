@@ -24,7 +24,7 @@ echo -n \
 run_command_with_platform "$cli get secret -n \"\$CONJUR_NAMESPACE_NAME\" $(cat kubernetes/token-name) -o json | jq -r '.data[\"ca.crt\"]' | base64 --decode >> kubernetes/api-ca.pem"
 
 # conjur variable values add conjur/authn-k8s/<authenticator>/kubernetes/<var> "<value>"
-docker-compose -f "temp/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml" \
+docker-compose -f "$UNIQUE_TEST_DIR/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml" \
   run --rm \
   -v "${PWD}/kubernetes":/k8s-resources \
   -w /src/cli \
