@@ -95,24 +95,37 @@ pipeline {
             sh './bin/helm-dependency-update-in-docker'
           }
         }
-        stage('Openshift E2E Workflow Tests') {
-          steps {
-            sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform oc'
-          }
-        }
-        stage('Run E2E Tests') {
+        stage('Test app with') {
           parallel {
-            stage('Enterprise and test app deployed to GKE') {
+            stage('Enterprise in GKE') {
               steps {
                 sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke'
               }
             }
-            stage('Enterprise deployed locally, test app deployed to GKE') {
+            stage('OSS in OpenShift') {
+              steps {
+                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift'
+              }
+            }
+          }
+        }
+        stage('Enterprise in Jenkins') {
+          stages {
+            stage('Test app in GKE') {
               steps {
                 sh '''
                   HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
                   echo "HOST_IP=${HOST_IP}"
                   cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins
+                '''
+              }
+            }
+            stage('Test app in OpenShift') {
+              steps {
+                sh '''
+                  HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
+                  echo "HOST_IP=${HOST_IP}"
+                  cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins
                 '''
               }
             }
@@ -125,9 +138,10 @@ pipeline {
       parallel {
         stage('On a master build') {
           when { branch 'master' }
-            steps {
-              sh 'summon ./bin/publish --edge'
-            }
+
+          steps {
+            sh 'summon ./bin/publish --edge'
+          }
         }
         stage('On a new tag') {
           when { tag "v*" }

@@ -71,8 +71,8 @@ function main() {
     echo "Openshift"
     echo "Running" "${cmd}"
     # some scripts need these set
-    export CONJUR_PLATFORM="oc"
-    export APP_PLATFORM="oc"
+    export CONJUR_PLATFORM="openshift"
+    export APP_PLATFORM="openshift"
     export RUN_CLIENT_CONTAINER="$local_container"
     summon -e openshift -D ENV=$env -D VER=$openshift_version \
         sh -c "${cmd}"

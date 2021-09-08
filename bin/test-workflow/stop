@@ -8,31 +8,49 @@ check_env_var RUN_CLIENT_CONTAINER
 if [[ "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
   if [[ "$RUN_CLIENT_CONTAINER" == "true" ]]; then
     run_command_with_platform "
-    ./cleanup_helm.sh
-    ./cleanup_namespaces.sh
-    rm -rf temp
+      ./cleanup_helm.sh
+      ./cleanup_namespaces.sh
+
+      if [[ '$PLATFORM' == 'openshift' ]]; then
+        oc logout
+      fi
+
+      rm -rf 'temp/conjur-oss-helm-chart-$UNIQUE_TEST_ID'
     "
   else 
     ./cleanup_helm.sh
     ./cleanup_namespaces.sh
+    rm -rf "temp/conjur-oss-helm-chart-$UNIQUE_TEST_ID"
   fi
+
 elif [[ "$CONJUR_PLATFORM" == "gke" ]]; then
   run_command_with_platform "
     ./cleanup_helm.sh
-    pushd temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./stop && popd
+
+    pushd 'temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID'
+      ./stop
+    popd
+
     ./cleanup_namespaces.sh
   "
-  rm -rf temp/kubernetes-conjur-deploy-"$UNIQUE_TEST_ID"
+
+  rm -rf "temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID"
 
 elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
-  pushd temp/conjur-intro-"$UNIQUE_TEST_ID" > /dev/null
+  pushd "temp/conjur-intro-$UNIQUE_TEST_ID" > /dev/null
     ./bin/dap --stop
+    docker run --rm -w /dap-intro -v "$(pwd):/dap-intro" alpine ash -c "rm -rf system"
   popd > /dev/null
-  rm -rf temp/conjur-intro-"$UNIQUE_TEST_ID"
 
   run_command_with_platform "
     ./cleanup_helm.sh
     ./cleanup_namespaces.sh
+
+    if [[ '$PLATFORM' == 'openshift' ]]; then
+      oc logout
+    fi
   "
+
+  rm -rf "temp/conjur-intro-$UNIQUE_TEST_ID"
 
 fi

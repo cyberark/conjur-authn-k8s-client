@@ -12,7 +12,7 @@ if [[ "$CONJUR_PLATFORM" == "gke" || "$APP_PLATFORM" == "gke" ]]; then
   check_env_var GCLOUD_PROJECT_NAME
 fi
 
-if [[ "$CONJUR_PLATFORM" == "oc" || "$APP_PLATFORM" == "oc" ]]; then
+if [[ "$CONJUR_PLATFORM" == "openshift" || "$APP_PLATFORM" == "openshift" ]]; then
   check_env_var CONJUR_PLATFORM
   check_env_var APP_PLATFORM
   check_env_var OPENSHIFT_URL
@@ -31,7 +31,7 @@ function main {
     docker login "$DOCKER_REGISTRY_URL" \
       -u oauth2accesstoken \
       -p "$(gcloud auth print-access-token)"
-  elif [[ "$CONJUR_PLATFORM" == "oc" || "$APP_PLATFORM" == "oc" ]]; then
+  elif [[ "$CONJUR_PLATFORM" == "openshift" || "$APP_PLATFORM" == "openshift" ]]; then
     oc login "$OPENSHIFT_URL" \
       --username="$OPENSHIFT_USERNAME" \
       --password="$OPENSHIFT_PASSWORD" \
