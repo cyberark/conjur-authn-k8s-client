@@ -4,8 +4,10 @@ set -euo pipefail
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
 TIMEOUT="${TIMEOUT:-5m0s}"
+TEST_CLIENT_IMAGE_TAG="${TEST_CLIENT_IMAGE_TAG:-edge}"
 
 source utils.sh
+source ../build_utils
 
 check_env_var CONJUR_APPLIANCE_URL
 check_env_var CONJUR_NAMESPACE_NAME
@@ -17,21 +19,26 @@ fi
 
 set_namespace default
 
+if [[ "$TEST_CLIENT_IMAGE_TAG" != "edge" ]]; then
+  announce "Pushing test client image conjur-k8s-cluster-test:$TEST_CLIENT_IMAGE_TAG"
+  push_conjur-k8s-cluster-test "$TEST_CLIENT_IMAGE_TAG"
+fi
+
 # Prepare our cluster with conjur and authnK8s credentials in a golden configmap
 announce "Installing cluster prep chart"
 pushd ../../helm/conjur-config-cluster-prep > /dev/null
 
   if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
     conjur_url="$CONJUR_APPLIANCE_URL"
-    get_cert_options="-v -i -s -u"
+    get_cert_options="-v -i -s -t $TEST_CLIENT_IMAGE_TAG -u"
     service_account_options=""
   else
     conjur_url="$CONJUR_FOLLOWER_URL"
     if [[ "$CONJUR_PLATFORM" == "gke" ]]; then
-      get_cert_options="-v -i -s -u"
+      get_cert_options="-v -i -s -t $TEST_CLIENT_IMAGE_TAG -u"
       service_account_options="--set authnK8s.serviceAccount.create=false --set authnK8s.serviceAccount.name=conjur-cluster"
     elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
-      get_cert_options="-v -s -u"
+      get_cert_options="-v -s -t $TEST_CLIENT_IMAGE_TAG -u"
       service_account_options=""
     fi
   fi

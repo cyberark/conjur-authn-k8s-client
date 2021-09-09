@@ -303,6 +303,7 @@ function run_command_with_platform {
     -e CONJUR_FOLLOWER_URL \
     -e DEPLOY_MASTER_CLUSTER \
     -e HELM_RELEASE \
+    -e TEST_CLIENT_IMAGE_TAG \
     -e GCLOUD_CLUSTER_NAME \
     -e GCLOUD_ZONE \
     -e GCLOUD_PROJECT_NAME \
