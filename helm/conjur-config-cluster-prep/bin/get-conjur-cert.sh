@@ -242,7 +242,7 @@ function ensure_openssl_pod_created() {
     if [ -z "$existing_deployment" ]; then
         echo "Creating SSL deployment $openssl_deployment"
         kubectl create deployment "$openssl_deployment" \
-            --image cyberark/conjur-k8s-cluster-test:edge
+            --image docker.io/cyberark/conjur-k8s-cluster-test:edge
         # Remember that we need to clean up the deployment that we just created
         deployment_was_created=true
         # Wait for Pod to be ready
