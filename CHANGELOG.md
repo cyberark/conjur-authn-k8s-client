@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.21.1] - 2021-09-09
 ### Security
 - Upgrades Openssl in Alpine to resolve CVE-2021-3711.
   [cyberark/conjur-authn-k8s-client#392](https://github.com/cyberark/conjur-authn-k8s-client/issues/392)
@@ -170,7 +172,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.21.0...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.21.1...HEAD
+[0.21.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.21.0...v0.21.1
 [0.21.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.1...v0.20.0
 [0.19.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.0...v0.19.1
@@ -187,3 +190,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 [0.11.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.10.1...v0.10.2
+[0.10.1]: https://github.com/cyberark/conjur-authn-k8s-client/releases/tag/v0.10.1
