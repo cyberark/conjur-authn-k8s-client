@@ -26,10 +26,10 @@ announce "Generating Conjur policy."
 prepare_conjur_cli_image() {
   announce "Pulling and pushing Conjur CLI image."
 
-  docker pull cyberark/conjur-cli:"$CONJUR_VERSION"-latest
+  docker pull "cyberark/conjur-cli:$CONJUR_VERSION-latest"
 
   cli_app_image="$(platform_image_for_push conjur-cli $CONJUR_NAMESPACE_NAME)"
-  docker tag cyberark/conjur-cli:"$CONJUR_VERSION"-latest "$cli_app_image"
+  docker tag "cyberark/conjur-cli:$CONJUR_VERSION-latest" "$cli_app_image"
 
   docker push "$cli_app_image"
 }

@@ -7,7 +7,6 @@ TIMEOUT="${TIMEOUT:-5m0s}"
 TEST_CLIENT_IMAGE_TAG="${TEST_CLIENT_IMAGE_TAG:-edge}"
 
 source utils.sh
-source ../build_utils
 
 check_env_var CONJUR_APPLIANCE_URL
 check_env_var CONJUR_NAMESPACE_NAME
@@ -21,7 +20,12 @@ set_namespace default
 
 if [[ "$TEST_CLIENT_IMAGE_TAG" != "edge" ]]; then
   announce "Pushing test client image conjur-k8s-cluster-test:$TEST_CLIENT_IMAGE_TAG"
-  push_conjur-k8s-cluster-test "$TEST_CLIENT_IMAGE_TAG"
+
+  source_image="conjur-k8s-cluster-test:$TEST_CLIENT_IMAGE_TAG"
+  test_client_image="$(platform_image_for_push $source_image $CONJUR_NAMESPACE_NAME)"
+  docker tag "$source_image" "$test_client_image"
+
+  docker push "$test_client_image"
 fi
 
 # Prepare our cluster with conjur and authnK8s credentials in a golden configmap

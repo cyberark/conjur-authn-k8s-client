@@ -175,7 +175,6 @@ if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
       ./platform_login.sh
     fi
     ./1_deploy_conjur.sh
-    eval "$conjur_init"
     eval "$conjur_prep"
     eval "$cluster_prep"
     eval "$test_app_workflow"
