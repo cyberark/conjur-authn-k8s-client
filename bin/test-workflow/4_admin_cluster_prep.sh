@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -euox pipefail
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
 TIMEOUT="${TIMEOUT:-5m0s}"
@@ -21,9 +21,9 @@ set_namespace default
 if [[ "$TEST_CLIENT_IMAGE_TAG" != "edge" ]]; then
   announce "Pushing test client image conjur-k8s-cluster-test:$TEST_CLIENT_IMAGE_TAG"
 
-  source_image="conjur-k8s-cluster-test:$TEST_CLIENT_IMAGE_TAG"
+  source_image="conjur-k8s-cluster-test"
   test_client_image="$(platform_image_for_push $source_image $CONJUR_NAMESPACE_NAME)"
-  docker tag "$source_image" "$test_client_image"
+  docker tag "$source_image:$TEST_CLIENT_IMAGE_TAG" "$test_client_image"
 
   docker push "$test_client_image"
 fi
