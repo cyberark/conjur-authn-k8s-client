@@ -26,6 +26,8 @@ if [[ "$TEST_CLIENT_IMAGE_TAG" != "edge" ]]; then
   docker tag "$source_image:$TEST_CLIENT_IMAGE_TAG" "$test_client_image"
 
   docker push "$test_client_image"
+
+  docker image ls
 fi
 
 # Prepare our cluster with conjur and authnK8s credentials in a golden configmap
