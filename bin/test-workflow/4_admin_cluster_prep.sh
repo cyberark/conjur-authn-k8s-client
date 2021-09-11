@@ -36,15 +36,15 @@ pushd ../../helm/conjur-config-cluster-prep > /dev/null
 
   if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
     conjur_url="$CONJUR_APPLIANCE_URL"
-    get_cert_options="-v -i -s -t $TEST_CLIENT_IMAGE_TAG -u"
+    get_cert_options="-v -i -s -t $CONJUR_NAMESPACE_NAME -u"
     service_account_options=""
   else
     conjur_url="$CONJUR_FOLLOWER_URL"
     if [[ "$CONJUR_PLATFORM" == "gke" ]]; then
-      get_cert_options="-v -i -s -t $TEST_CLIENT_IMAGE_TAG -u"
+      get_cert_options="-v -i -s -t $CONJUR_NAMESPACE_NAME -u"
       service_account_options="--set authnK8s.serviceAccount.create=false --set authnK8s.serviceAccount.name=conjur-cluster"
     elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
-      get_cert_options="-v -s -t $TEST_CLIENT_IMAGE_TAG -u"
+      get_cert_options="-v -s -t $CONJUR_NAMESPACE_NAME -u"
       service_account_options=""
     fi
   fi
