@@ -280,7 +280,7 @@ function ensure_openssl_pod_created() {
         # TODO: Remove sleep after this is fixed in kubectl
         sleep 5
         # Wait for Pod to be ready
-        kubectl wait --for=condition=ready pod -l "app=$openssl_deployment"
+        kubectl wait --for=condition=ready pod -l "app=$openssl_deployment" --timeout=500s
     fi
 }
 
