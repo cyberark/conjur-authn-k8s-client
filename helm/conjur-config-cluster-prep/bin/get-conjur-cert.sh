@@ -232,13 +232,13 @@ function get_port() {
 function get_openssl_deployment() {
     openssl_deployment="$1"
 
-    oc get pod -l "app=$openssl_deployment" -o jsonpath='{.items[*].metadata.name}'
+    kubectl get pod -l "app=$openssl_deployment" -o jsonpath='{.items[*].metadata.name}'
 }
 
 function get_openssl_pod() {
     openssl_deployment="$1"
 
-    oc get pod -l "app=$openssl_deployment" -o jsonpath='{.items[*].metadata.name}'
+    kubectl get pod -l "app=$openssl_deployment" -o jsonpath='{.items[*].metadata.name}'
 }
 
 function ensure_openssl_pod_created() {
@@ -246,10 +246,13 @@ function ensure_openssl_pod_created() {
 
     # Create a test deployment if it hasn't been created already
     existing_deployment="$(get_openssl_pod $openssl_deployment)"
-    if [ -z "$existing_deployment" ]; then
-        echo "Creating SSL deployment $openssl_deployment"
+    if [ -n "$existing_deployment" ]; then
+        echo "Deleting existing SSL deployment $openssl_deployment"
+        kubectl delete deployment "$openssl_deployment"
+
+        echo "Creating new SSL deployment $openssl_deployment"
         echo "Using image cyberark/conjur-k8s-cluster-test:$test_image_tag"
-        oc create deployment "$openssl_deployment" \
+        kubectl create deployment "$openssl_deployment" \
             --image cyberark/conjur-k8s-cluster-test:"$test_image_tag"
         # Remember that we need to clean up the deployment that we just created
         deployment_was_created=true
@@ -257,10 +260,27 @@ function ensure_openssl_pod_created() {
         echo "Waiting for OpenSSL test pod to be ready"
         # Some flakiness here - wait currently will fail if the resource doesn't exist yet
         # See https://github.com/kubernetes/kubernetes/issues/83242
-        # TODO: Remove sleep after this is fixed in oc
+        # TODO: Remove sleep after this is fixed in kubectl
         sleep 5
         # Wait for Pod to be ready
-        oc wait --for=condition=ready pod -l "app=$openssl_deployment"
+        kubectl wait --for=condition=ready pod -l "app=$openssl_deployment"
+    fi
+
+    if [ -z "$existing_deployment" ]; then
+        echo "Creating SSL deployment $openssl_deployment"
+        echo "Using image cyberark/conjur-k8s-cluster-test:$test_image_tag"
+        kubectl create deployment "$openssl_deployment" \
+            --image cyberark/conjur-k8s-cluster-test:"$test_image_tag"
+        # Remember that we need to clean up the deployment that we just created
+        deployment_was_created=true
+        # Wait for Pod to be ready
+        echo "Waiting for OpenSSL test pod to be ready"
+        # Some flakiness here - wait currently will fail if the resource doesn't exist yet
+        # See https://github.com/kubernetes/kubernetes/issues/83242
+        # TODO: Remove sleep after this is fixed in kubectl
+        sleep 5
+        # Wait for Pod to be ready
+        kubectl wait --for=condition=ready pod -l "app=$openssl_deployment"
     fi
 }
 
@@ -268,7 +288,7 @@ function k8s_retrieve_certificate() {
     ssl_pod="$1"
     ssl_cmd="$2"
 
-    oc exec "$ssl_pod" -- sh -c "$ssl_cmd"
+    kubectl exec "$ssl_pod" -- sh -c "$ssl_cmd"
 }
 
 # This function will validate the Conjur SSL certificate using
@@ -281,22 +301,23 @@ function k8s_verify_certificate() {
   echo "File path to copy: $cert_filepath"
   echo "Copying Conjur certificate to openssl pod"
   cert_filename="$(basename $cert_filepath)"
-  oc cp "$cert_filepath" "$ssl_pod":"$cert_filename"
+  kubectl cp "$cert_filepath" "$ssl_pod":"$cert_filename"
 
   # Test CA certificate with curl
   echo "Testing CA certificate with curl"
   curl_cmd="curl --cacert $cert_filename https://$domain_name"
   status=0
-  (oc exec "$ssl_pod" -- sh -c "$curl_cmd" > /dev/null) || status="$?"
+  (kubectl exec "$ssl_pod" -- sh -c "$curl_cmd" > /dev/null) || status="$?"
   [ "$status" -eq 0 ] && echo "certificate is verified!" || echo "certificate failed verification"
 
   # Remove the certificate
-  oc exec "$ssl_pod" -- rm "$cert_filename"
+  kubectl exec "$ssl_pod" -- rm "$cert_filename"
 }
 
 function delete_openssl_deployment() {
     openssl_deployment="$1"
-    oc delete deployment "$openssl_deployment"
+    echo "Deleting SSL deployment $openssl_deployment"
+    kubectl delete deployment "$openssl_deployment"
 }
 
 main "$@"
