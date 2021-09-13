@@ -272,7 +272,7 @@ function ensure_openssl_pod_created() {
     existing_deployment="$(get_openssl_pod $openssl_deployment)"
     if [ -n "$existing_deployment" ]; then
         echo "Deleting existing SSL deployment $openssl_deployment"
-        kubectl delete deployment "$openssl_deployment"
+        oc delete deployment "$openssl_deployment"
         sleep 5
     fi
 
@@ -281,7 +281,7 @@ function ensure_openssl_pod_created() {
     conjur_k8s_cluster_test_image="$(platform_image_for_pull conjur-k8s-cluster-test $CONJUR_NAMESPACE_NAME)"
     echo "Using image $conjur_k8s_cluster_test_image"
 
-    kubectl create deployment "$openssl_deployment" \
+    oc create deployment "$openssl_deployment" \
         --image "$conjur_k8s_cluster_test_image"
     
     #kubectl create deployment "$openssl_deployment" \
@@ -296,7 +296,7 @@ function ensure_openssl_pod_created() {
     # TODO: Remove sleep after this is fixed in kubectl
     sleep 5
     # Wait for Pod to be ready
-    kubectl wait --for=condition=ready pod -l "app=$openssl_deployment" || kubectl describe pod -l "app=$openssl_deployment"
+    oc wait --for=condition=ready pod -l "app=$openssl_deployment" || oc describe pod -l "app=$openssl_deployment"
 }
 
 function k8s_retrieve_certificate() {
