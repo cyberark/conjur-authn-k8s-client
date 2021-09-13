@@ -97,13 +97,11 @@ pipeline {
         }
         stage('Test app with') {
           parallel {
-            /*
             stage('Enterprise in GKE') {
               steps {
                 sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --tag dev'
               }
             }
-            */
             stage('OSS in OpenShift') {
               steps {
                 sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --tag dev'
