@@ -247,8 +247,8 @@ function ensure_openssl_pod_created() {
     # Create a test deployment if it hasn't been created already
     existing_deployment="$(get_openssl_pod $openssl_deployment)"
     if [ -n "$existing_deployment" ]; then
-        echo "Deleting existing SSL deployment $existing_deployment"
-        kubectl delete deployment "$existing_deployment"
+        echo "Deleting existing SSL deployment $openssl_deployment"
+        kubectl delete deployment "$openssl_deployment"
 
         echo "Creating new SSL deployment $openssl_deployment"
         echo "Using image conjur-k8s-cluster-test:$test_image_tag"
