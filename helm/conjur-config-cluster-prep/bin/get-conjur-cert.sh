@@ -252,9 +252,15 @@ function ensure_openssl_pod_created() {
         sleep 5
 
         echo "Creating new SSL deployment $openssl_deployment"
-        echo "Using image conjur-k8s-cluster-test:$test_image_tag"
+        
+        conjur_k8s_cluster_test_image="$(platform_image_for_pull conjur-k8s-cluster-test $CONJUR_NAMESPACE_NAME)"
+        echo "Using image $conjur_k8s_cluster_test_image"
+
         kubectl create deployment "$openssl_deployment" \
-            --image "default-route-openshift-image-registry.apps.openshift-47-fips-enc.ci.conjur.net/$CONJUR_NAMESPACE_NAME/conjur-k8s-cluster-test:$CONJUR_NAMESPACE_NAME"
+            --image "$conjur_k8s_cluster_test_image"
+        
+        #kubectl create deployment "$openssl_deployment" \
+        #    --image "default-route-openshift-image-registry.apps.openshift-47-fips-enc.ci.conjur.net/$CONJUR_NAMESPACE_NAME/conjur-k8s-cluster-test:$CONJUR_NAMESPACE_NAME"
         # Remember that we need to clean up the deployment that we just created
         deployment_was_created=true
         # Wait for Pod to be ready
