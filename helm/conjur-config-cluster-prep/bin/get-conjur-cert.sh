@@ -248,12 +248,13 @@ function ensure_openssl_pod_created() {
     existing_deployment="$(get_openssl_pod $openssl_deployment)"
     if [ -n "$existing_deployment" ]; then
         echo "Deleting existing SSL deployment $openssl_deployment"
-        oc delete deployment "$openssl_deployment"
+        kubectl delete deployment "$openssl_deployment"
+        sleep 5
 
         echo "Creating new SSL deployment $openssl_deployment"
         echo "Using image conjur-k8s-cluster-test:$test_image_tag"
-        oc create deployment "$openssl_deployment" \
-            --image conjur-k8s-cluster-test:"$test_image_tag"
+        kubectl create deployment "$openssl_deployment" \
+            --image "default-route-openshift-image-registry.apps.openshift-47-fips-enc.ci.conjur.net/$CONJUR_NAMESPACE_NAME/conjur-k8s-cluster-test:$CONJUR_NAMESPACE_NAME"
         # Remember that we need to clean up the deployment that we just created
         deployment_was_created=true
         # Wait for Pod to be ready
@@ -263,7 +264,7 @@ function ensure_openssl_pod_created() {
         # TODO: Remove sleep after this is fixed in kubectl
         sleep 5
         # Wait for Pod to be ready
-        oc wait --for=condition=ready pod -l "app=$openssl_deployment" || kubectl describe pod -l "app=$openssl_deployment"
+        kubectl wait --for=condition=ready pod -l "app=$openssl_deployment" || kubectl describe pod -l "app=$openssl_deployment"
     fi
 
     if [ -z "$existing_deployment" ]; then
