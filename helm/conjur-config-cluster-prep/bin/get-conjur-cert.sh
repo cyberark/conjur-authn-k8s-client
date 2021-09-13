@@ -241,6 +241,30 @@ function get_openssl_pod() {
     kubectl get pod -l "app=$openssl_deployment" -o jsonpath='{.items[*].metadata.name}'
 }
 
+function platform_image_for_pull() {
+    local image="$1"
+    local namespace="$2"
+    if [[ ${PLATFORM} = "openshift" ]]; then
+      echo "${PULL_DOCKER_REGISTRY_PATH}/$namespace/$1:$namespace"
+    elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
+      echo "${PULL_DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE_NAME"
+    else
+      echo "${PULL_DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE_NAME"
+    fi
+}
+
+function platform_image_for_push() {
+    local image="$1"
+    local namespace="$2"
+    if [[ ${PLATFORM} = "openshift" ]]; then
+      echo "${DOCKER_REGISTRY_PATH}/$namespace/$1:$namespace"
+    elif [[ "$USE_DOCKER_LOCAL_REGISTRY" = "true" ]]; then
+      echo "${DOCKER_REGISTRY_URL}/$1:$CONJUR_NAMESPACE_NAME"
+    else
+      echo "${DOCKER_REGISTRY_PATH}/$1:$CONJUR_NAMESPACE_NAME"
+    fi
+}
+
 function ensure_openssl_pod_created() {
     openssl_deployment="$1"
 
