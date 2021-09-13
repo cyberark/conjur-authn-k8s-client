@@ -274,45 +274,29 @@ function ensure_openssl_pod_created() {
         echo "Deleting existing SSL deployment $openssl_deployment"
         kubectl delete deployment "$openssl_deployment"
         sleep 5
-
-        echo "Creating new SSL deployment $openssl_deployment"
-        
-        conjur_k8s_cluster_test_image="$(platform_image_for_pull conjur-k8s-cluster-test $CONJUR_NAMESPACE_NAME)"
-        echo "Using image $conjur_k8s_cluster_test_image"
-
-        kubectl create deployment "$openssl_deployment" \
-            --image "$conjur_k8s_cluster_test_image"
-        
-        #kubectl create deployment "$openssl_deployment" \
-        #    --image "default-route-openshift-image-registry.apps.openshift-47-fips-enc.ci.conjur.net/$CONJUR_NAMESPACE_NAME/conjur-k8s-cluster-test:$CONJUR_NAMESPACE_NAME"
-        # Remember that we need to clean up the deployment that we just created
-        deployment_was_created=true
-        # Wait for Pod to be ready
-        echo "Waiting for OpenSSL test pod to be ready"
-        # Some flakiness here - wait currently will fail if the resource doesn't exist yet
-        # See https://github.com/kubernetes/kubernetes/issues/83242
-        # TODO: Remove sleep after this is fixed in kubectl
-        sleep 5
-        # Wait for Pod to be ready
-        kubectl wait --for=condition=ready pod -l "app=$openssl_deployment" || kubectl describe pod -l "app=$openssl_deployment"
     fi
 
-    if [ -z "$existing_deployment" ]; then
-        echo "Creating SSL deployment $openssl_deployment"
-        echo "Using image conjur-k8s-cluster-test:$test_image_tag"
-        kubectl create deployment "$openssl_deployment" \
-            --image conjur-k8s-cluster-test:"$test_image_tag"
-        # Remember that we need to clean up the deployment that we just created
-        deployment_was_created=true
-        # Wait for Pod to be ready
-        echo "Waiting for OpenSSL test pod to be ready"
-        # Some flakiness here - wait currently will fail if the resource doesn't exist yet
-        # See https://github.com/kubernetes/kubernetes/issues/83242
-        # TODO: Remove sleep after this is fixed in kubectl
-        sleep 5
-        # Wait for Pod to be ready
-        kubectl wait --for=condition=ready pod -l "app=$openssl_deployment" || kubectl describe pod -l "app=$openssl_deployment"
-    fi
+    echo "Creating new SSL deployment $openssl_deployment"
+    
+    conjur_k8s_cluster_test_image="$(platform_image_for_pull conjur-k8s-cluster-test $CONJUR_NAMESPACE_NAME)"
+    echo "Using image $conjur_k8s_cluster_test_image"
+
+    kubectl create deployment "$openssl_deployment" \
+        --image "$conjur_k8s_cluster_test_image"
+    
+    #kubectl create deployment "$openssl_deployment" \
+    #    --image "default-route-openshift-image-registry.apps.openshift-47-fips-enc.ci.conjur.net/$CONJUR_NAMESPACE_NAME/conjur-k8s-cluster-test:$CONJUR_NAMESPACE_NAME"
+    
+    # Remember that we need to clean up the deployment that we just created
+    deployment_was_created=true
+    # Wait for Pod to be ready
+    echo "Waiting for OpenSSL test pod to be ready"
+    # Some flakiness here - wait currently will fail if the resource doesn't exist yet
+    # See https://github.com/kubernetes/kubernetes/issues/83242
+    # TODO: Remove sleep after this is fixed in kubectl
+    sleep 5
+    # Wait for Pod to be ready
+    kubectl wait --for=condition=ready pod -l "app=$openssl_deployment" || kubectl describe pod -l "app=$openssl_deployment"
 }
 
 function k8s_retrieve_certificate() {
