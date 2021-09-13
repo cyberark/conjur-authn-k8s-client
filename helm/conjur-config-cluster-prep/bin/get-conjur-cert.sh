@@ -296,7 +296,7 @@ function ensure_openssl_pod_created() {
     # TODO: Remove sleep after this is fixed in kubectl
     sleep 5
     # Wait for Pod to be ready
-    oc wait --for=condition=ready pod -l "app=$openssl_deployment" || oc describe pod -l "app=$openssl_deployment"
+    oc wait --for=condition=ready pod -l "app=$openssl_deployment" || (oc describe pod -l "app=$openssl_deployment" && oc delete deployment "$openssl_deployment")
 }
 
 function k8s_retrieve_certificate() {
