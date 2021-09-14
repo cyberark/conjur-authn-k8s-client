@@ -1,4 +1,4 @@
-name: Upload Raw K8S Manifests as Release Artifacts
+name: Upload Helm Charts as Release Artifacts
 
 on:
   # Run this on tagged releases
@@ -12,10 +12,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Package Helm charts
+        run: |
+          pushd helm
+            helm package conjur-config-cluster-prep
+            helm package conjur-config-namespace-prep
+          popd
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
+            helm/conjur-config-cluster-prep-*.tgz
+            helm/conjur-config-namespace-prep-*.tgz
             helm/conjur-config-cluster-prep/generated/*.yaml
             helm/conjur-config-namespace-prep/generated/*.yaml
             helm/conjur-config-cluster-prep/bin/get-conjur-cert.sh
