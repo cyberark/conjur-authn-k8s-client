@@ -73,4 +73,5 @@ if [[ "$ret_val" != 0 ]]; then
   $cli version
   $cli get statefulset -n "$TEST_APP_NAMESPACE_NAME"
   $cli describe statefulset test-app-backend -n "$TEST_APP_NAMESPACE_NAME"
+  exit $ret_val
 fi
