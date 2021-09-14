@@ -18,5 +18,6 @@ jobs:
           files: |
             helm/conjur-config-cluster-prep/generated/*.yaml
             helm/conjur-config-namespace-prep/generated/*.yaml
+            helm/conjur-config-cluster-prep/bin/get-conjur-cert.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
