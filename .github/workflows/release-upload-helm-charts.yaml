@@ -16,6 +16,12 @@ jobs:
       - name: Package Helm charts
         run: |
           pushd helm
+            zip -v -j conjur-config-raw-k8s-manifests.zip \
+              conjur-config-cluster-prep/generated/* \
+              conjur-config-namespace-prep/generated/*
+
+            rm -r conjur-config-*-prep/generated
+
             helm package conjur-config-cluster-prep
             helm package conjur-config-namespace-prep
           popd
@@ -26,8 +32,7 @@ jobs:
           files: |
             helm/conjur-config-cluster-prep-*.tgz
             helm/conjur-config-namespace-prep-*.tgz
-            helm/conjur-config-cluster-prep/generated/*.yaml
-            helm/conjur-config-namespace-prep/generated/*.yaml
+            helm/conjur-config-raw-k8s-manifests.zip
             helm/conjur-config-cluster-prep/bin/get-conjur-cert.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
