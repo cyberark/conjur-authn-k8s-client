@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added user-configurable Helm values for the names of resources created by the `conjur-config-namespace-prep` Helm chart
   [cyberark/conjur-authn-k8s-client#383](https://github.com/cyberark/conjur-authn-k8s-client/issues/383)
 
-## [0.21.1] - 2021-09-09
 ### Security
 - Upgrades Openssl in Alpine to resolve CVE-2021-3711.
   [cyberark/conjur-authn-k8s-client#392](https://github.com/cyberark/conjur-authn-k8s-client/issues/392)
