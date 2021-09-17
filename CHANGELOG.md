@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.22.0] - 2021-09-17
 ### Added
 - Introduces the `conjur-config-cluster-prep.yaml` and `conjur-config-namespace-prep.yaml` raw Kubernetes manifests generated from their corresponding Helm charts. These manifests provide an alternative method of configuring a Kubernetes cluster for the deployment of Conjur-authenticated applications for users unable to use  Helm in their environment.
   [cyberark/conjur-authn-k8s-client#338](https://github.com/cyberark/conjur-authn-k8s-client/issues/338)
@@ -176,8 +178,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.21.1...HEAD
-[0.21.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.21.0...v0.21.1
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.22.0...HEAD
+[0.22.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.1...v0.20.0
 [0.19.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.0...v0.19.1
