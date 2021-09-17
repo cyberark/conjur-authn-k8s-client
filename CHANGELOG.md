@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Introduces the `conjur-config-cluster-prep.yaml` and `conjur-config-namespace-prep.yaml` raw Kubernetes manifests generated from their corresponding Helm charts. These manifests provide an alternative method of configuring a Kubernetes cluster for the deployment of Conjur-authenticated applications for users unable to use  Helm in their environment.
+  [cyberark/conjur-authn-k8s-client#338](https://github.com/cyberark/conjur-authn-k8s-client/issues/338)
+- Added user-configurable Helm values for the names of resources created by the `conjur-config-namespace-prep` Helm chart
+  [cyberark/conjur-authn-k8s-client#383](https://github.com/cyberark/conjur-authn-k8s-client/issues/383)
 
-## [0.21.1] - 2021-09-09
 ### Security
 - Upgrades Openssl in Alpine to resolve CVE-2021-3711.
   [cyberark/conjur-authn-k8s-client#392](https://github.com/cyberark/conjur-authn-k8s-client/issues/392)

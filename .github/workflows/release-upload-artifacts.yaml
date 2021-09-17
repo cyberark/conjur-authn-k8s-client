@@ -1,0 +1,40 @@
+name: Upload Release Artifacts
+
+on:
+  # Run this on tagged releases
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Package release artifacts
+        run: |
+          pushd helm
+            # manifests for non-helm deployment
+            zip -v -j conjur-config-raw-k8s-manifests.zip \
+              conjur-config-cluster-prep/generated/* \
+              conjur-config-namespace-prep/generated/*
+
+            rm -r conjur-config-*-prep/generated
+
+            # helm charts
+            helm package conjur-config-cluster-prep
+            helm package conjur-config-namespace-prep
+          popd
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            helm/conjur-config-cluster-prep-*.tgz
+            helm/conjur-config-namespace-prep-*.tgz
+            helm/conjur-config-raw-k8s-manifests.zip
+            helm/conjur-config-cluster-prep/bin/get-conjur-cert.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
