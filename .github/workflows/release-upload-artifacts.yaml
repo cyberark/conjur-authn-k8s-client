@@ -1,4 +1,4 @@
-name: Upload Helm Charts as Release Artifacts
+name: Upload Release Artifacts
 
 on:
   # Run this on tagged releases
@@ -13,15 +13,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Package Helm charts
+      - name: Package release artifacts
         run: |
           pushd helm
+            # manifests for non-helm deployment
             zip -v -j conjur-config-raw-k8s-manifests.zip \
               conjur-config-cluster-prep/generated/* \
               conjur-config-namespace-prep/generated/*
 
             rm -r conjur-config-*-prep/generated
 
+            # helm charts
             helm package conjur-config-cluster-prep
             helm package conjur-config-namespace-prep
           popd
