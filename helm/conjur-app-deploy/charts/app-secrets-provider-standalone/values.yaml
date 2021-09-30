@@ -7,7 +7,7 @@ global:
   
 app:
   image:
-    repository: "cyberark/demo-app"
+    repository: "docker.io/cyberark/demo-app"
     tag: "latest"
     # Supported values: "Always", "IfNotPresent", "Never"
     pullPolicy: "Always"

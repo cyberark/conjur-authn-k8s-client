@@ -17,7 +17,7 @@ app:
  
 authnClient:
   image:
-    repository: "cyberark/conjur-authn-k8s-client"
+    repository: "docker.io/cyberark/conjur-authn-k8s-client"
     tag: "latest"
     # supported values: "Always", "IfNotPresent", "Never"
     pullPolicy: "Always"
