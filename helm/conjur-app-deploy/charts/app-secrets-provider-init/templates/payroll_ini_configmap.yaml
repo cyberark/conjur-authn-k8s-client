@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: payroll-ini-configmap
+    labels:
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      app.kubernetes.io/name: "payroll-ini-configmap"
+      app.kubernetes.io/component: "push-to-file"
+      app.kubernetes.io/instance: "conjur-{{ .Chart.Name }}-configmap"
+      app.kubernetes.io/part-of: "push-to-file"
+      conjur.org/name: "payroll-ini-configmap"
+      helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+data:
+    # Sample application .ini file
+    payroll.ini: |
+      ; last modified 1 April 2019
+      [owner]
+      name=John Doe
+      organization=Acme Widgets Inc.
+
+      [database]
+      server=192.0.2.62
+      port=143
+      file=payroll.dat
+      cert="<Database certificate goes here>"
