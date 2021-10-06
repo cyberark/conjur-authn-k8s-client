@@ -2,16 +2,14 @@ package config
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"testing"
-	"time"
-
-	"github.com/stretchr/testify/assert"
 
 	logger "github.com/cyberark/conjur-authn-k8s-client/pkg/log"
+	"github.com/stretchr/testify/assert"
 )
 
 var environmentValues = map[string]string{
@@ -25,86 +23,102 @@ var environmentValues = map[string]string{
 	"MY_POD_NAME":            "testPodName",
 }
 
-func setEnvVars(env map[string]string) {
-	for key, value := range env {
-		err := os.Setenv(key, value)
-		if err != nil {
-			panic(err)
-		}
-	}
+var annotationValues = map[string]string{
+	"conjur.org/authn-identity": "host/anotherHost",
+	"conjur.org/debug-logging":  "true",
+	"conjur.org/container-mode": "init",
 }
 
-func unsetEnvVars(env map[string]string) {
-	for key := range env {
-		err := os.Setenv(key, "")
-		if err != nil {
-			return
-		}
-	}
+var envToAnnot = map[string]string{
+	"CONJUR_AUTHN_LOGIN": "conjur.org/authn-identity",
+	"DEBUG":              "conjur.org/debug-logging",
+	"CONTAINER_MODE":     "conjur.org/container-mode",
 }
 
-type errorAssertFunc func(*testing.T, []error, []error)
-
-func assertEmptyErrorList() errorAssertFunc {
-	return func(t *testing.T, errorList []error, infoList []error) {
-		assert.Empty(t, errorList)
-	}
-}
-
-func assertInfoInList(err error) errorAssertFunc {
-	return func(t *testing.T, errorList []error, infoList []error) {
-		assert.Contains(t, infoList, err)
-	}
-}
-
-func assertErrorInList(err error) errorAssertFunc {
-	return func(t *testing.T, errorList []error, infoList []error) {
-		assert.Contains(t, errorList, err)
-	}
-}
-
-func assertGoodConfig(expected *Config, result *Config) func(*testing.T) {
-	return func(t *testing.T) {
+func assertGoodConfig(expected *Config) func(*testing.T, *Config) {
+	return func(t *testing.T, result *Config) {
 		assert.Equal(t, expected, result)
 	}
 }
 
-func TestGatherSettings(t *testing.T) {
-	setEnvVars(environmentValues)
-	defer unsetEnvVars(environmentValues)
+type errorAssertFunc func(*testing.T, []error)
 
+func assertEmptyErrorList() errorAssertFunc {
+	return func(t *testing.T, errorList []error) {
+		assert.Empty(t, errorList)
+	}
+}
+
+func assertErrorInList(err error) errorAssertFunc {
+	return func(t *testing.T, errorList []error) {
+		assert.Contains(t, errorList, err)
+	}
+}
+
+func setEnv(env map[string]string) {
+	for key, value := range env {
+		os.Setenv(key, value)
+	}
+}
+
+func unsetEnv(env map[string]string) {
+	for key := range env {
+		os.Setenv(key, "")
+	}
+}
+
+func TestGatherSettings(t *testing.T) {
 	TestCases := []struct {
 		description string
-		annotations map[string]string
-		expectedMap map[string]string
+		annotFunc   func(string) string
+		expected    AuthnSettings
 	}{
 		{
-			description: "returned map contains envvar and annotation settings",
-			annotations: map[string]string{
-				"conjur.org/authn-identity": "host/anotherHost",
-				"conjur.org/debug-logging":  "true",
-				"conjur.org/container-mode": "init",
-				"conjur.org/unused":         "value",
+			description: "functions are ordered by priority: first function overrides second, which overrides third",
+			annotFunc:   fromAnnotations,
+			expected: AuthnSettings{
+				"CONJUR_ACCOUNT":                       "testAccount",
+				"CONJUR_AUTHN_LOGIN":                   "host/anotherHost", // provided by annotation
+				"CONJUR_AUTHN_URL":                     "filepath",
+				"CONJUR_CERT_FILE":                     "testSSLCertFile.txt",
+				"CONJUR_SSL_CERTIFICATE":               "testSSLCert",
+				"CONTAINER_MODE":                       "init", // provided by annotation
+				"DEBUG":                                "true", // provided by annotation
+				"MY_POD_NAME":                          "testPodName",
+				"MY_POD_NAMESPACE":                     "testNameSpace",
+				"CONJUR_AUTHN_TOKEN_FILE":              DefaultTokenFilePath,
+				"CONJUR_CLIENT_CERT_PATH":              DefaultClientCertPath,
+				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": DefaultClientCertRetryCountLimit,
+				"CONJUR_TOKEN_TIMEOUT":                 DefaultTokenRefreshTimeout,
+				"CONJUR_VERSION":                       DefaultConjurVersion,
 			},
-			expectedMap: map[string]string{
-				"conjur.org/authn-identity": "host/anotherHost",
-				"conjur.org/debug-logging":  "true",
-				"conjur.org/container-mode": "init",
-				"CONJUR_AUTHN_URL":          "filepath",
-				"CONJUR_ACCOUNT":            "testAccount",
-				"CONJUR_AUTHN_LOGIN":        "host",
-				"CONJUR_CERT_FILE":          "testSSLCertFile.txt",
-				"CONJUR_SSL_CERTIFICATE":    "testSSLCert",
-				"MY_POD_NAMESPACE":          "testNameSpace",
-				"MY_POD_NAME":               "testPodName",
+		},
+		{
+			description: "if the first getter function returns empty strings, fallback to the next functions, and eventually an empty string",
+			annotFunc:   emptyAnnotations,
+			expected: AuthnSettings{
+				"CONJUR_AUTHN_URL":                     "filepath",
+				"CONJUR_ACCOUNT":                       "testAccount",
+				"CONJUR_AUTHN_LOGIN":                   "host",
+				"CONJUR_CERT_FILE":                     "testSSLCertFile.txt",
+				"CONJUR_SSL_CERTIFICATE":               "testSSLCert",
+				"MY_POD_NAMESPACE":                     "testNameSpace",
+				"MY_POD_NAME":                          "testPodName",
+				"DEBUG":                                "",
+				"CONTAINER_MODE":                       DefaultContainerMode,
+				"CONJUR_CLIENT_CERT_PATH":              DefaultClientCertPath,
+				"CONJUR_AUTHN_TOKEN_FILE":              DefaultTokenFilePath,
+				"CONJUR_VERSION":                       DefaultConjurVersion,
+				"CONJUR_TOKEN_TIMEOUT":                 DefaultTokenRefreshTimeout,
+				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": DefaultClientCertRetryCountLimit,
 			},
 		},
 	}
 
 	for _, tc := range TestCases {
 		t.Run(tc.description, func(t *testing.T) {
-			settings := GatherSettings(tc.annotations)
-			assert.Equal(t, tc.expectedMap, settings)
+			resultMap := GatherSettings(tc.annotFunc, fromEnv)
+			assert.Equal(t, tc.expected, resultMap)
 		})
 	}
 }
@@ -112,72 +126,104 @@ func TestGatherSettings(t *testing.T) {
 func TestValidateSettings(t *testing.T) {
 	TestCases := []struct {
 		description string
-		env         map[string]string
-		annotations map[string]string
+		settings    AuthnSettings
 		assert      errorAssertFunc
 	}{
 		{
-			description: "returned map contains envvar and annotation settings",
-			env:         environmentValues,
-			annotations: map[string]string{
-				"conjur.org/authn-identity": "host/anotherHost",
-				"conjur.org/debug-logging":  "true",
-				"conjur.org/container-mode": "init",
+			description: "happy path",
+			settings: AuthnSettings{
+				// required variables
+				"CONJUR_AUTHN_URL":   "filepath",
+				"CONJUR_ACCOUNT":     "testAccount",
+				"CONJUR_AUTHN_LOGIN": "host",
+				"MY_POD_NAME":        "testPodName",
+				"MY_POD_NAMESPACE":   "testNameSpace",
+				// correct value types
+				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": "7",
+				"CONJUR_TOKEN_TIMEOUT":                 "6m0s",
+				"CONTAINER_MODE":                       "init",
+				// certificate provided
+				"CONJUR_SSL_CERTIFICATE": "samplecertificate",
 			},
 			assert: assertEmptyErrorList(),
 		},
 		{
-			description: "a required envvar is not included",
-			env: map[string]string{
-				// "CONJUR_AUTHN_URL":       "filepath",
-				"CONJUR_ACCOUNT":         "testAccount",
-				"CONJUR_AUTHN_LOGIN":     "host",
-				"MY_POD_NAMESPACE":       "testNameSpace",
-				"MY_POD_NAME":            "testPodName",
-				"CONJUR_SSL_CERTIFICATE": "testSSLCert",
-			},
-			annotations: map[string]string{},
-			assert:      assertErrorInList(fmt.Errorf(logger.CAKC009, "CONJUR_AUTHN_URL")),
+			description: "error raised for missing required setting",
+			settings:    AuthnSettings{},
+			assert:      assertErrorInList(fmt.Errorf(logger.CAKC062, "CONJUR_AUTHN_URL")),
 		},
 		{
-			description: "configuration Username is not set by envvar or annotation",
-			env: map[string]string{
-				"CONJUR_AUTHN_URL": "filepath",
-				// "CONJUR_AUTHN_LOGIN": "host",
-				"CONJUR_ACCOUNT":         "testAccount",
-				"MY_POD_NAMESPACE":       "testNameSpace",
-				"MY_POD_NAME":            "testPodName",
-				"CONJUR_SSL_CERTIFICATE": "testSSLCert",
+			description: "error raised for invalid username",
+			settings: AuthnSettings{
+				"CONJUR_AUTHN_URL":   "filepath",
+				"CONJUR_ACCOUNT":     "testAccount",
+				"CONJUR_AUTHN_LOGIN": "bad-username",
+				"MY_POD_NAME":        "testPodName",
+				"MY_POD_NAMESPACE":   "testNameSpace",
 			},
-			annotations: map[string]string{},
-			assert:      assertErrorInList(fmt.Errorf(logger.CAKC061, "Username", "CONJUR_AUTHN_LOGIN", "conjur.org/authn-identity")),
+			assert: assertErrorInList(fmt.Errorf(logger.CAKC032, "bad-username")),
 		},
 		{
-			description: "setting with multiple sources provided by both",
-			env: map[string]string{
-				"CONJUR_AUTHN_URL":       "filepath",
-				"CONJUR_AUTHN_LOGIN":     "host",
-				"CONJUR_ACCOUNT":         "testAccount",
-				"MY_POD_NAMESPACE":       "testNameSpace",
-				"MY_POD_NAME":            "testPodName",
-				"CONJUR_SSL_CERTIFICATE": "testSSLCert",
+			description: "error raised for invalid retry count limit",
+			settings: AuthnSettings{
+				"CONJUR_AUTHN_URL":                     "filepath",
+				"CONJUR_ACCOUNT":                       "testAccount",
+				"CONJUR_AUTHN_LOGIN":                   "host",
+				"MY_POD_NAME":                          "testPodName",
+				"MY_POD_NAMESPACE":                     "testNameSpace",
+				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": "seven",
 			},
-			annotations: map[string]string{
-				"conjur.org/authn-identity": "host/anotherHost",
+			assert: assertErrorInList(fmt.Errorf(logger.CAKC060, "CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT", "seven")),
+		},
+		{
+			description: "error raised for invalid timeout",
+			settings: AuthnSettings{
+				"CONJUR_AUTHN_URL":                     "filepath",
+				"CONJUR_ACCOUNT":                       "testAccount",
+				"CONJUR_AUTHN_LOGIN":                   "host",
+				"MY_POD_NAME":                          "testPodName",
+				"MY_POD_NAMESPACE":                     "testNameSpace",
+				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": "7",
+				"CONJUR_TOKEN_TIMEOUT":                 "seventeen",
 			},
-			assert: assertInfoInList(fmt.Errorf(logger.CAKC060, "Username", "CONJUR_AUTHN_LOGIN", "conjur.org/authn-identity")),
+			assert: assertErrorInList(fmt.Errorf(logger.CAKC060, "CONJUR_TOKEN_TIMEOUT", "seventeen")),
+		},
+		{
+			description: "error raised for invalid container mode",
+			settings: AuthnSettings{
+				"CONJUR_AUTHN_URL":                     "filepath",
+				"CONJUR_ACCOUNT":                       "testAccount",
+				"CONJUR_AUTHN_LOGIN":                   "host",
+				"MY_POD_NAME":                          "testPodName",
+				"MY_POD_NAMESPACE":                     "testNameSpace",
+				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": "7",
+				"CONJUR_TOKEN_TIMEOUT":                 "6m0s",
+				"CONTAINER_MODE":                       "bogus-mode",
+			},
+			assert: assertErrorInList(fmt.Errorf(logger.CAKC060, "CONTAINER_MODE", "bogus-mode")),
+		},
+		{
+			description: "error raised for invalid certificate",
+			settings: AuthnSettings{
+				"CONJUR_AUTHN_URL":                     "filepath",
+				"CONJUR_ACCOUNT":                       "testAccount",
+				"CONJUR_AUTHN_LOGIN":                   "host",
+				"MY_POD_NAME":                          "testPodName",
+				"MY_POD_NAMESPACE":                     "testNameSpace",
+				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": "7",
+				"CONJUR_TOKEN_TIMEOUT":                 "6m0s",
+				"CONTAINER_MODE":                       "init",
+				"CONJUR_SSL_CERTIFICATE":               "",
+				"CONJUR_CERT_FILE":                     "",
+			},
+			assert: assertErrorInList(errors.New(logger.CAKC007)),
 		},
 	}
 
 	for _, tc := range TestCases {
 		t.Run(tc.description, func(t *testing.T) {
-			setEnvVars(tc.env)
-			defer unsetEnvVars(tc.env)
-
-			settings := GatherSettings(tc.annotations)
-			errLogs, infoLogs := ValidateSettings(settings, successfulMockReadFile)
-
-			tc.assert(t, errLogs, infoLogs)
+			errLogs := tc.settings.Validate(successfulMockReadFile)
+			tc.assert(t, errLogs)
 		})
 	}
 }
@@ -185,170 +231,264 @@ func TestValidateSettings(t *testing.T) {
 func TestNewConfig(t *testing.T) {
 	TestCases := []struct {
 		description string
-		settings    map[string]string
+		settings    AuthnSettings
+		expected    *Config
+		assert      func(*testing.T, *Config)
 	}{
 		{
-			description: "annotations overwrite envvars",
-			settings: map[string]string{
-				"CONJUR_AUTHN_URL":          "filepath",
-				"CONJUR_ACCOUNT":            "testAccount",
-				"MY_POD_NAMESPACE":          "testNameSpace",
-				"MY_POD_NAME":               "testPodName",
-				"CONJUR_SSL_CERTIFICATE":    "testSSLCert",
-				"CONTAINER_MODE":            "application",
-				"conjur.org/container-mode": "init",
-				"CONJUR_AUTHN_LOGIN":        "host",
-				"conjur.org/authn-identity": "host/anotherHost",
+			description: "happy path",
+			settings: AuthnSettings{
+				// required variables
+				"CONJUR_AUTHN_URL":   "filepath",
+				"CONJUR_ACCOUNT":     "testAccount",
+				"CONJUR_AUTHN_LOGIN": "host/test-user",
+				"MY_POD_NAME":        "testPodName",
+				"MY_POD_NAMESPACE":   "testNameSpace",
+				// correct value types
+				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": "7",
+				"CONJUR_TOKEN_TIMEOUT":                 "6m0s",
+				"CONTAINER_MODE":                       "init",
+				// certificate provided
+				"CONJUR_SSL_CERTIFICATE": "samplecertificate",
+				// defaults provided
+				"CONJUR_AUTHN_TOKEN_FILE": DefaultTokenFilePath,
+				"CONJUR_CLIENT_CERT_PATH": DefaultClientCertPath,
+				"CONJUR_VERSION":          DefaultConjurVersion,
 			},
+			assert: assertGoodConfig(&Config{
+				Account:                   "testAccount",
+				ClientCertPath:            DefaultClientCertPath,
+				ClientCertRetryCountLimit: 7,
+				ContainerMode:             "init",
+				ConjurVersion:             "5",
+				InjectCertLogPath:         DefaultInjectCertLogPath,
+				PodName:                   "testPodName",
+				PodNamespace:              "testNameSpace",
+				SSLCertificate:            []byte("samplecertificate"),
+				TokenFilePath:             DefaultTokenFilePath,
+				TokenRefreshTimeout:       360000000000,
+				URL:                       "filepath",
+				Username: &Username{
+					FullUsername: "host/test-user",
+					Prefix:       "host",
+					Suffix:       "test-user",
+				},
+			}),
 		},
 	}
 
 	for _, tc := range TestCases {
 		t.Run(tc.description, func(t *testing.T) {
-			config := NewConfig(tc.settings)
-			expectedUsername, _ := NewUsername("host/anotherHost")
-			defaultTimeout, _ := time.ParseDuration(DefaultTokenRefreshTimeout)
-			defaultCountLimit, _ := strconv.Atoi(DefaultClientCertRetryCountLimit)
+			config := tc.settings.NewConfig()
+			tc.assert(t, config)
+		})
+	}
+}
 
-			assertGoodConfig(&Config{
-				Account:                   "testAccount",
-				ContainerMode:             "init",
-				ConjurVersion:             "5",
-				PodName:                   "testPodName",
-				PodNamespace:              "testNameSpace",
-				Username:                  expectedUsername,
-				URL:                       "filepath",
-				SSLCertificate:            []byte("testSSLCert"),
-				ClientCertPath:            "",
-				TokenRefreshTimeout:       defaultTimeout,
-				ClientCertRetryCountLimit: defaultCountLimit,
-				InjectCertLogPath:         DefaultInjectCertLogPath,
-				TokenFilePath:             DefaultTokenFilePath,
-			}, config)
+func TestFromEnv(t *testing.T) {
+	TestCases := []struct {
+		description string
+		env         map[string]string
+		expectErr   bool
+	}{
+		{
+			description: "happy path",
+			env: map[string]string{
+				"CONJUR_AUTHN_URL":       "filepath",
+				"CONJUR_ACCOUNT":         "testAccount",
+				"CONJUR_AUTHN_LOGIN":     "host/test-user",
+				"MY_POD_NAME":            "testPodName",
+				"MY_POD_NAMESPACE":       "testNameSpace",
+				"CONJUR_SSL_CERTIFICATE": "samplecert",
+			},
+			expectErr: false,
+		},
+		{
+			description: "bad settings return nil Config and error message",
+			env:         map[string]string{},
+			expectErr:   true,
+		},
+	}
+
+	for _, tc := range TestCases {
+		t.Run(tc.description, func(t *testing.T) {
+			setEnv(tc.env)
+			config, err := FromEnv(successfulMockReadFile)
+
+			if tc.expectErr {
+				assert.Nil(t, config)
+				assert.NotNil(t, err)
+			} else {
+				assert.NotNil(t, config)
+				assert.Nil(t, err)
+			}
+			unsetEnv(tc.env)
+		})
+	}
+}
+
+func TestConjurVersion(t *testing.T) {
+	TestCases := []struct {
+		description string
+		version     string
+		expVersion  string
+		assert      errorAssertFunc
+	}{
+		{
+			description: "Succeeds if version is 4",
+			version:     "4",
+			expVersion:  "4",
+		},
+		{
+			description: "Succeeds if version is 5",
+			version:     "5",
+			expVersion:  "5",
+		},
+		{
+			description: "Sets the default version for an empty value",
+			version:     "",
+			expVersion:  DefaultConjurVersion,
+		},
+		{
+			description: "Returns error if version is invalid",
+			version:     "3",
+			expVersion:  "",
+			assert:      assertErrorInList(fmt.Errorf(logger.CAKC060, "CONJUR_VERSION", "3")),
+		},
+	}
+
+	for _, tc := range TestCases {
+		provideVersion := func(key string) string {
+			if key == "CONJUR_VERSION" {
+				return tc.version
+			}
+			return ""
+		}
+
+		t.Run(tc.description, func(t *testing.T) {
+			settings := GatherSettings(provideVersion)
+			if tc.assert == nil {
+				assert.Equal(t, tc.expVersion, settings["CONJUR_VERSION"])
+			} else {
+				errLogs := settings.Validate(successfulMockReadFile)
+				tc.assert(t, errLogs)
+			}
 		})
 	}
 }
 
 func TestDebugLogging(t *testing.T) {
-	setEnvVars(environmentValues)
-	defer unsetEnvVars(environmentValues)
-
 	TestCases := []struct {
-		description     string
-		envDebugValue   string
-		annotDebugValue string
+		description string
+		debugValue  string
+		settings    AuthnSettings
 	}{
 		{
-			description:     "debug logs are enabled with 'DEBUG=true' envvar",
-			envDebugValue:   "true",
-			annotDebugValue: "",
+			description: "debug logs are enabled",
+			debugValue:  "true",
+			settings: AuthnSettings{
+				// required variables
+				"CONJUR_AUTHN_URL":   "filepath",
+				"CONJUR_ACCOUNT":     "testAccount",
+				"CONJUR_AUTHN_LOGIN": "host/test-user",
+				"MY_POD_NAME":        "testPodName",
+				"MY_POD_NAMESPACE":   "testNameSpace",
+				// correct value types
+				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": "7",
+				"CONJUR_TOKEN_TIMEOUT":                 "6m0s",
+				"CONTAINER_MODE":                       "init",
+				// certificate provided
+				"CONJUR_SSL_CERTIFICATE": "samplecertificate",
+				// defaults provided
+				"CONJUR_AUTHN_TOKEN_FILE": DefaultTokenFilePath,
+				"CONJUR_CLIENT_CERT_PATH": DefaultClientCertPath,
+				"CONJUR_VERSION":          DefaultConjurVersion,
+				// debug setting
+				"DEBUG": "true",
+			},
 		},
 		{
-			description:     "debug logs are disabled if 'DEBUG' envvar does not equal 'true'",
-			envDebugValue:   "invalid value",
-			annotDebugValue: "",
+			description: "debug logs are disabled",
+			debugValue:  "",
+			settings: AuthnSettings{
+				// required variables
+				"CONJUR_AUTHN_URL":   "filepath",
+				"CONJUR_ACCOUNT":     "testAccount",
+				"CONJUR_AUTHN_LOGIN": "host/test-user",
+				"MY_POD_NAME":        "testPodName",
+				"MY_POD_NAMESPACE":   "testNameSpace",
+				// correct value types
+				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": "7",
+				"CONJUR_TOKEN_TIMEOUT":                 "6m0s",
+				"CONTAINER_MODE":                       "init",
+				// certificate provided
+				"CONJUR_SSL_CERTIFICATE": "samplecertificate",
+				// defaults provided
+				"CONJUR_AUTHN_TOKEN_FILE": DefaultTokenFilePath,
+				"CONJUR_CLIENT_CERT_PATH": DefaultClientCertPath,
+				"CONJUR_VERSION":          DefaultConjurVersion,
+			},
 		},
 		{
-			description:     "annotation 'conjur.org/debug-logging' takes precedence over 'DEBUG' envvar",
-			envDebugValue:   "invalid value",
-			annotDebugValue: "true",
+			description: "debug logs are given an incorrect value",
+			debugValue:  "garbage",
+			settings: AuthnSettings{
+				// required variables
+				"CONJUR_AUTHN_URL":   "filepath",
+				"CONJUR_ACCOUNT":     "testAccount",
+				"CONJUR_AUTHN_LOGIN": "host/test-user",
+				"MY_POD_NAME":        "testPodName",
+				"MY_POD_NAMESPACE":   "testNameSpace",
+				// correct value types
+				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": "7",
+				"CONJUR_TOKEN_TIMEOUT":                 "6m0s",
+				"CONTAINER_MODE":                       "init",
+				// certificate provided
+				"CONJUR_SSL_CERTIFICATE": "samplecertificate",
+				// defaults provided
+				"CONJUR_AUTHN_TOKEN_FILE": DefaultTokenFilePath,
+				"CONJUR_CLIENT_CERT_PATH": DefaultClientCertPath,
+				"CONJUR_VERSION":          DefaultConjurVersion,
+				// debug setting
+				"DEBUG": "garbage",
+			},
 		},
 	}
 
-	setEnvVars(environmentValues)
-	defer unsetEnvVars(environmentValues)
-
 	for _, tc := range TestCases {
-		_ = os.Setenv("DEBUG", tc.envDebugValue)
-
-		settings := GatherSettings(map[string]string{
-			"conjur.org/debug-logging": tc.annotDebugValue,
-		})
-
-		errLogs, infoLogs := ValidateSettings(settings, successfulMockReadFile)
-		assert.Equal(t, 0, len(errLogs))
-		assert.Equal(t, 0, len(infoLogs))
-
-		// Replace logger with buffer to test its value
 		var logBuffer bytes.Buffer
 		logger.InfoLogger = log.New(&logBuffer, "", 0)
 
-		NewConfig(settings)
+		config := tc.settings.NewConfig()
+		assert.NotNil(t, config)
 
 		logMessages := logBuffer.String()
-		if tc.envDebugValue == "invalid value" && tc.annotDebugValue == "" {
-			assert.Contains(t, logMessages, "WARN")
-			assert.Contains(t, logMessages, "CAKC034")
-		} else {
-			assert.NotContains(t, logMessages, "CAKC034")
-			assert.Contains(t, logMessages, "DEBUG")
+		if tc.debugValue == "true" {
 			assert.Contains(t, logMessages, "CAKC052")
+			assert.NotContains(t, logMessages, "CAKC034")
+		} else if tc.debugValue == "" {
+			assert.NotContains(t, logMessages, "CAKC052")
+			assert.NotContains(t, logMessages, "CAKC034")
+		} else {
+			assert.NotContains(t, logMessages, "CAKC052")
+			assert.Contains(t, logMessages, "CAKC034")
 		}
-	}
-}
-
-func TestConjurVersion(t *testing.T) {
-	setEnvVars(environmentValues)
-	defer unsetEnvVars(environmentValues)
-
-	TestCases := []struct {
-		description string
-		envVersion  string
-		expVersion  string
-		expErrStr   string
-	}{
-		{
-			description: "Succeeds if version is 4",
-			envVersion:  "4",
-			expVersion:  "4",
-			expErrStr:   "",
-		},
-		{
-			description: "Succeeds if version is 5",
-			envVersion:  "5",
-			expVersion:  "5",
-			expErrStr:   "",
-		},
-		{
-			description: "Sets the default version for an empty value",
-			envVersion:  "",
-			expVersion:  DefaultConjurVersion,
-			expErrStr:   "",
-		},
-		{
-			description: "Returns error if version is invalid",
-			envVersion:  "3",
-			expVersion:  "",
-			expErrStr:   "invalid conjur version",
-		},
-	}
-
-	for _, tc := range TestCases {
-		t.Run(tc.description, func(t *testing.T) {
-			_ = os.Setenv("CONJUR_VERSION", tc.envVersion)
-
-			var logBuffer bytes.Buffer
-			if tc.expErrStr != "" {
-				// Replace logger with buffer to test its value
-				logger.ErrorLogger = log.New(&logBuffer, "", 0)
-			}
-
-			config, err := FromEnv(successfulMockReadFile)
-
-			if tc.expErrStr == "" {
-				assert.Nil(t, err)
-				assert.Equal(t, tc.expVersion, config.ConjurVersion)
-			} else {
-				assert.NotNil(t, err)
-				errorMessages := logBuffer.String()
-				assert.Contains(t, errorMessages, tc.expErrStr)
-			}
-
-			_ = os.Setenv("CONJUR_VERSION", "")
-		})
 	}
 }
 
 func successfulMockReadFile(filename string) ([]byte, error) {
 	return []byte{}, nil
+}
+
+func fromEnv(key string) string {
+	return environmentValues[key]
+}
+
+func fromAnnotations(key string) string {
+	annot := envToAnnot[key]
+	return annotationValues[annot]
+}
+
+func emptyAnnotations(key string) string {
+	return ""
 }
