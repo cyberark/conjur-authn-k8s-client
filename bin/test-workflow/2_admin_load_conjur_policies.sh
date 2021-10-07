@@ -80,24 +80,19 @@ pushd policy > /dev/null
   validator_namespace="${VALIDATOR_NAMESPACE_NAME:-$CONJUR_NAMESPACE_NAME}"
   app_validator_id="${APP_VALIDATOR_ID:-app-validator}"
   app_validator_namespace="${APP_VALIDATOR_NAMESPACE_NAME:-$TEST_APP_NAMESPACE_NAME}"
-  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/cluster-authn-svc-def.template.yml |
+
+  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/authenticator-policy.template.yml > ./generated/"$TEST_APP_NAMESPACE_NAME".authenticator-policy.yml
+
+  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-identities-policy.template.yml |
     sed "s#{{ VALIDATOR_ID }}#$validator_id#g" |
     sed "s#{{ VALIDATOR_NAMESPACE_NAME }}#$validator_namespace#g" |
     sed "s#{{ APP_VALIDATOR_ID }}#$app_validator_id#g" |
     sed "s#{{ APP_VALIDATOR_NAMESPACE_NAME }}#$app_validator_namespace#g" |
-    sed "s#{{ CONJUR_NAMESPACE }}#$CONJUR_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".cluster-authn-svc.yml
-
-  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/project-authn-def.template.yml |
     sed "s#{{ IS_OPENSHIFT }}#$is_openshift#g" |
     sed "s#{{ IS_KUBERNETES }}#$is_kubernetes#g" |
-    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".project-authn.yml
-
-  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-identity-def.template.yml |
-    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".app-identity.yml
-
-  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/authn-any-policy-branch.template.yml |
-    sed "s#{{ IS_OPENSHIFT }}#$is_openshift#g" |
-    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".authn-any-policy-branch.yml
+    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".app-identities-policy.yml
+  
+  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-grants.template.yml > ./generated/"$TEST_APP_NAMESPACE_NAME".app-grants.yml
 popd > /dev/null
 
 if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then

@@ -37,7 +37,7 @@ MIIC/ThisIsAMockThisIsOnlyAMock==\n
     # 'authnLogin' must be set to a Conjur host ID that has been
     # pre-configured for basic authentication (i.e. no access to secrets
     # is required) in Conjur security policy. Example:
-    #    authnLogin: host/conjur/authn-k8s/my-authenticator-id/validator
+    #    authnLogin: host/conjur/authn-k8s/my-authenticator-id/apps/validator
     authnLogin:
     # 'debug' enables authenticator sidecar debug logs during testing
     debug: true

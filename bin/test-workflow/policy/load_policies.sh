@@ -15,12 +15,10 @@ readonly POLICY_DIR="/policy"
 
 # NOTE: generated files are prefixed with the test app namespace to allow for parallel CI
 readonly POLICY_FILES=(
-  "$POLICY_DIR/users.yml"
-  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.project-authn.yml"
-  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.cluster-authn-svc.yml"
-  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.app-identity.yml"
-  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.authn-any-policy-branch.yml"
-  "$POLICY_DIR/app-access.yml"
+  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.authenticator-policy.yml"
+  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.app-identities-policy.yml"
+  "$POLICY_DIR/app-policy.yml"
+  "$POLICY_DIR/generated/$TEST_APP_NAMESPACE_NAME.app-grants.yml"
 )
 
 for policy_file in "${POLICY_FILES[@]}"; do

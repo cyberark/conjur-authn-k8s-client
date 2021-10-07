@@ -60,6 +60,6 @@ test:
     # pre-configured for basic authentication in Conjur security policy.
     # The authn-k8s sidecar will use a CONJUR_AUTHN_LOGIN value of:
     #    host/conjur/authn-k8s/{{authenticatorID}}/{{validatorID}}
-    validatorID: "validator"
+    validatorID: "apps/validator"
     # 'debug' enables authenticator sidecar debug logs during testing
     debug: true

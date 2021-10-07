@@ -12,11 +12,11 @@ readonly HELM_INSTALL_TIMEOUT="10s"
 
 readonly CLUSTER_PREP_RELEASE="cluster-prep"
 readonly CLUSTER_PREP_NAMESPACE="conjur-oss"
-readonly CLUSTER_PREP_VALIDATOR_ID="validator"
+readonly CLUSTER_PREP_VALIDATOR_ID="apps/validator"
 readonly NAMESPACE_PREP_RELEASE="namespace-prep"
 readonly NAMESPACE_PREP_NAMESPACE="app-test"
 readonly APPLIANCE_URL="https://conjur-oss.conjur-oss.svc.cluster.local"
-readonly NAMESPACE_PREP_VALIDATOR_HOST="host/conjur/authn-k8s/my-authenticator-id/app-validator"
+readonly NAMESPACE_PREP_VALIDATOR_HOST="host/conjur/authn-k8s/my-authenticator-id/apps/app-validator"
 
 readonly TEST_WORKFLOW_DIR="./test-workflow"
 readonly CLUSTER_PREP_CHART_DIR="../helm/conjur-config-cluster-prep"
@@ -406,7 +406,7 @@ function main() {
        (! test_helm_chart $chart $test); then
       tests_failed=true
     fi
-    delete_helm_charts "$chart"
+    # delete_helm_charts "$chart"
   done
 
   # Delete the KinD cluster if requested
