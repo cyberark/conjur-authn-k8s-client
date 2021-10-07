@@ -1,0 +1,36 @@
+# Grant permission for hosts in the apps group to authenticate via kubernetes authenticator
+- !grant
+  role: !group conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/consumers
+  members:
+    - !group conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps
+
+# Grant permission for the appropriate hosts to read and execute app variables
+- !grant
+  role: !group test-summon-init-app-db
+  members:
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-summon-init
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-summon-init
+
+- !grant
+  role: !group test-summon-sidecar-app-db
+  members:
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-summon-sidecar
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-summon-sidecar
+
+- !grant
+  role: !group test-secretless-app-db
+  members:
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-secretless-broker
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-secretless-broker
+
+- !grant
+  role: !group test-secrets-provider-init-app-db
+  members:
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-secrets-provider-init
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-secrets-provider-init
+
+- !grant
+  role: !group test-secrets-provider-standalone-app-db
+  members:
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-secrets-provider-standalone
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-secrets-provider-standalone

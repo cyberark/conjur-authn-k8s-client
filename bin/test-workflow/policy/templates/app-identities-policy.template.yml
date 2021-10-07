@@ -1,0 +1,110 @@
+---
+# This policy defines a group of whitelisted identities permitted to authenticate to the authn-k8s endpoint.
+- !policy
+  id: conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps
+  annotations:
+    description: Identities permitted to authenticate
+  body:
+    - !group
+      annotations:
+        description: Group of authenticator identities permitted to call authn svc
+
+    - &hosts
+      # Annotation-based authentication (host ID is an application name, and
+      # permitted application identities are listed as annotations)
+
+      # The VALIDATOR_ID and APP_VALIDATOR host IDs can be used to validate basic
+      # authentication after a cluster or application Namespace (respectively) have
+      # been configured for authn-k8s. These host IDs do not have access to secrets
+      # (i.e. they are authenticate-only).
+      - !host
+        id: {{ VALIDATOR_ID }}
+        annotations:
+          description: Validation host used when configuring a cluster
+          authn-k8s/namespace: {{ VALIDATOR_NAMESPACE_NAME }}
+
+      - !host
+        id: {{ APP_VALIDATOR_ID }}
+        annotations:
+          description: Validation host used when configuring an application namespace
+          authn-k8s/namespace: {{ APP_VALIDATOR_NAMESPACE_NAME }}
+
+      - !host
+        id: test-app-summon-init
+        annotations:
+          authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+          authn-k8s/service-account: test-app-summon-init
+          authn-k8s/deployment: test-app-summon-init
+          authn-k8s/authentication-container-name: authenticator
+          kubernetes: "{{ IS_KUBERNETES }}"
+      - !host
+        id: test-app-summon-sidecar
+        annotations:
+          authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+          authn-k8s/service-account: test-app-summon-sidecar
+          authn-k8s/deployment: test-app-summon-sidecar
+          authn-k8s/authentication-container-name: authenticator
+          kubernetes: "{{ IS_KUBERNETES }}"
+      - !host
+        id: test-app-secretless-broker
+        annotations:
+          authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+          authn-k8s/service-account: test-app-secretless-broker
+          authn-k8s/deployment: test-app-secretless-broker
+          authn-k8s/authentication-container-name: secretless
+          kubernetes: "{{ IS_KUBERNETES }}"
+      - !host
+        id: test-app-secrets-provider-init
+        annotations:
+          authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+          authn-k8s/service-account: test-app-secrets-provider-init
+          authn-k8s/deployment: test-app-secrets-provider-init
+          authn-k8s/authentication-container-name: cyberark-secrets-provider-for-k8s
+          kubernetes: "{{ IS_KUBERNETES }}"
+      - !host
+        id: test-app-secrets-provider-standalone
+        annotations:
+          authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+          authn-k8s/service-account: secrets-provider-service-account
+          authn-k8s/authentication-container-name: cyberark-secrets-provider-for-k8s
+          kubernetes: "{{ IS_KUBERNETES }}"
+
+      - !host
+        id: oc-test-app-summon-init
+        annotations:
+          authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+          authn-k8s/service-account: oc-test-app-summon-init
+          authn-k8s/authentication-container-name: authenticator
+          openshift: "{{ IS_OPENSHIFT }}"
+      - !host
+        id: oc-test-app-summon-sidecar
+        annotations:
+          authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+          authn-k8s/service-account: oc-test-app-summon-sidecar
+          authn-k8s/authentication-container-name: authenticator
+          openshift: "{{ IS_OPENSHIFT }}"
+      - !host
+        id: oc-test-app-secretless-broker
+        annotations:
+          authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+          authn-k8s/service-account: oc-test-app-secretless-broker
+          authn-k8s/authentication-container-name: secretless
+          openshift: "{{ IS_OPENSHIFT }}"
+      - !host
+        id: oc-test-app-secrets-provider-init
+        annotations:
+          authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+          authn-k8s/service-account: oc-test-app-secrets-provider-init
+          authn-k8s/authentication-container-name: cyberark-secrets-provider-for-k8s
+          kubernetes: "{{ IS_OPENSHIFT }}"
+      - !host
+        id: oc-test-app-secrets-provider-standalone
+        annotations:
+          authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+          authn-k8s/service-account: oc-secrets-provider-service-account
+          authn-k8s/authentication-container-name: cyberark-secrets-provider-for-k8s
+          kubernetes: "{{ IS_OPENSHIFT }}"
+
+    - !grant
+      role: !group
+      members: *hosts
