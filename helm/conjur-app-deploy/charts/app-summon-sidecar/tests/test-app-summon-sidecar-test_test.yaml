@@ -59,7 +59,7 @@ tests:
           value: "conjur-connect"
      - equal:
           path: spec.template.spec.containers[1].image
-          value: "cyberark/conjur-authn-k8s-client:latest"
+          value: "docker.io/cyberark/conjur-authn-k8s-client:latest"
      - equal:
           path: spec.template.spec.containers[1].imagePullPolicy
           value: "Always"
