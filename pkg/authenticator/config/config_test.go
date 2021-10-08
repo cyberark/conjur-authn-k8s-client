@@ -55,6 +55,12 @@ func assertErrorInList(err error) errorAssertFunc {
 	}
 }
 
+func assertErrorNotInList(err error) errorAssertFunc {
+	return func(t *testing.T, errorList []error) {
+		assert.NotContains(t, errorList, err)
+	}
+}
+
 func setEnv(env map[string]string) {
 	for key, value := range env {
 		os.Setenv(key, value)
@@ -123,7 +129,7 @@ func TestGatherSettings(t *testing.T) {
 	}
 }
 
-func TestValidateSettings(t *testing.T) {
+func TestValidate(t *testing.T) {
 	TestCases := []struct {
 		description string
 		settings    AuthnSettings
@@ -144,6 +150,8 @@ func TestValidateSettings(t *testing.T) {
 				"CONTAINER_MODE":                       "init",
 				// certificate provided
 				"CONJUR_SSL_CERTIFICATE": "samplecertificate",
+				// valid version
+				"CONJUR_VERSION": "5",
 			},
 			assert: assertEmptyErrorList(),
 		},
@@ -338,16 +346,19 @@ func TestConjurVersion(t *testing.T) {
 			description: "Succeeds if version is 4",
 			version:     "4",
 			expVersion:  "4",
+			assert:      assertErrorNotInList(fmt.Errorf(logger.CAKC060, "CONJUR_VERSION", "4")),
 		},
 		{
 			description: "Succeeds if version is 5",
 			version:     "5",
 			expVersion:  "5",
+			assert:      assertErrorNotInList(fmt.Errorf(logger.CAKC060, "CONJUR_VERSION", "5")),
 		},
 		{
 			description: "Sets the default version for an empty value",
 			version:     "",
 			expVersion:  DefaultConjurVersion,
+			assert:      assertErrorNotInList(fmt.Errorf(logger.CAKC060, "CONJUR_VERSION", DefaultConjurVersion)),
 		},
 		{
 			description: "Returns error if version is invalid",
@@ -367,11 +378,10 @@ func TestConjurVersion(t *testing.T) {
 
 		t.Run(tc.description, func(t *testing.T) {
 			settings := GatherSettings(provideVersion)
-			if tc.assert == nil {
+			errLogs := settings.Validate(successfulMockReadFile)
+			tc.assert(t, errLogs)
+			if tc.expVersion != "" {
 				assert.Equal(t, tc.expVersion, settings["CONJUR_VERSION"])
-			} else {
-				errLogs := settings.Validate(successfulMockReadFile)
-				tc.assert(t, errLogs)
 			}
 		})
 	}

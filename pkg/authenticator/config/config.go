@@ -29,6 +29,7 @@ type Config struct {
 	Username                  *Username
 }
 
+// AuthnSettings represents a group of authenticator client configuration settings.
 type AuthnSettings map[string]string
 
 // Default settings (this comment added to satisfy linter)
@@ -134,7 +135,7 @@ func GatherSettings(getters ...func(key string) string) AuthnSettings {
 	return settings
 }
 
-// Validate confirms that the AuthnSettings is question yield a valid authenticator
+// Validate confirms that the given AuthnSettings yield a valid authenticator
 // client configuration. Returns a list of Error logs.
 func (settings AuthnSettings) Validate(readFileFunc ReadFileFunc) []error {
 	errorLogs := []error{}
@@ -167,9 +168,7 @@ func (settings AuthnSettings) Validate(readFileFunc ReadFileFunc) []error {
 	return errorLogs
 }
 
-// NewConfig provides a new authenticator configuration given one or more `func(key string) string` arguments.
-// This allows configuration to accept settings from multiple sources without needing to be aware
-// of how those settings are provided.
+// NewConfig provides a new authenticator configuration from an AuthnSettings map.
 func (settings AuthnSettings) NewConfig() *Config {
 	configureLogLevel(settings["DEBUG"])
 
@@ -268,9 +267,7 @@ func validConjurVersion(key, version string) error {
 	case "4":
 		break
 	case "5":
-		break // Stick with default
-	case "":
-		break // Stick with default
+		break
 	default:
 		return fmt.Errorf(log.CAKC060, key, version)
 	}
