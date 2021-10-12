@@ -11,8 +11,8 @@ pushd helm > /dev/null
   # manifests for non-helm deployment
   # include version in manifest filename
   for chart in "${HELM_CHARTS[@]}"; do
-    version=$(yq eval '.version' $chart/Chart.yaml)
-    mv $chart/generated/$chart.yaml $chart/generated/$chart-$version.yaml
+    version=$(yq eval '.version' "$chart/Chart.yaml")
+    mv "$chart/generated/$chart.yaml" "$chart/generated/$chart-$version.yaml"
   done
 
   mkdir -p artifacts/raw-k8s-manifests
@@ -24,11 +24,11 @@ pushd helm > /dev/null
 
   # helm charts
   for chart in "${HELM_CHARTS[@]}"; do
-    helm package $chart
+    helm package "$chart"
   done
 
   mkdir -p artifacts/helm-charts/
-  mv *.tgz artifacts/helm-charts/
+  mv ./*.tgz artifacts/helm-charts/
   cp conjur-config-cluster-prep/bin/get-conjur-cert.sh artifacts/
 
   # combine all the artifacts into a single archive file
@@ -36,13 +36,13 @@ pushd helm > /dev/null
   readonly REPO_NAME="${GITHUB_REPOSITORY##*/}"
   readonly TAG_NAME="${GITHUB_REF##*/}"
   readonly ARCHIVE_FILENAME="$REPO_NAME-$TAG_NAME.tar.gz"
-  tar -czf $ARCHIVE_FILENAME artifacts
+  tar -czf "$ARCHIVE_FILENAME" artifacts
 
   rm -r artifacts/*
-  mv $ARCHIVE_FILENAME artifacts/
+  mv "$ARCHIVE_FILENAME" artifacts/
 
   # cleanup
   for chart in "${HELM_CHARTS[@]}"; do
-    git restore $chart/generated
+    git restore "$chart/generated"
   done
 popd > /dev/null
