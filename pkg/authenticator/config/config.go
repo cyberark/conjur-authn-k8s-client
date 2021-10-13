@@ -37,7 +37,6 @@ const (
 	DefaultClientCertPath    = "/etc/conjur/ssl/client.pem"
 	DefaultInjectCertLogPath = "/tmp/conjur_copy_text_output.log"
 	DefaultTokenFilePath     = "/run/conjur/access-token"
-	DefaultContainerMode     = "application"
 
 	DefaultConjurVersion = "5"
 
@@ -80,7 +79,6 @@ var defaultValues = map[string]string{
 	"CONJUR_VERSION":                       DefaultConjurVersion,
 	"CONJUR_TOKEN_TIMEOUT":                 DefaultTokenRefreshTimeout,
 	"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": DefaultClientCertRetryCountLimit,
-	"CONTAINER_MODE":                       DefaultContainerMode,
 }
 
 func defaultEnv(key string) string {
@@ -252,15 +250,6 @@ func validUsername(key, value string) error {
 	return err
 }
 
-func validContainerMode(key, value string) error {
-	for _, validMode := range []string{"init", "application"} {
-		if value == validMode {
-			return nil
-		}
-	}
-	return fmt.Errorf(log.CAKC060, key, value)
-}
-
 func validConjurVersion(key, version string) error {
 	// Only versions '4' & '5' are allowed, with '5' being used as the default
 	switch version {
@@ -285,8 +274,6 @@ func validateSetting(key string, value string) error {
 		return validTimeout(key, value)
 	case "CONJUR_VERSION":
 		return validConjurVersion(key, value)
-	case "CONTAINER_MODE":
-		return validContainerMode(key, value)
 	default:
 		return nil
 	}
