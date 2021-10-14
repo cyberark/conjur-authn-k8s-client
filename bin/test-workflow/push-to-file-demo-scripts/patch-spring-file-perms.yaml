@@ -1,0 +1,5 @@
+spec:
+  template:
+    metadata:
+      annotations:
+        conjur.org/secret-file-permissions.p2f-app: "-rw-rw----"

@@ -1,0 +1,22 @@
+spec:
+  template:
+    metadata:
+      annotations:
+        conjur.org/conjur-secrets.p2f-app: |
+          - test-secrets-provider-p2f-app-db/url
+          - test-secrets-provider-p2f-app-db/username
+          - test-secrets-provider-p2f-app-db/password
+        conjur.org/secret-file-path.p2f-app: ./application.yaml
+        conjur.org/secret-file-format.p2f-app: template
+        conjur.org/secret-file-template.p2f-app: |
+          spring:
+            datasource:
+              platform: postgres
+              url: jdbc:{{ secret "url" }}
+              username: {{ secret "username" }}
+              password: {{ secret "password" }}
+            jpa:
+              generate-ddl: true
+              hibernate:
+                ddl-auto: update
+

@@ -91,6 +91,31 @@
       resources: *secrets-provider-p2f-variables
 
 - !policy
+  id: my-app-db
+  annotations:
+    description: This policy contains the creds to access the DB for an imaginary "my-app"
+
+  body:
+    - !group
+
+    - &my-app-variables
+      - !variable dev/password
+      - !variable dev/url
+      - !variable dev/username
+      - !variable dev/cert-base64
+      - !variable dev/port
+      - !variable prod/password
+      - !variable prod/url
+      - !variable prod/username
+      - !variable prod/cert-base64
+      - !variable prod/port
+
+    - !permit
+      role: !group
+      privileges: [ read, execute ]
+      resources: *my-app-variables
+
+- !policy
   id: test-secrets-provider-standalone-app-db
   annotations:
     description: This policy contains the creds to access the secrets provider app DB
