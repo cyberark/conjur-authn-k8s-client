@@ -37,7 +37,9 @@ pushd ../../helm/conjur-app-deploy > /dev/null
   secrets_provider_init_options="--set app-secrets-provider-init.enabled=true \
     --set app-secrets-provider-init.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-init \
     --set app-secrets-provider-init.conjur.authnConfigMap.name=conjur-authn-configmap-secrets-provider-init \
-    --set app-secrets-provider-init.app.platform=$PLATFORM"
+    --set app-secrets-provider-init.app.platform=$PLATFORM \
+    --set app-secrets-provider-init.secretsProvider.image.repository=docker.io/diverdane/secrets-provider-for-k8s \
+    --set app-secrets-provider-init.secretsProvider.image.tag=m1-e2e-demo"
 
   declare -A app_options
   app_options[summon-sidecar]="$summon_sidecar_options"
