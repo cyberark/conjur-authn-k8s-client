@@ -12,6 +12,13 @@ pipeline {
     cron(getDailyCronString())
   }
 
+  parameters { 
+    booleanParam(
+      name: 'TEST_OCP_NEXT',
+      description: 'Whether or not to run the pipeline against the next OCP version',
+      defaultValue: true) 
+  }
+
   stages {
     stage('Validate') {
       parallel {
@@ -107,6 +114,14 @@ pipeline {
                 sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift'
               }
             }
+            stage('OSS in OpenShift v(next)') {
+              when {
+                expression { params.TEST_OCP_NEXT }
+              }
+              steps {
+                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift'
+              }
+            }
           }
         }
         stage('Enterprise in Jenkins') {
@@ -126,6 +141,18 @@ pipeline {
                   HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
                   echo "HOST_IP=${HOST_IP}"
                   cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins
+                '''
+              }
+            }
+            stage('Test app in OpenShift v(next)') {
+              when {
+                expression { params.TEST_OCP_NEXT }
+              }
+              steps {
+                sh '''
+                  HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
+                  echo "HOST_IP=${HOST_IP}"
+                  cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins
                 '''
               }
             }
