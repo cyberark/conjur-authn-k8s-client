@@ -7,10 +7,13 @@ import (
 	"encoding/pem"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/memory"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 )
 
@@ -100,5 +103,55 @@ func TestAuthenticator(t *testing.T) {
 			_, err := os.Stat(path)
 			So(os.IsNotExist(err), ShouldBeTrue)
 		})
+	})
+
+	t.Run("retrieves access token", func(t *testing.T) {
+		// Create a temporary file for storing the client cert. This will allow multiple tests to run in parallel
+		tmpDir := t.TempDir()
+		clientCertPath := filepath.Join(tmpDir, "etc:conjur:ssl:client.pem")
+		certLogPath := filepath.Join(tmpDir, "tmp:conjur_copy_text_output.log")
+		tokenPath := filepath.Join(tmpDir, "run:conjur:access-token")
+
+		// Start up a test server to mock the Conjur server's auth endpoints
+		ts := testServer(clientCertPath, "some token")
+		defer ts.Close()
+
+		// Create an authenticator with dummy config
+		at, _ := memory.NewAccessToken()
+		sslcert := pem.EncodeToMemory(&pem.Block{
+			Type:  "CERTIFICATE",
+			Bytes: ts.Certificate().Raw,
+		})
+		username, _ := config.NewUsername("host/test-user")
+
+		cfg := config.Config{
+			Account:                   "account",
+			ClientCertPath:            clientCertPath,
+			ClientCertRetryCountLimit: 1,
+			ContainerMode:             "doesntmatter",
+			ConjurVersion:             "5",
+			InjectCertLogPath:         certLogPath,
+			PodName:                   "somepodname",
+			PodNamespace:              "somepodnamespace",
+			SSLCertificate:            sslcert,
+			TokenFilePath:             tokenPath,
+			TokenRefreshTimeout:       0,
+			URL:                       ts.URL,
+			Username:                  username,
+		}
+
+		authn, err := NewWithAccessToken(cfg, at)
+		if !assert.NoError(t, err) {
+			return
+		}
+
+		err = authn.Authenticate()
+		if !assert.NoError(t, err) {
+			return
+		}
+
+		// Check that the access token was set correctly
+		token, _ := authn.AccessToken.Read()
+		assert.Equal(t, token, []byte("some token"))
 	})
 }
