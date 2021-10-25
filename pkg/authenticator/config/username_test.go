@@ -2,63 +2,63 @@ package config
 
 import (
 	"fmt"
-
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestUsername(t *testing.T) {
-	Convey("NewUsername", t, func() {
-		Convey("Given a valid host's username", func() {
-			Convey("that is longer than 4 parts", func() {
-				username := "host/path/to/policy/namespace/resource_type/resource_id"
-				expectedPrefix := "host.path.to.policy"
-				expectedSuffix := "namespace.resource_type.resource_id"
+func TestNewUsername(t *testing.T) {
+	t.Run("longer than 4 parts", func(t *testing.T) {
+		// SETUP & EXERCISE
+		usernameStruct, err := NewUsername(
+			"host/path/to/policy/namespace/resource_type/resource_id",
+		)
+		if !assert.NoError(t, err) {
+			return
+		}
 
-				usernameStruct, err := NewUsername(username)
-				Convey("Finishes without raising an error", func() {
-					So(err, ShouldBeNil)
-				})
+		// ASSERT
+		assert.Equal(t, "host.path.to.policy", usernameStruct.Prefix)
+		assert.Equal(t,  "namespace.resource_type.resource_id", usernameStruct.Suffix)
+	})
 
-				Convey("The suffix include the last 3 parts", func() {
-					So(usernameStruct.Prefix, ShouldEqual, expectedPrefix)
-					So(usernameStruct.Suffix, ShouldEqual, expectedSuffix)
-				})
-			})
+	t.Run("shorter than 4 parts", func(t *testing.T) {
+		// SETUP & EXERCISE
+		usernameStruct, err := NewUsername("host/policy/host_id")
+		if !assert.NoError(t, err) {
+			return
+		}
 
-			Convey("that is shorter than 4 parts", func() {
-				username := "host/policy/host_id"
-				expectedPrefix := "host.policy"
-				expectedSuffix := "host_id"
+		// ASSERT
+		assert.Equal(t, "host.policy", usernameStruct.Prefix)
+		assert.Equal(t,  "host_id", usernameStruct.Suffix)
+	})
 
-				usernameStruct, err := NewUsername(username)
-				Convey("Finishes without raising an error", func() {
-					So(err, ShouldBeNil)
-				})
 
-				Convey("The suffix includes only the host id", func() {
-					So(usernameStruct.Prefix, ShouldEqual, expectedPrefix)
-					So(usernameStruct.Suffix, ShouldEqual, expectedSuffix)
-				})
-			})
-		})
+	t.Run("missing host/ prefix", func(t *testing.T) {
+		// SETUP & EXERCISE
+		_, err := NewUsername("namespace/resource_type/resource_id")
+		if !assert.Error(t, err) {
+			return
+		}
 
-		Convey("Given a username that doesn't start with 'host/'", func() {
-			username := "namespace/resource_type/resource_id"
+		assert.Contains(t, err.Error(), "CAKC032")
+	})
 
-			_, err := NewUsername(username)
-			Convey("Raises an invalid username error", func() {
-				So(err.Error(), ShouldStartWith, "CAKC032")
-			})
-		})
+	t.Run("string representation", func(t *testing.T) {
+		// SETUP & EXERCISE
+		usernameStruct, err := NewUsername(
+			"host/path/to/policy/namespace/resource_type/resource_id",
+		)
+		if !assert.NoError(t, err) {
+			return
+		}
 
-		Convey("String representation of username only shows full username", func() {
-			username := "host/path/to/policy/namespace/resource_type/resource_id"
-
-			usernameStruct, _ := NewUsername(username)
-			usernameStructStr := fmt.Sprintf("%s", usernameStruct)
-			So(usernameStructStr, ShouldEqual, username)
-		})
+		// ASSERT
+		assert.Equal(
+			t,
+			"host/path/to/policy/namespace/resource_type/resource_id",
+			fmt.Sprintf("%s", usernameStruct),
+		)
 	})
 }
