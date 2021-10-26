@@ -75,8 +75,38 @@ func NewWithAccessToken(config authnConfig.Config, accessToken access_token.Acce
 	}, nil
 }
 
-// GenerateCSR prepares the CSR
-func (auth *Authenticator) GenerateCSR(commonName string) ([]byte, error) {
+// Authenticate sends Conjur an authenticate request and writes the response
+// to the token file (after decrypting it if needed). It also manages state of
+// certificates.
+func (auth *Authenticator) Authenticate() error {
+	log.Info(log.CAKC040, auth.Config.Username)
+
+	err := auth.loginIfNeeded()
+	if err != nil {
+		return err
+	}
+
+	authenticationResponse, err := auth.sendAuthenticationRequest()
+	if err != nil {
+		return err
+	}
+
+	parsedResponse, err := auth.parseAuthenticationResponse(authenticationResponse)
+	if err != nil {
+		return err
+	}
+
+	err = auth.AccessToken.Write(parsedResponse)
+	if err != nil {
+		return err
+	}
+
+	log.Info(log.CAKC035)
+	return nil
+}
+
+// generateCSR prepares the CSR
+func (auth *Authenticator) generateCSR(commonName string) ([]byte, error) {
 	sanURIString, err := generateSANURI(auth.Config.PodNamespace, auth.Config.PodName)
 	sanURI, err := url.Parse(sanURIString)
 	if err != nil {
@@ -109,13 +139,13 @@ func (auth *Authenticator) GenerateCSR(commonName string) ([]byte, error) {
 	return x509.CreateCertificateRequest(rand.Reader, &template, auth.privateKey)
 }
 
-// Login sends Conjur a CSR and verifies that the client cert is
+// login sends Conjur a CSR and verifies that the client cert is
 // successfully retrieved
-func (auth *Authenticator) Login() error {
+func (auth *Authenticator) login() error {
 
 	log.Debug(log.CAKC041, auth.Config.Username)
 
-	csrRawBytes, err := auth.GenerateCSR(auth.Config.Username.Suffix)
+	csrRawBytes, err := auth.generateCSR(auth.Config.Username.Suffix)
 
 	csrBytes := pem.EncodeToMemory(&pem.Block{
 		Type: "CERTIFICATE REQUEST", Bytes: csrRawBytes,
@@ -187,8 +217,8 @@ func (auth *Authenticator) IsLoggedIn() bool {
 	return auth.PublicCert != nil
 }
 
-// IsCertExpired returns true if certificate is expired or close to expiring
-func (auth *Authenticator) IsCertExpired() bool {
+// isCertExpired returns true if certificate is expired or close to expiring
+func (auth *Authenticator) isCertExpired() bool {
 	certExpiresOn := auth.PublicCert.NotAfter.UTC()
 	currentDate := time.Now().UTC()
 
@@ -199,53 +229,23 @@ func (auth *Authenticator) IsCertExpired() bool {
 	return currentDate.Add(bufferTime).After(certExpiresOn)
 }
 
-// Authenticate sends Conjur an authenticate request and writes the response
-// to the token file (after decrypting it if needed). It also manages state of
-// certificates.
-func (auth *Authenticator) Authenticate() error {
-	log.Info(log.CAKC040, auth.Config.Username)
-
-	err := auth.loginIfNeeded()
-	if err != nil {
-		return err
-	}
-
-	authenticationResponse, err := auth.sendAuthenticationRequest()
-	if err != nil {
-		return err
-	}
-
-	parsedResponse, err := auth.parseAuthenticationResponse(authenticationResponse)
-	if err != nil {
-		return err
-	}
-
-	err = auth.AccessToken.Write(parsedResponse)
-	if err != nil {
-		return err
-	}
-
-	log.Info(log.CAKC035)
-	return nil
-}
-
 // loginIfNeeded checks if we need to send a login request to Conjur and sends
 // one if needed
 func (auth *Authenticator) loginIfNeeded() error {
 	if !auth.IsLoggedIn() {
 		log.Debug(log.CAKC039)
 
-		if err := auth.Login(); err != nil {
+		if err := auth.login(); err != nil {
 			return log.RecordedError(log.CAKC015)
 		}
 
 		log.Debug(log.CAKC036)
 	}
 
-	if auth.IsCertExpired() {
+	if auth.isCertExpired() {
 		log.Debug(log.CAKC038)
 
-		if err := auth.Login(); err != nil {
+		if err := auth.login(); err != nil {
 			return err
 		}
 

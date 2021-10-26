@@ -48,7 +48,7 @@ func TestAuthenticator_GenerateCSR(t *testing.T) {
 
 	// EXERCISE
 	// Generate the CSR
-	csr, err := authn.GenerateCSR("host.path.to.policy")
+	csr, err := authn.generateCSR("host.path.to.policy")
 	assert.NoError(t, err)
 
 	// ASSERT
@@ -82,7 +82,7 @@ func TestAuthenticator_IsCertExpired(t *testing.T) {
 		}
 
 		// EXERCISE
-		isExpired := authn.IsCertExpired()
+		isExpired := authn.isCertExpired()
 
 		// ASSERT
 		assert.False(t, isExpired)
@@ -97,7 +97,7 @@ func TestAuthenticator_IsCertExpired(t *testing.T) {
 		}
 
 		// EXERCISE
-		isExpired := authn.IsCertExpired()
+		isExpired := authn.isCertExpired()
 
 		// ASSERT
 		assert.True(t, isExpired)
