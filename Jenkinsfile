@@ -114,14 +114,14 @@ pipeline {
                 sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift'
               }
             }
-            stage('OSS in OpenShift v(next)') {
-              when {
-                expression { params.TEST_OCP_NEXT }
-              }
-              steps {
-                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift'
-              }
-            }
+          }
+        }
+        stage('OSS in OpenShift v(next)') {
+          when {
+            expression { params.TEST_OCP_NEXT }
+          }
+          steps {
+            sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift'
           }
         }
         stage('Enterprise in Jenkins') {
