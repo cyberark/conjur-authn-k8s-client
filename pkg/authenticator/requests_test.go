@@ -3,26 +3,21 @@ package authenticator
 import (
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestRequests(t *testing.T) {
-	Convey("LoginRequest", t, func() {
-		conjurVersion := "5"
-		authnURL := "dummyURL"
-		csrBytes := []byte("dummyCSRBytes")
+func TestLoginRequest(t *testing.T) {
+	// SETUP
+	conjurVersion := "5"
+	authnURL := "dummyURL"
+	csrBytes := []byte("dummyCSRBytes")
 
-		Convey("Given a host's username prefix", func() {
-			usernamePrefix := "host.path.to.policy"
+	// EXERCISE
+	req, err := LoginRequest(authnURL, conjurVersion, csrBytes, "host.path.to.policy")
+	if !assert.NoError(t, err) {
+		return
+	}
 
-			req, err := LoginRequest(authnURL, conjurVersion, csrBytes, usernamePrefix)
-			Convey("Finishes without raising an error", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("Includes the username prefix in the 'Host-Id-Prefix' header", func() {
-				So(req.Header.Get("Host-Id-Prefix"), ShouldEqual, usernamePrefix)
-			})
-		})
-	})
+	// ASSERT
+	assert.Equal(t, "host.path.to.policy", req.Header.Get("Host-Id-Prefix"))
 }

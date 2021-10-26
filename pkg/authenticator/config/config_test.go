@@ -216,7 +216,10 @@ func TestValidate(t *testing.T) {
 
 	for _, tc := range TestCases {
 		t.Run(tc.description, func(t *testing.T) {
+			// SETUP & EXERCISE
 			errLogs := tc.settings.Validate(successfulMockReadFile)
+
+			// ASSERT
 			tc.assert(t, errLogs)
 		})
 	}
@@ -306,9 +309,11 @@ func TestFromEnv(t *testing.T) {
 
 	for _, tc := range TestCases {
 		t.Run(tc.description, func(t *testing.T) {
+			// SETUP & EXERCISE
 			setEnv(tc.env)
 			config, err := FromEnv(successfulMockReadFile)
 
+			// ASSERT
 			if tc.expectErr {
 				assert.Nil(t, config)
 				assert.NotNil(t, err)
@@ -363,8 +368,11 @@ func TestConjurVersion(t *testing.T) {
 		}
 
 		t.Run(tc.description, func(t *testing.T) {
+			// SETUP & EXERCISE
 			settings := GatherSettings(provideVersion)
 			errLogs := settings.Validate(successfulMockReadFile)
+
+			// ASSERT
 			tc.assert(t, errLogs)
 			if tc.expVersion != "" {
 				assert.Equal(t, tc.expVersion, settings["CONJUR_VERSION"])
@@ -452,12 +460,15 @@ func TestDebugLogging(t *testing.T) {
 	}
 
 	for _, tc := range TestCases {
+		// SETUP
 		var logBuffer bytes.Buffer
 		logger.InfoLogger = log.New(&logBuffer, "", 0)
 
+		// EXERCISE
 		config := tc.settings.NewConfig()
 		assert.NotNil(t, config)
 
+		// ASSERT
 		logMessages := logBuffer.String()
 		if tc.debugValue == "true" {
 			assert.Contains(t, logMessages, "CAKC052")

@@ -4,9 +4,9 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/asn1"
 	"encoding/pem"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -32,80 +32,97 @@ func parseCert(filename string) (*x509.Certificate, error) {
 	return cert, nil
 }
 
-func TestAuthenticator(t *testing.T) {
-	Convey("IsCertExpired", t, func() {
-		Convey("Returns false if cert is not expired", func() {
-			goodCert, err := parseCert("testdata/good_cert.crt")
-			So(err, ShouldBeNil)
+func TestAuthenticator_GenerateCSR(t *testing.T) {
+	// SETUP
+	// Create a minimal authenticator with a minimal config
+	authnConfig := config.Config{
+		PodName:      "testPodName",
+		PodNamespace: "testPodNamespace",
+	}
+	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
+	assert.NoError(t, err)
 
-			authn := Authenticator{
-				PublicCert: goodCert,
-			}
+	authn := &Authenticator{
+		Config:     authnConfig,
+		privateKey: signingKey,
+	}
 
-			So(authn.IsCertExpired(), ShouldEqual, false)
-		})
+	// EXERCISE
+	// Generate the CSR
+	csr, err := authn.GenerateCSR("host.path.to.policy")
+	assert.NoError(t, err)
 
-		Convey("Returns true if cert is expired", func() {
-			expiredCert, err := parseCert("testdata/expired_cert.crt")
-			So(err, ShouldBeNil)
+	// ASSERT
+	// Parse the generated CSR using the stdlib to ensure
+	// it has the properties we expect
+	parsedCsr, err := x509.ParseCertificateRequest(csr)
+	assert.NoError(t, err)
 
-			authn := Authenticator{
-				PublicCert: expiredCert,
-			}
+	// Assert on common name
+	assert.Equal(t, "host.path.to.policy", parsedCsr.Subject.CommonName)
 
-			So(authn.IsCertExpired(), ShouldEqual, true)
-		})
-	})
+	// Assert on spiffe SAN
+	assert.Len(t, parsedCsr.Extensions, 1)
+	var sans []asn1.RawValue
+	_, _ = asn1.Unmarshal(parsedCsr.Extensions[0].Value, &sans)
+	assert.Len(t, sans, 1)
+	assert.Equal(
+		t,
+		"spiffe://cluster.local/namespace/testPodNamespace/podname/testPodName",
+		string(sans[0].Bytes),
+	)
+}
 
-	Convey("GenerateCSR", t, func() {
-		// Create a minimal authenticator with a minimal config
-		authnConfig := config.Config{
-			PodName:      "testPod",
-			PodNamespace: "testNameSpace",
+func TestAuthenticator_IsCertExpired(t *testing.T) {
+	t.Run("Active cert", func(t *testing.T) {
+		// SETUP
+		activeCert, err := parseCert("testdata/good_cert.crt")
+		assert.NoError(t, err)
+		authn := Authenticator{
+			PublicCert: activeCert,
 		}
 
-		signingKey, _ := rsa.GenerateKey(rand.Reader, 1024)
-		authn := &Authenticator{
-			Config:     authnConfig,
-			privateKey: signingKey,
-		}
+		// EXERCISE
+		isExpired := authn.IsCertExpired()
 
-		Convey("Given a common-name", func() {
-			commonName := "host.path.to.policy"
-			csr, err := authn.GenerateCSR(commonName)
-			Convey("Finishes without raising an error", func() {
-				So(err, ShouldBeNil)
-			})
-
-			// decrypt the CSR
-			csrDecrypted, _ := x509.ParseCertificateRequest(csr)
-			Convey("Inserts the common-name in the subject", func() {
-				So(csrDecrypted.Subject.CommonName, ShouldEqual, commonName)
-			})
-		})
+		// ASSERT
+		assert.False(t, isExpired)
 	})
 
-	Convey("consumeInjectClientCertError", t, func() {
-		path := "/tmp/test_file"
-		dataStr := "some\ntext\n"
-		err := ioutil.WriteFile(path, []byte(dataStr), 0644)
-		if err != nil {
-			t.FailNow()
+	t.Run("Expired cert", func(t *testing.T) {
+		// SETUP
+		expiredCert, err := parseCert("testdata/expired_cert.crt")
+		assert.NoError(t, err)
+		authn := Authenticator{
+			PublicCert: expiredCert,
 		}
 
-		content := consumeInjectClientCertError(path)
+		// EXERCISE
+		isExpired := authn.IsCertExpired()
 
-		Convey("Gets the content from the file", func() {
-			So(content, ShouldResemble, dataStr)
-		})
-
-		Convey("Deletes the file", func() {
-			_, err := os.Stat(path)
-			So(os.IsNotExist(err), ShouldBeTrue)
-		})
+		// ASSERT
+		assert.True(t, isExpired)
 	})
+}
 
-	t.Run("retrieves access token", func(t *testing.T) {
+func Test_consumeInectClientCertError(t *testing.T) {
+	// SETUP
+	path := "/tmp/test_file"
+	expectedErr := "some\ntext\n"
+	err := ioutil.WriteFile(path, []byte(expectedErr), 0644)
+	assert.NoError(t, err)
+
+	// EXERCISE
+	consumedErr := consumeInjectClientCertError(path)
+
+	// ASSERT
+	assert.Equal(t, expectedErr, consumedErr)
+	assert.NoFileExists(t, path)
+
+}
+
+func TestAuthenticator_Authenticate(t *testing.T) {
+	t.Run("happy path", func(t *testing.T) {
 		// Create a temporary file for storing the client cert. This will allow multiple tests to run in parallel
 		tmpDir := t.TempDir()
 		clientCertPath := filepath.Join(tmpDir, "etc:conjur:ssl:client.pem")
