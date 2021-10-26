@@ -15,23 +15,41 @@ import (
 	"time"
 )
 
+type TestAuthServer struct {
+	Server             *httptest.Server
+	ClientCertPath     string
+	CertLogPath        string
+	ExpectedTokenValue string
+	SkipWritingCSRFile bool
+	HandleLogin        func(
+		loginCsr *x509.CertificateRequest,
+		loginCsrErr error,
+	)
+}
+
 // testServer creates, for testing purposes, an http server on a random port that mocks conjur's
 // login and authenticate endpoints.
-func testServer(clientCertPath, expectedTokenValue string) *httptest.Server {
+func NewTestAuthServer(clientCertPath, certLogPath, expectedTokenValue string, skipWritingCSRfile bool) *TestAuthServer {
+	ts := &TestAuthServer{
+		ClientCertPath:     clientCertPath,
+		CertLogPath:        certLogPath,
+		ExpectedTokenValue: expectedTokenValue,
+		SkipWritingCSRFile: skipWritingCSRfile,
+	}
+
 	authnCACertificate := &x509.Certificate{
 		SerialNumber: big.NewInt(2021),
 	}
 	authnCAPrivKey, _ := rsa.GenerateKey(rand.Reader, 4096)
 
-	var loginCsr *x509.CertificateRequest
-	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts.Server = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		if strings.HasSuffix(r.URL.Path, "/authenticate") {
 			// Peer certificate from mutual auth
 
 			// Respond with a dummy token
 			w.WriteHeader(201)
-			w.Write([]byte(expectedTokenValue))
+			w.Write([]byte(ts.ExpectedTokenValue))
 		}
 
 		if strings.HasPrefix(r.URL.Path, "/inject_client_cert") {
@@ -41,9 +59,20 @@ func testServer(clientCertPath, expectedTokenValue string) *httptest.Server {
 			defer r.Body.Close()
 
 			csrBlock, _ := pem.Decode(body)
-			loginCsr, _ = x509.ParseCertificateRequest(csrBlock.Bytes)
+			loginCsr, err := x509.ParseCertificateRequest(csrBlock.Bytes)
+			if ts.HandleLogin != nil {
+				ts.HandleLogin(loginCsr, err)
+			}
 
-			w.WriteHeader(201)
+			w.WriteHeader(202)
+
+			if ts.SkipWritingCSRFile {
+				err := ioutil.WriteFile(ts.CertLogPath, []byte("error writing csr file\n"), os.ModePerm)
+				if err != nil {
+					panic(err)
+				}
+				return
+			}
 
 			// Create client certificate template
 			clientCRTTemplate := x509.Certificate{
@@ -71,8 +100,8 @@ func testServer(clientCertPath, expectedTokenValue string) *httptest.Server {
 				authnCAPrivKey,
 			)
 			// Save the certificate
-			err := ioutil.WriteFile(
-				clientCertPath,
+			err = ioutil.WriteFile(
+				ts.ClientCertPath,
 				pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: clientCRTRaw}),
 				os.ModePerm,
 			)
@@ -82,8 +111,8 @@ func testServer(clientCertPath, expectedTokenValue string) *httptest.Server {
 		}
 
 	}))
-	ts.StartTLS()
-	ts.TLS.ClientAuth = tls.RequestClientCert
+	ts.Server.StartTLS()
+	ts.Server.TLS.ClientAuth = tls.RequestClientCert
 
 	return ts
 }
