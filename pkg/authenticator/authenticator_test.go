@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/memory"
