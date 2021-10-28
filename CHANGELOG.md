@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+- The project Golang version is updated from the end-of-life v1.15 to version v1.16. [cyberark/conjur-authn-k8s-client#416](https://github.com/cyberark/conjur-authn-k8s-client/pull/416)
+
 ## [0.22.0] - 2021-09-17
 ### Added
 - Introduces the `conjur-config-cluster-prep.yaml` and `conjur-config-namespace-prep.yaml` raw Kubernetes manifests generated from their corresponding Helm charts. These manifests provide an alternative method of configuring a Kubernetes cluster for the deployment of Conjur-authenticated applications for users unable to use  Helm in their environment.
