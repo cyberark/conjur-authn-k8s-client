@@ -32,6 +32,7 @@ readonly APPS=(
   "test-summon-sidecar-app"
   "test-secretless-app"
   "test-secrets-provider-init-app"
+  "test-secrets-provider-p2f-app"
   "test-secrets-provider-standalone-app"
 )
 

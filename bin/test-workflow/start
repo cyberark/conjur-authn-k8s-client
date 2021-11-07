@@ -29,6 +29,8 @@ Usage: ./start [options]:
                               Currently supports:
                                 - summon-sidecar
                                 - secretless-broker
+                                - secrets-provider-init
+                                - secrets-provider-p2f
                                 - secrets-provider-standalone
     -n, --nocleanup           Do not run the cleanup scripts, all resources are maintained.
                               All other selections are rejected
@@ -44,7 +46,7 @@ function cleanup {
   fi
 }
 
-declare -a supported_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init")
+declare -a supported_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init" "secrets-provider-p2f")
 # Default: Test all applications
 declare -a install_apps=("${supported_apps[@]}")
 
@@ -56,9 +58,9 @@ while true; do
         if [[ ! " ${supported_apps[@]} " =~ " $app " ]]; then
           echo "$app is not a supported test app!"
           echo "Supported test apps include:"
-          echo "  - summon-sidecar"
-          echo "  - secretless-broker"
-          echo "  - secrets-provider-init"
+          for app in "${supported_apps[@]}"; do
+            echo "  - $app"
+          done
           exit 1
         fi
       done
