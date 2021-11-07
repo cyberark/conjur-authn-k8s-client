@@ -24,5 +24,8 @@ app-secretless-broker:
 app-secrets-provider-init:
   enabled: false
 
+app-secrets-provider-p2f:
+  enabled: false
+
 app-secrets-provider-standalone:
   enabled: false
