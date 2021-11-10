@@ -58,7 +58,7 @@ The workflow currently supports testing Kubernetes authentication against Conjur
 
 ### Steps
 
-1) Prepare Environment
+1) Prepare Environment (_Persona: Kubernetes Cluster Admin_)
 
     - The following scripts use environment variables to persist information regarding the workflow's configuration. Each is set to a default value, and can be changed by setting the envvar before invoking the script.
 
@@ -67,7 +67,7 @@ The workflow currently supports testing Kubernetes authentication against Conjur
       source ./0_prep_env.sh
       ```
 
-2) Deploy Conjur to Kubernetes Cluster
+2) Deploy Conjur to Kubernetes Cluster (_Persona: Kubernetes Cluster Admin_)
 
     - The workflow can either deploy Conjur Open Source or Conjur Enterprise, and decides based on the `CONJUR_OSS_HELM_INSTALLED` environment variable
         - Deploy Conjur Open Source to KinD
@@ -87,14 +87,14 @@ The workflow currently supports testing Kubernetes authentication against Conjur
       ./1_deploy_conjur.sh
       ```
 
-3) Load Conjur Policy
+3) Load Conjur Policy (_Persona: Conjur Admin_)
 
     - This step loads Conjur policy in order to:
 
-        - [Prepare Kubernetes authenticator in Conjur](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/bin/test-workflow/policy/templates/cluster-authn-svc-def.template.yml)
-        - [Prepare PetStore app identities](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/bin/test-workflow/policy/templates/project-authn-def.template.yml)
-        - [Permit identities to use the authenticator](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/bin/test-workflow/policy/templates/app-identity-def.template.yml)
-        - [Prepare app credentials in Conjur](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/bin/test-workflow/policy/app-access.yml)
+        - [Prepare Kubernetes authenticator in Conjur](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/bin/test-workflow/policy/templates/authenticator-policy.template.yml)
+        - [Prepare PetStore app identities](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/bin/test-workflow/policy/templates/app-identities-policy.template.yml)
+        - [Permit identities to use the authenticator](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/bin/test-workflow/policy/templates/app-grants.template.yml)
+        - [Prepare app credentials in Conjur](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/bin/test-workflow/policy/app-policy.yml)
 
     - To load all Conjur policy needed for the demo app to use the Conjur Kubernetes sidecar authenticator, run:
       ```bash
@@ -107,7 +107,7 @@ The workflow currently supports testing Kubernetes authentication against Conjur
       Conjur policy loaded.
       ```
 
-4) Initialize Kubernetes Authenticator Certificate Authority
+4) Initialize Kubernetes Authenticator Certificate Authority (_Persona: Conjur Admin_)
 
     - To initialize the Kubenetes authenticator CA, run:
       ```bash
@@ -119,7 +119,7 @@ The workflow currently supports testing Kubernetes authentication against Conjur
       Certificate authority initialized.
       ```
 
-5) Cluster Preparation
+5) Cluster Preparation (_Persona: Conjur Admin_)
 
     - In this step, the Kubernetes cluster is prepared to enable applications to authenticate with Conjur Open Source using:
 
@@ -147,7 +147,7 @@ The workflow currently supports testing Kubernetes authentication against Conjur
 
     - More context on this step can be found in the [`helm/conjur-config-cluster-prep`](https://github.com/cyberark/conjur-authn-k8s-client/tree/master/helm/conjur-config-cluster-prep) directory.
 
-6) App Namespace Preparation
+6) App Namespace Preparation (_Persona: App developer / DevOps engineer_)
 
     - In this step, a new namespace is created in the Kubernetes cluster for the PetStore test app deployment, and it is prepared to authenticate with Conjur Open Source using:
 
@@ -171,7 +171,7 @@ The workflow currently supports testing Kubernetes authentication against Conjur
 
     - More context on this step can be found in the [`helm/conjur-config-namespace-prep`](https://github.com/cyberark/conjur-authn-k8s-client/tree/master/helm/conjur-config-namespace-prep) directory.
 
-7) Deploy PetStore App
+7) Deploy PetStore App (_Persona: App developer / DevOps engineer_)
 
     - At this point in the workflow:
 
@@ -216,7 +216,7 @@ Kubernetes sidecar authenticator, and are performed by the Kubernetes Admin.
               Test app/sidecar deployed.
               ```
 
-8) Verify Deployment and Conjur Kubernetes Authenticator
+8) Verify Deployment and Conjur Kubernetes Authenticator (_Persona: App developer / DevOps engineer_)
 
     - Verify the PetSore app's deployment with:
       ```bash
