@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -38,9 +38,9 @@ func (m mockGetEnv) getEnv(name string) string {
 }
 
 func TestEnvironmentVariable(t *testing.T) {
-	Convey("IntFromEnvOrDefault", t, func() {
-		Convey("When parsing an int value", func() {
-			Convey("That was retrieved from the env", func() {
+	t.Run("IntFromEnvOrDefault", func(t *testing.T) {
+		t.Run("When parsing an int value", func(t *testing.T) {
+			t.Run("That was retrieved from the env", func(t *testing.T) {
 				mockGetEnv := newMockGetEnv(intValueStr)
 				intValue, err := IntFromEnvOrDefault(
 					envVarName,
@@ -48,20 +48,16 @@ func TestEnvironmentVariable(t *testing.T) {
 					mockGetEnv.getEnv,
 				)
 
-				Convey("Finishes without raising an error", func() {
-					So(err, ShouldEqual, nil)
+				t.Run("Finishes without raising an error", func(t *testing.T) {
+					assert.NoError(t, err)
 				})
 
-				Convey("Parses the value into an int", func() {
-					So(
-						intValue,
-						ShouldResemble,
-						expectedIntValue,
-					)
+				t.Run("Parses the value into an int", func(t *testing.T) {
+					assert.EqualValues(t, expectedIntValue, intValue)
 				})
 			})
 
-			Convey("That was given as a default value", func() {
+			t.Run("That was given as a default value", func(t *testing.T) {
 				mockGetEnv := newMockGetEnv("")
 				intValue, err := IntFromEnvOrDefault(
 					envVarName,
@@ -69,21 +65,17 @@ func TestEnvironmentVariable(t *testing.T) {
 					mockGetEnv.getEnv,
 				)
 
-				Convey("Finishes without raising an error", func() {
-					So(err, ShouldEqual, nil)
+				t.Run("Finishes without raising an error", func(t *testing.T) {
+					assert.NoError(t, err)
 				})
 
-				Convey("Parses the value into an int", func() {
-					So(
-						intValue,
-						ShouldResemble,
-						defaultIntValue,
-					)
+				t.Run("Parses the value into an int", func(t *testing.T) {
+					assert.EqualValues(t, defaultIntValue, intValue)
 				})
 			})
 		})
 
-		Convey("When parsing a non-int value", func() {
+		t.Run("When parsing a non-int value", func(t *testing.T) {
 			mockGetEnv := newMockGetEnv(InvalidValueStr)
 			_, err := IntFromEnvOrDefault(
 				envVarName,
@@ -97,15 +89,15 @@ func TestEnvironmentVariable(t *testing.T) {
 				"strconv.Atoi: parsing \"SOME_ENV_VAR_VALUE\": invalid syntax",
 			)
 
-			Convey("Raises a proper error", func() {
-				So(err, ShouldResemble, expectedError)
+			t.Run("Raises a proper error", func(t *testing.T) {
+				assert.EqualError(t, err, expectedError.Error())
 			})
 		})
 	})
 
-	Convey("DurationFromEnvOrDefault", t, func() {
-		Convey("When parsing a duration value", func() {
-			Convey("That was retrieved from the env", func() {
+	t.Run("DurationFromEnvOrDefault", func(t *testing.T) {
+		t.Run("When parsing a duration value", func(t *testing.T) {
+			t.Run("That was retrieved from the env", func(t *testing.T) {
 				mockGetEnv := newMockGetEnv(durationValueStr)
 				durationValue, err := DurationFromEnvOrDefault(
 					envVarName,
@@ -113,20 +105,16 @@ func TestEnvironmentVariable(t *testing.T) {
 					mockGetEnv.getEnv,
 				)
 
-				Convey("Finishes without raising an error", func() {
-					So(err, ShouldEqual, nil)
+				t.Run("Finishes without raising an error", func(t *testing.T) {
+					assert.NoError(t, err)
 				})
 
-				Convey("Parses the value into a duration", func() {
-					So(
-						durationValue,
-						ShouldResemble,
-						expectedDurationValue,
-					)
+				t.Run("Parses the value into a duration", func(t *testing.T) {
+					assert.EqualValues(t, expectedDurationValue, durationValue)
 				})
 			})
 
-			Convey("That was given as a default value", func() {
+			t.Run("That was given as a default value", func(t *testing.T) {
 				mockGetEnv := newMockGetEnv("")
 				durationValue, err := DurationFromEnvOrDefault(
 					envVarName,
@@ -134,21 +122,17 @@ func TestEnvironmentVariable(t *testing.T) {
 					mockGetEnv.getEnv,
 				)
 
-				Convey("Finishes without raising an error", func() {
-					So(err, ShouldEqual, nil)
+				t.Run("Finishes without raising an error", func(t *testing.T) {
+					assert.NoError(t, err)
 				})
 
-				Convey("Parses the value into a duration", func() {
-					So(
-						durationValue,
-						ShouldResemble,
-						defaultDurationValue,
-					)
+				t.Run("Parses the value into a duration", func(t *testing.T) {
+					assert.EqualValues(t, defaultDurationValue, durationValue)
 				})
 			})
 		})
 
-		Convey("When parsing a non-duration value", func() {
+		t.Run("When parsing a non-duration value", func(t *testing.T) {
 			mockGetEnv := newMockGetEnv(InvalidValueStr)
 			_, err := DurationFromEnvOrDefault(
 				envVarName,
@@ -162,8 +146,8 @@ func TestEnvironmentVariable(t *testing.T) {
 				"time: invalid duration \"SOME_ENV_VAR_VALUE\"",
 			)
 
-			Convey("Raises a proper error", func() {
-				So(err, ShouldResemble, expectedError)
+			t.Run("Raises a proper error", func(t *testing.T) {
+				assert.EqualError(t, err, expectedError.Error())
 			})
 		})
 	})

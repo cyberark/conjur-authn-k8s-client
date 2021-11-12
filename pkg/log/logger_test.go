@@ -6,47 +6,47 @@ import (
 	"log"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAuthenticator(t *testing.T) {
-	Convey("Logger", t, func() {
-		Convey("Calling RecordedError logs the message and return error object with that message", func() {
-			validateLog(func(message string, params ...interface{}) {
+	t.Run("Logger", func(t *testing.T) {
+		t.Run("Calling RecordedError logs the message and return error object with that message", func(t *testing.T) {
+			validateLog(t, func(message string, params ...interface{}) {
 				err := RecordedError(message, params...)
-				So(err.Error(), ShouldContainSubstring, fmt.Sprintf(message, params...))
+				assert.Contains(t, err.Error(), fmt.Sprintf(message, params...))
 			}, "ERROR", "log message with param: <%s>", "param value")
 		})
 
-		Convey("Calling Error logs the message", func() {
-			validateLog(Error, "ERROR", "log message with param: <%s>", "param value")
+		t.Run("Calling Error logs the message", func(t *testing.T) {
+			validateLog(t, Error, "ERROR", "log message with param: <%s>", "param value")
 		})
 
-		Convey("Calling Warn logs the message", func() {
-			validateLog(Warn, "WARN", "log message with param: <%s>", "param value")
+		t.Run("Calling Warn logs the message", func(t *testing.T) {
+			validateLog(t, Warn, "WARN", "log message with param: <%s>", "param value")
 		})
 
-		Convey("Calling Info logs the message", func() {
-			validateLog(Info, "INFO", "log message with param: <%s>", "param value")
+		t.Run("Calling Info logs the message", func(t *testing.T) {
+			validateLog(t, Info, "INFO", "log message with param: <%s>", "param value")
 		})
 
-		Convey("Calling Debug does nothing before Calling EnableDebugMode", func() {
+		t.Run("Calling Debug does nothing before Calling EnableDebugMode", func(t *testing.T) {
 			var logBuffer bytes.Buffer
 			InfoLogger = log.New(&logBuffer, "", 0)
 
 			Debug("message")
 
-			So(logBuffer.Len(), ShouldEqual, 0)
+			assert.Equal(t, logBuffer.Len(), 0)
 		})
 
-		Convey("Calling Debug logs the message after Calling EnableDebugMode", func() {
+		t.Run("Calling Debug logs the message after Calling EnableDebugMode", func(t *testing.T) {
 			EnableDebugMode()
-			validateLog(Debug, "DEBUG", "log message with param: <%s>", "param value")
+			validateLog(t, Debug, "DEBUG", "log message with param: <%s>", "param value")
 		})
 	})
 }
 
-func validateLog(logFunc func(string, ...interface{}), logLevel, messageFormat, param string) {
+func validateLog(t *testing.T, logFunc func(string, ...interface{}), logLevel, messageFormat, param string) {
 	// Replace logger with buffer to test its value
 	var logBuffer bytes.Buffer
 	ErrorLogger = log.New(&logBuffer, "", 0)
@@ -54,7 +54,7 @@ func validateLog(logFunc func(string, ...interface{}), logLevel, messageFormat, 
 
 	logFunc(messageFormat, param)
 
-	logMessages := string(logBuffer.Bytes())
-	So(logMessages, ShouldContainSubstring, logLevel)
-	So(logMessages, ShouldContainSubstring, fmt.Sprintf(messageFormat, param))
+	logMessages := logBuffer.String()
+	assert.Contains(t, logMessages, logLevel)
+	assert.Contains(t, logMessages, fmt.Sprintf(messageFormat, param))
 }
