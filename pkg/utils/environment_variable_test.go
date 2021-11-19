@@ -48,13 +48,8 @@ func TestEnvironmentVariable(t *testing.T) {
 					mockGetEnv.getEnv,
 				)
 
-				t.Run("Finishes without raising an error", func(t *testing.T) {
-					assert.NoError(t, err)
-				})
-
-				t.Run("Parses the value into an int", func(t *testing.T) {
-					assert.EqualValues(t, expectedIntValue, intValue)
-				})
+				assert.NoError(t, err)
+				assert.EqualValues(t, expectedIntValue, intValue)
 			})
 
 			t.Run("That was given as a default value", func(t *testing.T) {
@@ -65,13 +60,8 @@ func TestEnvironmentVariable(t *testing.T) {
 					mockGetEnv.getEnv,
 				)
 
-				t.Run("Finishes without raising an error", func(t *testing.T) {
-					assert.NoError(t, err)
-				})
-
-				t.Run("Parses the value into an int", func(t *testing.T) {
-					assert.EqualValues(t, defaultIntValue, intValue)
-				})
+				assert.NoError(t, err)
+				assert.EqualValues(t, defaultIntValue, intValue)
 			})
 		})
 
@@ -89,9 +79,7 @@ func TestEnvironmentVariable(t *testing.T) {
 				"strconv.Atoi: parsing \"SOME_ENV_VAR_VALUE\": invalid syntax",
 			)
 
-			t.Run("Raises a proper error", func(t *testing.T) {
-				assert.EqualError(t, err, expectedError.Error())
-			})
+			assert.EqualError(t, err, expectedError.Error())
 		})
 	})
 
@@ -105,13 +93,8 @@ func TestEnvironmentVariable(t *testing.T) {
 					mockGetEnv.getEnv,
 				)
 
-				t.Run("Finishes without raising an error", func(t *testing.T) {
-					assert.NoError(t, err)
-				})
-
-				t.Run("Parses the value into a duration", func(t *testing.T) {
-					assert.EqualValues(t, expectedDurationValue, durationValue)
-				})
+				assert.NoError(t, err)
+				assert.EqualValues(t, expectedDurationValue, durationValue)
 			})
 
 			t.Run("That was given as a default value", func(t *testing.T) {
@@ -122,13 +105,8 @@ func TestEnvironmentVariable(t *testing.T) {
 					mockGetEnv.getEnv,
 				)
 
-				t.Run("Finishes without raising an error", func(t *testing.T) {
-					assert.NoError(t, err)
-				})
-
-				t.Run("Parses the value into a duration", func(t *testing.T) {
-					assert.EqualValues(t, defaultDurationValue, durationValue)
-				})
+				assert.NoError(t, err)
+				assert.EqualValues(t, defaultDurationValue, durationValue)
 			})
 		})
 
@@ -146,9 +124,7 @@ func TestEnvironmentVariable(t *testing.T) {
 				"time: invalid duration \"SOME_ENV_VAR_VALUE\"",
 			)
 
-			t.Run("Raises a proper error", func(t *testing.T) {
-				assert.EqualError(t, err, expectedError.Error())
-			})
+			assert.EqualError(t, err, expectedError.Error())
 		})
 	})
 }
