@@ -29,4 +29,4 @@ jobs:
           version: v3.3.0
 
       - name: Run Start
-        run: bin/test-workflow/start
+        run: bin/test-workflow/start --ci-apps

@@ -23,6 +23,12 @@ Usage: ./start [options]:
                                 - Defaults to 'gke'
                                 - Supports 'jenkins'
                               All other selections are rejected
+    -c, --ci-apps             Run the E2E workflow against the subset of apps tested in CI
+                              These include:
+                                - summon-sidecar
+                                - secretless-broker
+                                - secrets-provider-init
+                                - secrets-provider-standalone
     -a, --apps <app>[,<app>]  Specify which test apps to install
                               Multiple apps should be specified as a single comma-delimited string
                               Excluding this flag runs all supported apps
@@ -47,6 +53,7 @@ function cleanup {
 }
 
 declare -a supported_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init" "secrets-provider-p2f")
+declare -a run_in_ci_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init")
 # Default: Test all applications
 declare -a install_apps=("${supported_apps[@]}")
 
@@ -66,6 +73,10 @@ while true; do
       done
       install_apps=("${apps[@]}")
       shift
+      shift
+      ;;
+    -c|--ci-apps )
+      install_apps=("${run_in_ci_apps[@]}")
       shift
       ;;
     -e|--enterprise )

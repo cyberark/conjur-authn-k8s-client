@@ -73,28 +73,46 @@ pod_curl() {
 echo "Deploying a test curl pod"
 deploy_test_curl
 echo "Waiting for test curl pod to become available"
-bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_test_curl
-  
+bl_retry_constant "${RETRIES}" "${RETRY_WAIT}" check_test_curl
+
 echo "Waiting for pods to become available"
 
-if [[ "$PLATFORM" == "openshift" ]]; then
-  sidecar_pod=$(get_pod_name test-app-summon-sidecar)
-  secretless_pod=$(get_pod_name test-app-secretless)
-  secrets_provider_standalone_pod=$(get_pod_name test-app-secrets-provider-standalone)
-  secrets_provider_init_pod=$(get_pod_name test-app-secrets-provider-init)
-  secrets_provider_p2f_pod=$(get_pod_name test-app-secrets-provider-p2f)
+# restore array of apps to run
+declare -a install_apps=($(split_on_comma_delimiter $INSTALL_APPS))
 
-  # Routes are defined, but we need to do port-mapping to access them
-  oc port-forward "$sidecar_pod" 8081:8080 > /dev/null 2>&1 &
-  SIDECAR_PORT_FORWARD_PID=$!
-  oc port-forward "$secretless_pod" 8083:8080 > /dev/null 2>&1 &
-  SECRETLESS_PORT_FORWARD_PID=$!
-  oc port-forward "$secrets_provider_standalone_pod" 8084:8080 > /dev/null 2>&1 &
-  SECRETS_PROVIDER_STANDALONE_PID=$!
-  oc port-forward "$secrets_provider_init_pod" 8086:8080 > /dev/null 2>&1 &
-  SECRETS_PROVIDER_INIT_PORT_FORWARD_PID=$!
-  oc port-forward "$secrets_provider_p2f_pod" 8087:8080 > /dev/null 2>&1 &
-  SECRETS_PROVIDER_P2F_PORT_FORWARD_PID=$!
+if [[ "$PLATFORM" == "openshift" ]]; then
+  # Routes are defined, but we need to do port-mapping to access them.
+  # Port-mapping needs to be conditional - the process kill loop in function 'finish'
+  # causes nearly invisible failures tying to kill a process that isn't deployed.
+  if [[ " ${install_apps[*]} " =~ " summon-sidecar " ]]; then
+    sidecar_pod=$(get_pod_name test-app-summon-sidecar)
+    oc port-forward "$sidecar_pod" 8081:8080 > /dev/null 2>&1 &
+    SIDECAR_PORT_FORWARD_PID=$!
+  fi
+
+  if [[ " ${install_apps[*]} " =~ " secretless-broker " ]]; then
+    secretless_pod=$(get_pod_name test-app-secretless)
+    oc port-forward "$secretless_pod" 8083:8080 > /dev/null 2>&1 &
+    SECRETLESS_PORT_FORWARD_PID=$!
+  fi
+
+  if [[ " ${install_apps[*]} " =~ " secrets-provider-standalone " ]]; then
+    secrets_provider_standalone_pod=$(get_pod_name test-app-secrets-provider-standalone)
+    oc port-forward "$secrets_provider_standalone_pod" 8084:8080 > /dev/null 2>&1 &
+    SECRETS_PROVIDER_STANDALONE_PID=$!
+  fi
+  
+  if [[ " ${install_apps[*]} " =~ " secrets-provider-init " ]]; then
+    secrets_provider_init_pod=$(get_pod_name test-app-secrets-provider-init)
+    oc port-forward "$secrets_provider_init_pod" 8086:8080 > /dev/null 2>&1 &
+    SECRETS_PROVIDER_INIT_PORT_FORWARD_PID=$!
+  fi
+  
+  if [[ " ${install_apps[*]} " =~ " secrets-provider-p2f " ]]; then
+    secrets_provider_p2f_pod=$(get_pod_name test-app-secrets-provider-p2f)
+    oc port-forward "$secrets_provider_p2f_pod" 8087:8080 > /dev/null 2>&1 &
+    SECRETS_PROVIDER_P2F_PORT_FORWARD_PID=$!
+  fi
 
   curl_cmd=curl
   sidecar_url="localhost:8081"
@@ -117,9 +135,6 @@ echo "Waiting for urls to be ready"
 check_url(){
   ( $curl_cmd -sS --connect-timeout 3 "$1" ) > /dev/null
 }
-
-# restore array of apps to run
-declare -a install_apps=($(split_on_comma_delimiter $INSTALL_APPS))
 
 # declare associative arrays of app urls and pet names
 declare -A app_urls

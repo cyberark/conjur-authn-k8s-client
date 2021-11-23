@@ -38,7 +38,7 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-secrets-provider-init.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-init \
     --set app-secrets-provider-init.conjur.authnConfigMap.name=conjur-authn-configmap-secrets-provider-init \
     --set app-secrets-provider-init.app.platform=$PLATFORM"
-  secrets_provider_p2f_options="--set app-secrets-provider-p2f.enable=true \
+  secrets_provider_p2f_options="--set app-secrets-provider-p2f.enabled=true \
     --set app-secrets-provider-p2f.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-p2f \
     --set app-secrets-provider-p2f.app.platform=$PLATFORM \
     --set app-secrets-provider-p2f.secretsProvider.image.tag=edge"
