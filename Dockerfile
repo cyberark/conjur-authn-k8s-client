@@ -17,8 +17,7 @@ RUN apt-get update && apt-get install -y jq
 
 RUN go mod download
 
-RUN go get -u github.com/jstemmer/go-junit-report && \
-    go get github.com/smartystreets/goconvey
+RUN go get -u github.com/jstemmer/go-junit-report
 
 RUN go build -a -installsuffix cgo \
     -ldflags="-X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.TagSuffix=$TAG_SUFFIX'" \

@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 // Different types of file scenarios to test. (For file scenarios that use
@@ -28,26 +28,31 @@ type testConfig struct {
 
 // Map of test configuration based on file scenario
 var testConfigMap = map[string]testConfig{
-	existingFilePath: testConfig{
+	existingFilePath: {
 		useOSUtils: false,
 		statError:  nil,
-		isRegular:  true},
-	nonexistentFilePath: testConfig{
+		isRegular:  true,
+	},
+	nonexistentFilePath: {
 		useOSUtils: false,
 		statError:  os.ErrNotExist,
-		isRegular:  false},
-	nonRegularFilePath: testConfig{
+		isRegular:  false,
+	},
+	nonRegularFilePath: {
 		useOSUtils: true,
 		statError:  nil,
-		isRegular:  false},
-	unpermittedFilePath: testConfig{
+		isRegular:  false,
+	},
+	unpermittedFilePath: {
 		useOSUtils: false,
 		statError:  os.ErrPermission,
-		isRegular:  false},
-	invalidArgsFilePath: testConfig{
+		isRegular:  false,
+	},
+	invalidArgsFilePath: {
 		useOSUtils: false,
 		statError:  os.ErrInvalid,
-		isRegular:  false},
+		isRegular:  false,
+	},
 }
 
 func testCaseFileUtils(path string) *fileUtils {
@@ -68,23 +73,23 @@ func testCaseFileUtils(path string) *fileUtils {
 }
 
 func TestFile(t *testing.T) {
-	Convey("waitForFile", t, func() {
+	t.Run("waitForFile", func(t *testing.T) {
 		retryCountLimit := 10
-		Convey("Returns nil if file exists", func() {
+		t.Run("Returns nil if file exists", func(t *testing.T) {
 			path := existingFilePath
 			utilities := testCaseFileUtils(path)
 
-			So(
+			assert.Nil(
+				t,
 				waitForFile(
 					path,
 					retryCountLimit,
 					utilities,
 				),
-				ShouldBeNil,
 			)
 		})
 
-		Convey("Waits for whole time if file does not exist", func() {
+		t.Run("Waits for whole time if file does not exist", func(t *testing.T) {
 			path := nonexistentFilePath
 			utilities := testCaseFileUtils(path)
 			expectedOutput := fmt.Errorf(
@@ -93,29 +98,29 @@ func TestFile(t *testing.T) {
 				path,
 			)
 
-			So(
+			assert.EqualValues(
+				t,
 				waitForFile(
 					path,
 					retryCountLimit,
 					utilities,
 				),
-				ShouldResemble,
 				expectedOutput,
 			)
 		})
 	})
 
-	Convey("verifyFileExists", t, func() {
-		Convey("An existing file returns nil error", func() {
+	t.Run("verifyFileExists", func(t *testing.T) {
+		t.Run("An existing file returns nil error", func(t *testing.T) {
 			path := existingFilePath
 			utilities := testCaseFileUtils(path)
 
 			err := verifyFileExists(path, utilities)
 
-			So(err, ShouldBeNil)
+			assert.NoError(t, err)
 		})
 
-		Convey("A path to an unpermitted file returns a logged error", func() {
+		t.Run("A path to an unpermitted file returns a logged error", func(t *testing.T) {
 			path := unpermittedFilePath
 			utilities := testCaseFileUtils(path)
 			expectedOutput := fmt.Errorf(
@@ -125,10 +130,10 @@ func TestFile(t *testing.T) {
 
 			err := verifyFileExists(path, utilities)
 
-			So(err, ShouldResemble, expectedOutput)
+			assert.EqualError(t, err, expectedOutput.Error())
 		})
 
-		Convey("A path to a non-regular file returns a logged error", func() {
+		t.Run("A path to a non-regular file returns a logged error", func(t *testing.T) {
 			path := nonRegularFilePath
 			utilities := testCaseFileUtils(path)
 			expectedOutput := fmt.Errorf(
@@ -138,25 +143,25 @@ func TestFile(t *testing.T) {
 
 			err := verifyFileExists(path, utilities)
 
-			So(err, ShouldResemble, expectedOutput)
+			assert.EqualError(t, err, expectedOutput.Error())
 		})
 
-		Convey("A non-existing file returns an error without logging", func() {
+		t.Run("A non-existing file returns an error without logging", func(t *testing.T) {
 			path := nonexistentFilePath
 			utilities := testCaseFileUtils(path)
 
 			err := verifyFileExists(path, utilities)
 
-			So(os.IsNotExist(err), ShouldBeTrue)
+			assert.True(t, os.IsNotExist(err))
 		})
 
-		Convey("A non-ErrNotExist error is returned without logging", func() {
+		t.Run("A non-ErrNotExist error is returned without logging", func(t *testing.T) {
 			path := invalidArgsFilePath
 			utilities := testCaseFileUtils(path)
 
 			err := verifyFileExists(path, utilities)
 
-			So(err.Error(), ShouldResemble, "invalid argument")
+			assert.EqualError(t, err, "invalid argument")
 		})
 	})
 }

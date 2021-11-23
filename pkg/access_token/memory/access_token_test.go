@@ -4,10 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
-
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
+	"github.com/stretchr/testify/assert"
 )
 
 type ProxyHandlerTokenMemory struct {
@@ -17,146 +16,85 @@ type ProxyHandlerTokenMemory struct {
 func TestAccessTokenMemory(t *testing.T) {
 	var accessToken, _ = NewAccessToken()
 
-	Convey("Read", t, func() {
+	t.Run("Read", func(t *testing.T) {
+		dataActual := []byte{'t', 'e', 's', 't'}
+		err := accessToken.Write(dataActual)
+		assert.NoError(t, err)
 
-		Convey("Given an access token with data", func() {
-			dataActual := []byte{'t', 'e', 's', 't'}
-			err := accessToken.Write(dataActual)
+		dataExpected, err := accessToken.Read()
+		assert.NoError(t, err)
 
-			Convey("Finishes without raising an error", func() {
-				So(err, ShouldEqual, nil)
-			})
+		eq := reflect.DeepEqual(dataActual, dataExpected)
+		assert.True(t, eq)
 
-			Convey("When running Read method", func() {
-				dataExpected, err := accessToken.Read()
-
-				Convey("Finishes without raising an error", func() {
-					So(err, ShouldEqual, nil)
-				})
-
-				Convey("Returns the data that was written", func() {
-					eq := reflect.DeepEqual(dataActual, dataExpected)
-					So(eq, ShouldEqual, true)
-				})
-			})
-		})
-
-		Convey("Given an access token's data is empty", func() {
+		t.Run("Given an access token's data is empty", func(t *testing.T) {
 			accessToken.Data = nil
 
-			Convey("When running the Read method", func() {
-				_, err := accessToken.Read()
-
-				Convey("Raises an error that the data is empty", func() {
-					So(err.Error(), ShouldEqual, log.CAKC006)
-				})
-			})
+			_, err := accessToken.Read()
+			assert.EqualError(t, err, log.CAKC006)
 		})
 	})
 
-	Convey("Write", t, func() {
+	t.Run("Write", func(t *testing.T) {
+		dataActual := []byte{'t', 'e', 's', 't'}
 
-		Convey("Given an access token with data", func() {
-			dataActual := []byte{'t', 'e', 's', 't'}
+		err := accessToken.Write(dataActual)
+		assert.NoError(t, err)
 
-			Convey("Writes the access token to memory without raising an error", func() {
-				err := accessToken.Write(dataActual)
-				So(err, ShouldEqual, nil)
-			})
+		dataExpected, _ := accessToken.Read()
 
-			Convey("When running Read method", func() {
-				dataExpected, _ := accessToken.Read()
+		// Confirm data was written
+		eq := reflect.DeepEqual(dataActual, dataExpected)
+		assert.True(t, eq)
 
-				// Confirm data was written
-				Convey("Returns the data the was written", func() {
-					eq := reflect.DeepEqual(dataActual, dataExpected)
-					So(eq, ShouldEqual, true)
-				})
-			})
-		})
-
-		Convey("Given an access token without data", func() {
+		t.Run("Given an access token without data", func(t *testing.T) {
 			err := accessToken.Write(nil)
-
-			Convey("Raises an error that the data is empty", func() {
-				So(err.Error(), ShouldEqual, log.CAKC005)
-			})
+			assert.EqualError(t, err, log.CAKC005)
 		})
 	})
 
-	Convey("Delete", t, func() {
+	t.Run("Delete", func(t *testing.T) {
+		dataActual := []byte{'t', 'e', 's', 't'}
 
-		Convey("Given an access token with data", func() {
-			dataActual := []byte{'t', 'e', 's', 't'}
+		err := accessToken.Write(dataActual)
+		assert.NoError(t, err)
 
-			Convey("And the data was written successfully", func() {
-				err := accessToken.Write(dataActual)
-				So(err, ShouldEqual, nil)
+		// Read is added here because we want to check later that the contents were deleted from memory successfully
+		dataFromRead, err := accessToken.Read()
+		assert.NoError(t, err)
 
-				// Read is added here because we want to check later that the contents were deleted from memory successfully
-				Convey("And the data was read successfully", func() {
-					dataFromRead, err := accessToken.Read()
+		err = accessToken.Delete()
+		assert.NoError(t, err)
 
-					Convey("Finishes without raising an error", func() {
-						So(err, ShouldEqual, nil)
-					})
+		empty := make([]byte, len(dataActual))
+		eq := reflect.DeepEqual(dataActual, empty)
+		assert.True(t, eq)
+		eq = reflect.DeepEqual(dataFromRead, empty)
+		assert.True(t, eq)
 
-					Convey("When running the Delete method", func() {
-						err := accessToken.Delete()
-
-						Convey("Finishes without raising an error", func() {
-							So(err, ShouldEqual, nil)
-						})
-
-						Convey("Properly clears all data from memory", func() {
-							empty := make([]byte, len(dataActual))
-							eq := reflect.DeepEqual(dataActual, empty)
-							So(eq, ShouldEqual, true)
-							eq = reflect.DeepEqual(dataFromRead, empty)
-							So(eq, ShouldEqual, true)
-						})
-					})
-				})
-			})
-		})
-
-		Convey("Given an access token with no data", func() {
+		t.Run("Given an access token with no data", func(t *testing.T) {
 			accessToken.Data = nil
 
-			Convey("Finishes without raising an error", func() {
-				err := accessToken.Delete()
-				So(err, ShouldEqual, nil)
-			})
+			err := accessToken.Delete()
+			assert.NoError(t, err)
 		})
 
-		Convey("Given two instances of the accessToken interface", func() {
+		t.Run("Given two instances of the accessToken interface", func(t *testing.T) {
 			// Write Data to source interface
 			dataActual := []byte{'t', 'e', 's', 't'}
 			accessToken.Write(dataActual)
 
-			Convey("When setting token file location in proxy struct", func() {
+			t.Run("When setting token file location in proxy struct", func(t *testing.T) {
 				var proxyStruct ProxyHandlerTokenMemory
 				proxyStruct.AccessToken = accessToken
 
-				Convey("When running the Delete method", func() {
-					err := proxyStruct.AccessToken.Delete()
+				err := proxyStruct.AccessToken.Delete()
+				assert.NoError(t, err)
 
-					Convey("Deletes the accessToken file of proxyStruct", func() {
-						So(err, ShouldEqual, nil)
-					})
-
-					Convey("When running the Read method", func() {
-						dataExpected, err := accessToken.Read()
-
-						Convey("Returns no data because data in source interface was cleared", func() {
-							So(dataExpected, ShouldEqual, nil)
-						})
-
-						Convey("Raises the proper error", func() {
-							So(err.Error(), ShouldEqual, log.CAKC006)
-						})
-					})
-				})
+				// Returns no data because data in source interface was cleared
+				dataExpected, err := accessToken.Read()
+				assert.Nil(t, dataExpected)
+				assert.EqualError(t, err, log.CAKC006)
 			})
 		})
 	})
