@@ -85,6 +85,14 @@ fi
 export CONJUR_APPLIANCE_URL=${CONJUR_APPLIANCE_URL:-https://$conjur_service.$CONJUR_NAMESPACE_NAME.svc.cluster.local}
 export SAMPLE_APP_BACKEND_DB_PASSWORD="$(openssl rand -hex 12)"
 
+if [[ "$BENCHMARK_WITH_JAEGER" == "true" ]]; then
+  JAEGER_NAMESPACE_NAME="${TEST_APP_NAMESPACE_NAME}-jaeger"
+  JAEGER_COLLECTOR_URL="http://jaeger-collector.$JAEGER_NAMESPACE_NAME.svc.cluster.local:14268/api/traces"
+fi
+
+export JAEGER_NAMESPACE_NAME="${JAEGER_NAMESPACE_NAME:-}"
+export JAEGER_COLLECTOR_URL="${JAEGER_COLLECTOR_URL:-}"
+
 ### PLATFORM SPECIFIC CONFIG
 if [[ "$CONJUR_PLATFORM" == "gke" ]]; then
   export CONJUR_FOLLOWER_URL="https://conjur-follower.$CONJUR_NAMESPACE_NAME.svc.cluster.local"

@@ -41,6 +41,8 @@ Usage: ./start [options]:
                                 - secrets-provider-init
                                 - secrets-provider-p2f
                                 - secrets-provider-standalone
+    -b, --benchmark           Run benchmark tracing with Jaeger.
+                              Otherwise trace output will be appended to the init container's log.
     -n, --nocleanup           Do not run the cleanup scripts, all resources are maintained.
                               All other selections are rejected
     -h, --help                Show the help message
@@ -100,6 +102,10 @@ while true; do
       shift
       shift
       ;;
+    -b|--benchmark )
+      BENCHMARK_WITH_JAEGER="true"
+      shift
+      ;;
     -n|--nocleanup )
       do_cleanup="false"
       shift
@@ -126,6 +132,7 @@ export INSTALL_APPS=$(IFS=','; echo "${install_apps[*]}")
 
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
 export RUN_CLIENT_CONTAINER="${RUN_CLIENT_CONTAINER:-true}"
+export BENCHMARK_WITH_JAEGER"${BENCHMARK_WITH_JAEGER:-false}"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   if [[ -z "$CONJUR_PLATFORM" ]]; then
@@ -200,4 +207,12 @@ elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
   run_command_with_platform "$cluster_prep"
   ./conjur_outside_k8s_vars.sh
   run_command_with_platform "$test_app_workflow"
+fi
+
+if [[ "$BENCHMARK_WITH_JAEGER" == "true" ]]; then
+  announce "Go to http://127.0.0.1:8080/ to view benchmark results in Jaeger. Press Ctrl+C to stop.\
+Note: Run 'kubectl delete pod <secrets-provider pod name> -n $TEST_APP_NAMESPACE_NAME' to force the pod to recreate which will generate new metrics."
+
+  pod_name=$(kubectl get pods --namespace $JAEGER_NAMESPACE_NAME -l "app.kubernetes.io/instance=jaeger,app.kubernetes.io/component=query" -o jsonpath="{.items[0].metadata.name}")
+  kubectl port-forward --namespace $JAEGER_NAMESPACE_NAME $pod_name 8080:16686 > /dev/null
 fi

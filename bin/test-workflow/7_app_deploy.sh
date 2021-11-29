@@ -37,9 +37,11 @@ pushd ../../helm/conjur-app-deploy > /dev/null
   secrets_provider_init_options="--set app-secrets-provider-init.enabled=true \
     --set app-secrets-provider-init.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-init \
     --set app-secrets-provider-init.conjur.authnConfigMap.name=conjur-authn-configmap-secrets-provider-init \
+    --set app-secrets-provider-init.conjur.jaegerCollectorUrl=$JAEGER_COLLECTOR_URL \
     --set app-secrets-provider-init.app.platform=$PLATFORM"
   secrets_provider_p2f_options="--set app-secrets-provider-p2f.enabled=true \
     --set app-secrets-provider-p2f.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-p2f \
+    --set app-secrets-provider-p2f.conjur.jaegerCollectorUrl=$JAEGER_COLLECTOR_URL \
     --set app-secrets-provider-p2f.app.platform=$PLATFORM"
 
   declare -A app_options

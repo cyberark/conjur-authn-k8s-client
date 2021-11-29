@@ -47,3 +47,7 @@ pushd ../../helm/conjur-config-cluster-prep > /dev/null
       $service_account_options
 
 popd > /dev/null
+
+if [[ "$JAEGER_COLLECTOR_URL" != "" ]]; then
+  ./setup_tracing.sh
+fi

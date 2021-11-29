@@ -63,7 +63,8 @@ has_namespace() {
 
 has_resource() {
   local selector="$1"
-  local num_matching_resources=$("$cli" get pods -n "$CONJUR_NAMESPACE_NAME" --selector "$selector" --no-headers 2>/dev/null | wc -l)
+  local namespace="${2:-$CONJUR_NAMESPACE_NAME}"
+  local num_matching_resources=$("$cli" get pods -n "$namespace" --selector "$selector" --no-headers 2>/dev/null | wc -l)
   if [ $num_matching_resources -gt 0 ]; then
     return 0
   else
