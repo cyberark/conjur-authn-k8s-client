@@ -82,8 +82,6 @@ declare -a install_apps=($(split_on_comma_delimiter $INSTALL_APPS))
 
 if [[ "$PLATFORM" == "openshift" ]]; then
   # Routes are defined, but we need to do port-mapping to access them.
-  # Port-mapping needs to be conditional - the process kill loop in function 'finish'
-  # causes nearly invisible failures tying to kill a process that isn't deployed.
   if [[ " ${install_apps[*]} " =~ " summon-sidecar " ]]; then
     sidecar_pod=$(get_pod_name test-app-summon-sidecar)
     oc port-forward "$sidecar_pod" 8081:8080 > /dev/null 2>&1 &

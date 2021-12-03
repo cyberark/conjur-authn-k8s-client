@@ -12,6 +12,9 @@ Runs the end-to-end workflow for testing Conjur Kubernetes authentication.
 By default, the workflow is run against Conjur Open Source, but can be run
 against Conjur Enterprise.
 
+Note: If both --apps and --ci-apps flags are used, the workflow defers to
+      the --apps flag and its explicit set of test apps.
+
 Usage: ./start [options]:
 
     -e, --enterprise          Run the E2E workflow against Conjur Enterprise
@@ -60,6 +63,10 @@ declare -a install_apps=("${supported_apps[@]}")
 while true; do
   case "$1" in
     -a|--apps )
+      if [[ ! "${install_apps[@]}" = "${supported_apps[@]}" ]]; then
+        echo "Both --ci-apps and --apps flags used."
+        echo "Deferring to those apps specified with --apps flag."
+      fi
       declare -a apps=($(split_on_comma_delimiter "$2"))
       for app in "${apps[@]}"; do
         if [[ ! " ${supported_apps[@]} " =~ " $app " ]]; then
@@ -76,7 +83,12 @@ while true; do
       shift
       ;;
     -c|--ci-apps )
-      install_apps=("${run_in_ci_apps[@]}")
+      if [[ ! "${install_apps[@]}" = "${supported_apps[@]}" ]]; then
+        echo "Both --ci-apps and --apps flags used."
+        echo "Deferring to those apps specified with --apps flag."
+      else
+        install_apps=("${run_in_ci_apps[@]}")
+      fi
       shift
       ;;
     -e|--enterprise )

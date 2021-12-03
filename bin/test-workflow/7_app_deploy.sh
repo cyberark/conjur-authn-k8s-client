@@ -40,8 +40,7 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-secrets-provider-init.app.platform=$PLATFORM"
   secrets_provider_p2f_options="--set app-secrets-provider-p2f.enabled=true \
     --set app-secrets-provider-p2f.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-p2f \
-    --set app-secrets-provider-p2f.app.platform=$PLATFORM \
-    --set app-secrets-provider-p2f.secretsProvider.image.tag=edge"
+    --set app-secrets-provider-p2f.app.platform=$PLATFORM"
 
   declare -A app_options
   app_options[summon-sidecar]="$summon_sidecar_options"
