@@ -1,0 +1,5 @@
+The Application deployment is complete.
+The following have been deployed:
+- A sample application with a Secrets Provider init container in Push-to-File mode
+
+Application is now available at test-app-secrets-provider-p2f.{{ .Release.Namespace }}.svc.cluster.local

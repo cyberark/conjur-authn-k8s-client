@@ -26,6 +26,7 @@ function finish {
     "SECRETLESS_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_STANDALONE_PID"
     "SECRETS_PROVIDER_INIT_PORT_FORWARD_PID"
+    "SECRETS_PROVIDER_P2F_PORT_FORWARD_PID"
   )
 
   # Upon error, dump some kubernetes resources and Conjur authentication policy
@@ -72,31 +73,51 @@ pod_curl() {
 echo "Deploying a test curl pod"
 deploy_test_curl
 echo "Waiting for test curl pod to become available"
-bl_retry_constant "${RETRIES}" "${RETRY_WAIT}"  check_test_curl
-  
+bl_retry_constant "${RETRIES}" "${RETRY_WAIT}" check_test_curl
+
 echo "Waiting for pods to become available"
 
-if [[ "$PLATFORM" == "openshift" ]]; then
-  sidecar_pod=$(get_pod_name test-app-summon-sidecar)
-  secretless_pod=$(get_pod_name test-app-secretless)
-  secrets_provider_standalone_pod=$(get_pod_name test-app-secrets-provider-standalone)
-  secrets_provider_init_pod=$(get_pod_name test-app-secrets-provider-init)
+# restore array of apps to run
+declare -a install_apps=($(split_on_comma_delimiter $INSTALL_APPS))
 
-  # Routes are defined, but we need to do port-mapping to access them
-  oc port-forward "$sidecar_pod" 8081:8080 > /dev/null 2>&1 &
-  SIDECAR_PORT_FORWARD_PID=$!
-  oc port-forward "$secretless_pod" 8083:8080 > /dev/null 2>&1 &
-  SECRETLESS_PORT_FORWARD_PID=$!
-  oc port-forward "$secrets_provider_standalone_pod" 8084:8080 > /dev/null 2>&1 &
-  SECRETS_PROVIDER_STANDALONE_PID=$!
-  oc port-forward "$secrets_provider_init_pod" 8086:8080 > /dev/null 2>&1 &
-  SECRETS_PROVIDER_INIT_PORT_FORWARD_PID=$!
+if [[ "$PLATFORM" == "openshift" ]]; then
+  # Routes are defined, but we need to do port-mapping to access them.
+  if [[ " ${install_apps[*]} " =~ " summon-sidecar " ]]; then
+    sidecar_pod=$(get_pod_name test-app-summon-sidecar)
+    oc port-forward "$sidecar_pod" 8081:8080 > /dev/null 2>&1 &
+    SIDECAR_PORT_FORWARD_PID=$!
+  fi
+
+  if [[ " ${install_apps[*]} " =~ " secretless-broker " ]]; then
+    secretless_pod=$(get_pod_name test-app-secretless)
+    oc port-forward "$secretless_pod" 8083:8080 > /dev/null 2>&1 &
+    SECRETLESS_PORT_FORWARD_PID=$!
+  fi
+
+  if [[ " ${install_apps[*]} " =~ " secrets-provider-standalone " ]]; then
+    secrets_provider_standalone_pod=$(get_pod_name test-app-secrets-provider-standalone)
+    oc port-forward "$secrets_provider_standalone_pod" 8084:8080 > /dev/null 2>&1 &
+    SECRETS_PROVIDER_STANDALONE_PID=$!
+  fi
+  
+  if [[ " ${install_apps[*]} " =~ " secrets-provider-init " ]]; then
+    secrets_provider_init_pod=$(get_pod_name test-app-secrets-provider-init)
+    oc port-forward "$secrets_provider_init_pod" 8086:8080 > /dev/null 2>&1 &
+    SECRETS_PROVIDER_INIT_PORT_FORWARD_PID=$!
+  fi
+  
+  if [[ " ${install_apps[*]} " =~ " secrets-provider-p2f " ]]; then
+    secrets_provider_p2f_pod=$(get_pod_name test-app-secrets-provider-p2f)
+    oc port-forward "$secrets_provider_p2f_pod" 8087:8080 > /dev/null 2>&1 &
+    SECRETS_PROVIDER_P2F_PORT_FORWARD_PID=$!
+  fi
 
   curl_cmd=curl
   sidecar_url="localhost:8081"
   secretless_url="localhost:8083"
   secrets_provider_standalone_url="localhost:8084"
   secrets_provider_init_url="localhost:8086"
+  secrets_provider_p2f_url="localhost:8087"
 else
   # Test by curling from a pod that is inside the KinD cluster.
   curl_cmd=pod_curl
@@ -104,6 +125,7 @@ else
   secretless_url="test-app-secretless-broker.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secrets_provider_standalone_url="test-app-secrets-provider-standalone.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secrets_provider_init_url="test-app-secrets-provider-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
+  secrets_provider_p2f_url="test-app-secrets-provider-p2f.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
 fi
 
 echo "Waiting for urls to be ready"
@@ -112,21 +134,20 @@ check_url(){
   ( $curl_cmd -sS --connect-timeout 3 "$1" ) > /dev/null
 }
 
-# restore array of apps to run
-declare -a install_apps=($(split_on_comma_delimiter $INSTALL_APPS))
-
 # declare associative arrays of app urls and pet names
 declare -A app_urls
 app_urls[summon-sidecar]="$sidecar_url"
 app_urls[secretless-broker]="$secretless_url"
 app_urls[secrets-provider-standalone]="$secrets_provider_standalone_url"
 app_urls[secrets-provider-init]="$secrets_provider_init_url"
+app_urls[secrets-provider-p2f]="$secrets_provider_p2f_url"
 
 declare -A app_pets
 app_pets[summon-sidecar]="Mr. Sidecar"
 app_pets[secretless-broker]="Mr. Secretless"
 app_pets[secrets-provider-standalone]="Mr. Standalone"
 app_pets[secrets-provider-init]="Mr. Provider"
+app_pets[secrets-provider-p2f]="Mr. FileProvider"
 
 # check connection to each installed test app
 for app in "${install_apps[@]}"; do

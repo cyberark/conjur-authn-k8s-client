@@ -99,12 +99,12 @@ pipeline {
           parallel {
             stage('Enterprise in GKE') {
               steps {
-                sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke'
+                sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --ci-apps'
               }
             }
             stage('OSS in OpenShift') {
               steps {
-                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift'
+                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --ci-apps'
               }
             }
           }
@@ -116,7 +116,7 @@ pipeline {
                 sh '''
                   HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
                   echo "HOST_IP=${HOST_IP}"
-                  cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins
+                  cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins --ci-apps
                 '''
               }
             }
@@ -125,7 +125,7 @@ pipeline {
                 sh '''
                   HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
                   echo "HOST_IP=${HOST_IP}"
-                  cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins
+                  cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins --ci-apps
                 '''
               }
             }

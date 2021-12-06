@@ -12,6 +12,9 @@ Runs the end-to-end workflow for testing Conjur Kubernetes authentication.
 By default, the workflow is run against Conjur Open Source, but can be run
 against Conjur Enterprise.
 
+Note: If both --apps and --ci-apps flags are used, the workflow defers to
+      the --apps flag and its explicit set of test apps.
+
 Usage: ./start [options]:
 
     -e, --enterprise          Run the E2E workflow against Conjur Enterprise
@@ -23,12 +26,20 @@ Usage: ./start [options]:
                                 - Defaults to 'gke'
                                 - Supports 'jenkins'
                               All other selections are rejected
+    -c, --ci-apps             Run the E2E workflow against the subset of apps tested in CI
+                              These include:
+                                - summon-sidecar
+                                - secretless-broker
+                                - secrets-provider-init
+                                - secrets-provider-standalone
     -a, --apps <app>[,<app>]  Specify which test apps to install
                               Multiple apps should be specified as a single comma-delimited string
                               Excluding this flag runs all supported apps
                               Currently supports:
                                 - summon-sidecar
                                 - secretless-broker
+                                - secrets-provider-init
+                                - secrets-provider-p2f
                                 - secrets-provider-standalone
     -n, --nocleanup           Do not run the cleanup scripts, all resources are maintained.
                               All other selections are rejected
@@ -44,26 +55,40 @@ function cleanup {
   fi
 }
 
-declare -a supported_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init")
+declare -a supported_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init" "secrets-provider-p2f")
+declare -a run_in_ci_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init")
 # Default: Test all applications
 declare -a install_apps=("${supported_apps[@]}")
 
 while true; do
   case "$1" in
     -a|--apps )
+      if [[ ! "${install_apps[@]}" = "${supported_apps[@]}" ]]; then
+        echo "Both --ci-apps and --apps flags used."
+        echo "Deferring to those apps specified with --apps flag."
+      fi
       declare -a apps=($(split_on_comma_delimiter "$2"))
       for app in "${apps[@]}"; do
         if [[ ! " ${supported_apps[@]} " =~ " $app " ]]; then
           echo "$app is not a supported test app!"
           echo "Supported test apps include:"
-          echo "  - summon-sidecar"
-          echo "  - secretless-broker"
-          echo "  - secrets-provider-init"
+          for app in "${supported_apps[@]}"; do
+            echo "  - $app"
+          done
           exit 1
         fi
       done
       install_apps=("${apps[@]}")
       shift
+      shift
+      ;;
+    -c|--ci-apps )
+      if [[ ! "${install_apps[@]}" = "${supported_apps[@]}" ]]; then
+        echo "Both --ci-apps and --apps flags used."
+        echo "Deferring to those apps specified with --apps flag."
+      else
+        install_apps=("${run_in_ci_apps[@]}")
+      fi
       shift
       ;;
     -e|--enterprise )
