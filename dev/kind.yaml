@@ -1,0 +1,9 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    # image: kindest/node:v1.19.7
+    extraMounts:
+      # A mount from the app source code on the host to the node
+      - hostPath: ./
+        containerPath: /src/authn-k8s-client
