@@ -1,0 +1,32 @@
+spec:
+  template:
+    metadata:
+      annotations:
+        conjur.org/conjur-secrets.my-app: |
+          - db-url: my-app-db/prod/url
+          - db-username: my-app-db/prod/username
+          - db-password: my-app-db/prod/password
+          - cert-base64: my-app-db/prod/cert-base64
+        conjur.org/secret-file-format.my-app: template
+        conjur.org/secret-file-path.my-app: my-app.ini
+        conjur.org/secret-file-permissions.my-app: "-rw-rw----"
+        conjur.org/secret-file-template.my-app: |
+          ;==============================================
+          ;  This is an example INI file created via a  |
+          ;             custom template                 |
+          ;==============================================
+
+          ;----------------------------------------------
+          ;            Some Static Config               |
+          ;----------------------------------------------
+          [owner]
+          name=Frank Zappa
+          organization=Mothers of Invention, Inc.
+
+          ;----------------------------------------------
+          ;      Database Credentials from Conjur       |
+          ;----------------------------------------------
+          [database]
+          url={{ secret "db-url" }}
+          username={{ secret "db-username" }}
+          password={{ secret "db-password" }}

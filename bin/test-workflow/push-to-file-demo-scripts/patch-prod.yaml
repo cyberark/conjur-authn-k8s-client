@@ -1,0 +1,10 @@
+spec:
+  template:
+    metadata:
+      annotations:
+        conjur.org/conjur-secrets.db: |
+          - db-url: my-app-db/prod/url
+          - db-username: my-app-db/prod/username
+          - db-password: my-app-db/prod/password
+        conjur.org/secret-file-permissions.db: "-rw-rw-r--"
+        conjur.org/secret-file-format.db: yaml

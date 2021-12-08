@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -eo pipefail
+cd "$(dirname "$0")/.." || ( echo "cannot cd into dir" && exit 1 )
+./start -n -a secrets-provider-p2f

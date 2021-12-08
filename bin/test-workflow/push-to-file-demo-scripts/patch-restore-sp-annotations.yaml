@@ -1,0 +1,11 @@
+spec:
+  template:
+    metadata:
+      annotations:
+        conjur.org/authn-identity: host/conjur/authn-k8s/my-authenticator-id/apps/test-app-secrets-provider-p2f
+        conjur.org/container-mode: init
+        conjur.org/debug-logging: "true"
+        conjur.org/retry-count-limit: "10"
+        conjur.org/retry-interval-sec: "3"
+        conjur.org/secrets-destination: file
+

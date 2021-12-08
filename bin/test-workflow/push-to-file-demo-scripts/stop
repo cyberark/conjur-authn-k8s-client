@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+kubectl delete namespace app-test
+kubectl delete namespace conjur-oss
