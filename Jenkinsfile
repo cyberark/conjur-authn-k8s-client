@@ -12,6 +12,13 @@ pipeline {
     cron(getDailyCronString())
   }
 
+  parameters { 
+    booleanParam(
+      name: 'TEST_OCP_NEXT',
+      description: 'Whether or not to run the pipeline against the next OCP version',
+      defaultValue: false) 
+  }
+
   stages {
     stage('Validate') {
       parallel {
@@ -102,9 +109,17 @@ pipeline {
                 sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --ci-apps'
               }
             }
-            stage('OSS in OpenShift') {
+            stage('OSS in OpenShift v(current)') {
               steps {
                 sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --ci-apps'
+              }
+            }
+            stage('OSS in OpenShift v(next)') {
+              when {
+                expression { params.TEST_OCP_NEXT }
+              }
+              steps {
+                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift'
               }
             }
           }
@@ -120,12 +135,24 @@ pipeline {
                 '''
               }
             }
-            stage('Test app in OpenShift') {
+            stage('Test app in OpenShift v(current)') {
               steps {
                 sh '''
                   HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
                   echo "HOST_IP=${HOST_IP}"
                   cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins --ci-apps
+                '''
+              }
+            }
+            stage('Test app in OpenShift v(next)') {
+              when {
+                expression { params.TEST_OCP_NEXT }
+              }
+              steps {
+                sh '''
+                  HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
+                  echo "HOST_IP=${HOST_IP}"
+                  cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --ci-apps
                 '''
               }
             }
