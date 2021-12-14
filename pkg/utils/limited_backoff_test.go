@@ -12,7 +12,7 @@ import (
 func TestLimitedBackOff(t *testing.T) {
 	t.Run("Subject: Using limited backoff", func(t *testing.T) {
 		const (
-			interval   = time.Second
+			interval   = time.Millisecond * 50
 			retryLimit = 3
 		)
 
