@@ -75,3 +75,5 @@ const CAKC059 string = "CAKC059 Path exists but does not contain regular file: %
 const CAKC060 string = "CAKC060 Setting %s given invalid value %s"
 const CAKC061 string = "CAKC061 Failed to validate setting for Authenticator configuration"
 const CAKC062 string = "CAKC062 Required Authenticator setting %s not provided"
+const CAKC063 string = "CAKC063 Unable to find configuration for URL: %s"
+const CAKC064 string = "CAKC064 Unable to find Authenticator for this configuration"

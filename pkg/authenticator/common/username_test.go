@@ -1,4 +1,4 @@
-package config
+package common
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func TestNewUsername(t *testing.T) {
 
 		// ASSERT
 		assert.Equal(t, "host.path.to.policy", usernameStruct.Prefix)
-		assert.Equal(t,  "namespace.resource_type.resource_id", usernameStruct.Suffix)
+		assert.Equal(t, "namespace.resource_type.resource_id", usernameStruct.Suffix)
 	})
 
 	t.Run("shorter than 4 parts", func(t *testing.T) {
@@ -31,9 +31,8 @@ func TestNewUsername(t *testing.T) {
 
 		// ASSERT
 		assert.Equal(t, "host.policy", usernameStruct.Prefix)
-		assert.Equal(t,  "host_id", usernameStruct.Suffix)
+		assert.Equal(t, "host_id", usernameStruct.Suffix)
 	})
-
 
 	t.Run("missing host/ prefix", func(t *testing.T) {
 		// SETUP & EXERCISE
