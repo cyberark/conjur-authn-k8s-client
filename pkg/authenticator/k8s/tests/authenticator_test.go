@@ -1,4 +1,4 @@
-package authenticator
+package tests
 
 import (
 	"bytes"
@@ -13,12 +13,13 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/memory"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/k8s"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
 type assertFunc func(t *testing.T,
-	authn *Authenticator,
+	authn *k8s.Authenticator,
 	err error,
 	loginCsr *x509.CertificateRequest,
 	loginCsrErr error,
@@ -37,7 +38,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			name:         "happy path",
 			podName:      "testPodName",
 			podNamespace: "testPodNamespace",
-			assert: func(t *testing.T, authn *Authenticator, err error, loginCsr *x509.CertificateRequest, loginCsrErr error, _ string) {
+			assert: func(t *testing.T, authn *k8s.Authenticator, err error, loginCsr *x509.CertificateRequest, loginCsrErr error, _ string) {
 				assert.NoError(t, err)
 
 				// Check the CSR
@@ -68,7 +69,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			name:         "empty podname",
 			podName:      "",
 			podNamespace: "",
-			assert: func(t *testing.T, authn *Authenticator, err error, loginCsr *x509.CertificateRequest, _ error, _ string) {
+			assert: func(t *testing.T, authn *k8s.Authenticator, err error, loginCsr *x509.CertificateRequest, _ error, _ string) {
 				assert.NoError(t, err)
 
 				// Assert empty spiffe
@@ -83,7 +84,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			name:         "expired cert",
 			podName:      "testPodName",
 			podNamespace: "testPodNamespace",
-			assert: func(t *testing.T, authn *Authenticator, err error, _ *x509.CertificateRequest, _ error, _ string) {
+			assert: func(t *testing.T, authn *k8s.Authenticator, err error, _ *x509.CertificateRequest, _ error, _ string) {
 				assert.NoError(t, err)
 				// Set the expiration date to now, and try to authenticate again
 				// This will cause the authenticator to try to refresh the cert
@@ -100,7 +101,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			podName:            "testPodName",
 			podNamespace:       "testPodNamespace",
 			skipWritingCSRFile: true,
-			assert: func(t *testing.T, _ *Authenticator, err error, _ *x509.CertificateRequest, _ error, logTxt string) {
+			assert: func(t *testing.T, _ *k8s.Authenticator, err error, _ *x509.CertificateRequest, _ error, logTxt string) {
 				assert.Error(t, err)
 				// Check logs for the expected error
 				assert.Contains(t, logTxt, "error writing csr file")
@@ -133,26 +134,28 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 				Type:  "CERTIFICATE",
 				Bytes: ts.Server.Certificate().Raw,
 			})
-			username, _ := config.NewUsername("host/test-user")
+			username, _ := common.NewUsername("host/test-user")
 
-			cfg := config.Config{
-				Account:                   "account",
-				ClientCertPath:            clientCertPath,
-				ClientCertRetryCountLimit: 0,
-				ContainerMode:             "doesntmatter",
-				ConjurVersion:             "5",
-				InjectCertLogPath:         certLogPath,
-				PodName:                   tc.podName,
-				PodNamespace:              tc.podNamespace,
-				SSLCertificate:            sslcert,
-				TokenFilePath:             tokenPath,
-				TokenRefreshTimeout:       0,
-				URL:                       ts.Server.URL,
-				Username:                  username,
+			cfg := k8s.Config{
+				ConjurVersion:     "5",
+				InjectCertLogPath: certLogPath,
+				PodName:           tc.podName,
+				PodNamespace:      tc.podNamespace,
+				Common: common.Config{
+					SSLCertificate:            sslcert,
+					TokenFilePath:             tokenPath,
+					TokenRefreshTimeout:       0,
+					URL:                       ts.Server.URL,
+					Username:                  username,
+					Account:                   "account",
+					ClientCertPath:            clientCertPath,
+					ClientCertRetryCountLimit: 0,
+					ContainerMode:             "doesntmatter",
+				},
 			}
 
 			// EXERCISE
-			authn, err := NewWithAccessToken(cfg, at)
+			authn, err := k8s.NewWithAccessToken(cfg, at)
 			if !assert.NoError(t, err) {
 				return
 			}

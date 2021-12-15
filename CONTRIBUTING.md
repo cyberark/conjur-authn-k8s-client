@@ -151,7 +151,7 @@ follow the instructions in this section.
 ### Update the version, changelog, and notices
 1. Create a new branch for the version bump.
 1. Based on the unreleased content, determine the new version number and update
-   the [version.go](pkg/authenticator/version.go) file.
+   the [version.go](pkg/authenticator/common/version.go) file.
 1. Determine the new version number and update the Helm `Chart.yaml` files in the `helm/conjur-*/` directories.
 1. Review the git log and ensure the [changelog](CHANGELOG.md) contains all
    relevant recent changes with references to GitHub issues or PRs, if possible.

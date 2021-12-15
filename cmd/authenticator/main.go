@@ -3,23 +3,23 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	"os"
 	"time"
 
 	"github.com/cenkalti/backoff"
 
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
-	authnConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 	"github.com/cyberark/secrets-provider-for-k8s/pkg/trace"
 )
 
 func main() {
-	log.Info(log.CAKC048, authenticator.FullVersionName)
+	log.Info(log.CAKC048, common.FullVersionName)
 
 	var err error
 
-	config, err := authnConfig.NewFromEnv()
+	config, err := authenticator.NewConfigFromEnv()
 	if err != nil {
 		printErrorAndExit(log.CAKC018)
 	}
@@ -28,7 +28,7 @@ func main() {
 	defer tracer.Shutdown(context.Background())
 
 	// Create new Authenticator
-	authn, err := authenticator.New(*config)
+	authn, err := authenticator.NewAuthenticator(config)
 	if err != nil {
 		printErrorAndExit(log.CAKC019)
 	}
@@ -48,14 +48,14 @@ func main() {
 				return log.RecordedError(log.CAKC016)
 			}
 
-			if authn.Config.ContainerMode == "init" {
+			if config.GetContainerMode() == "init" {
 				os.Exit(0)
 			}
 
-			log.Info(log.CAKC047, authn.Config.TokenRefreshTimeout)
+			log.Info(log.CAKC047, config.GetTokenTimeout())
 
 			fmt.Println()
-			time.Sleep(authn.Config.TokenRefreshTimeout)
+			time.Sleep(config.GetTokenTimeout())
 
 			// Reset exponential backoff
 			expBackoff.Reset()
