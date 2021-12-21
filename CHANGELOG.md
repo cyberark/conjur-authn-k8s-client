@@ -6,8 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+- Add support for tracing with OpenTelemetry. This adds a new function to the authenticator, `AuthenticateWithContext`. The existing funtion, `Authenticate()` is deprecated and will be removed in a future upddate. [cyberark/conjur-authn-k8s-client#423](https://github.com/cyberark/conjur-authn-k8s-client/pull/423)
+
 ### Changed
 - The project Golang version is updated from the end-of-life v1.15 to version v1.16. [cyberark/conjur-authn-k8s-client#416](https://github.com/cyberark/conjur-authn-k8s-client/pull/416)
+- Reduced default timeout for `waitForFile` from 1s to 50ms. [cyberark/conjur-authn-k8s-client#423](https://github.com/cyberark/conjur-authn-k8s-client/pull/423)
 
 ## [0.22.0] - 2021-09-17
 ### Added

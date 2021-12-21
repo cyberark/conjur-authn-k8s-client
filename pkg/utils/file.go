@@ -45,7 +45,7 @@ func waitForFile(
 	utilities *fileUtils,
 ) error {
 	limitedBackOff := NewLimitedBackOff(
-		time.Second,
+		time.Millisecond*50,
 		retryCountLimit,
 	)
 

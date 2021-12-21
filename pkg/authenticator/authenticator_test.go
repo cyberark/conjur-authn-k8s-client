@@ -2,6 +2,7 @@ package authenticator
 
 import (
 	"bytes"
+	"context"
 	"crypto/x509"
 	"encoding/asn1"
 	"encoding/pem"
@@ -87,7 +88,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 				// Set the expiration date to now, and try to authenticate again
 				// This will cause the authenticator to try to refresh the cert
 				authn.PublicCert.NotAfter = time.Now()
-				err = authn.Authenticate()
+				err = authn.AuthenticateWithContext(context.Background())
 				assert.NoError(t, err)
 
 				// Check that the cert was renewed
@@ -161,7 +162,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			log.ErrorLogger.SetOutput(&logTxt)
 
 			// Call the main method of the authenticator. This is where most of the internal implementation happens
-			err = authn.Authenticate()
+			err = authn.AuthenticateWithContext(context.Background())
 
 			// ASSERT
 			tc.assert(t, authn, err, loginCsr, loginCsrErr, logTxt.String())
