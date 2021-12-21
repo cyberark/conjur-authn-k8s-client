@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
+	jwtAuthenitcator "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/jwt"
 	k8sAuthenitcator "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/k8s"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
@@ -44,6 +45,8 @@ func ConfigFromEnv(readFileFunc common.ReadFileFunc) (common.ConfigurationInterf
 func GetConfiguration(url string) (common.ConfigurationInterface, error) {
 	if strings.Contains(url, k8sAuthenitcator.AuthnType) {
 		return &k8sAuthenitcator.Config{}, nil
+	} else if strings.Contains(url, jwtAuthenitcator.AuthnType) {
+		return &jwtAuthenitcator.Config{}, nil
 	}
 	return nil, fmt.Errorf(log.CAKC063, url)
 }

@@ -3,6 +3,7 @@ package creators
 import (
 	"fmt"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
+	jwtAuthenitcator "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/jwt"
 	"strings"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
@@ -31,6 +32,8 @@ func NewAuthenticatorWithAccessToken(conf common.ConfigurationInterface, token a
 func GetAuthenticator(conf common.ConfigurationInterface) (common.AuthenticatorInterface, error) {
 	if strings.Compare(conf.GetAuthenticationType(), k8sAuthenitcator.AuthnType) == 0 {
 		return &k8sAuthenitcator.Authenticator{}, nil
+	} else if strings.Compare(conf.GetAuthenticationType(), jwtAuthenitcator.AuthnType) == 0 {
+		return &jwtAuthenitcator.Authenticator{}, nil
 	}
 	return nil, fmt.Errorf(log.CAKC064)
 }

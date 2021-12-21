@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
@@ -53,6 +54,8 @@ func ValidateSetting(key string, value string) error {
 		return validTimeout(key, value)
 	case "CONJUR_VERSION":
 		return validConjurVersion(key, value)
+	case "JWT_TOKEN_PATH":
+		return validatePath(value)
 	default:
 		return nil
 	}
@@ -69,4 +72,12 @@ func ReadSSLCert(settings map[string]string, readFile ReadFileFunc) ([]byte, err
 		return []byte(SSLCert), nil
 	}
 	return readFile(SSLCertPath)
+}
+
+func validatePath(path string) error {
+	_, err := os.Stat(path)
+	if err != nil {
+		return fmt.Errorf(log.CAKC065, path)
+	}
+	return nil
 }
