@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ### Added
-- Add support for tracing with OpenTelemetry. This is a breaking change for software that leverages the github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator Go package (e.g. Secretless and Secrets Provider for Kubernetes); users of the Authn-K8s client Docker image are not impacted by this change. [cyberark/conjur-authn-k8s-client#423](https://github.com/cyberark/conjur-authn-k8s-client/pull/423)
+- Add support for tracing with OpenTelemetry. This adds a new function to the authenticator, `AuthenticateWithContext`. The existing funtion, `Authenticate()` is deprecated and will be removed in a future upddate. [cyberark/conjur-authn-k8s-client#423](https://github.com/cyberark/conjur-authn-k8s-client/pull/423)
 
 ### Changed
 - The project Golang version is updated from the end-of-life v1.15 to version v1.16. [cyberark/conjur-authn-k8s-client#416](https://github.com/cyberark/conjur-authn-k8s-client/pull/416)

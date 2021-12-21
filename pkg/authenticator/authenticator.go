@@ -81,7 +81,15 @@ func NewWithAccessToken(config authnConfig.Config, accessToken access_token.Acce
 // Authenticate sends Conjur an authenticate request and writes the response
 // to the token file (after decrypting it if needed). It also manages state of
 // certificates.
-func (auth *Authenticator) Authenticate(ctx context.Context) error {
+// @deprecated Use AuthenticateWithContext instead
+func (auth *Authenticator) Authenticate() error {
+	return auth.AuthenticateWithContext(context.TODO())
+}
+
+// Authenticate sends Conjur an authenticate request and writes the response
+// to the token file (after decrypting it if needed). It also manages state of
+// certificates.
+func (auth *Authenticator) AuthenticateWithContext(ctx context.Context) error {
 	log.Info(log.CAKC040, auth.Config.Username)
 
 	tr := trace.NewOtelTracer(otel.Tracer("conjur-authn-k8s-client"))

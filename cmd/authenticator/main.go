@@ -43,7 +43,7 @@ func main() {
 
 	err = backoff.Retry(func() error {
 		for {
-			err := authn.Authenticate(context.Background())
+			err := authn.AuthenticateWithContext(context.Background())
 			if err != nil {
 				return log.RecordedError(log.CAKC016)
 			}
