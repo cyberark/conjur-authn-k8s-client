@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
+	commonConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
 // Config defines the configuration parameters
 // for the authentication requests
 type Config struct {
-	Common            common.Config
+	Common            commonConfig.Config
 	InjectCertLogPath string
 	PodName           string
 	PodNamespace      string
@@ -89,7 +89,7 @@ func configureLogLevel(level string) {
 func (config *Config) LoadConfig(settings map[string]string) {
 	configureLogLevel(settings["DEBUG"])
 
-	config.Common = common.Config{}
+	config.Common = commonConfig.Config{}
 	config.Common.LoadConfig(settings)
 
 	for key, value := range settings {

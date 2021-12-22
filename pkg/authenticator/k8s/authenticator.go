@@ -22,7 +22,7 @@ import (
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/file"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
+	commonConfig "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
 	"github.com/cyberark/secrets-provider-for-k8s/pkg/trace"
@@ -49,9 +49,11 @@ const (
 )
 
 // Init the authenticator struct
-func (auth *Authenticator) Init(config *common.ConfigurationInterface) (common.AuthenticatorInterface, error) {
+func (auth *Authenticator) Init(config *commonConfig.ConfigurationInterface,
+	client *http.Client) (*Authenticator, error) {
+
 	var cfg = (*config).(*Config)
-	authn, err := New(*cfg)
+	authn, err := new(cfg, client)
 	if err != nil {
 		return nil, fmt.Errorf(log.CAKC019)
 	}
@@ -59,40 +61,40 @@ func (auth *Authenticator) Init(config *common.ConfigurationInterface) (common.A
 	return authn, nil
 }
 
-func (auth *Authenticator) InitWithAccessToken(config *common.ConfigurationInterface, token access_token.AccessToken) (common.AuthenticatorInterface, error) {
+func (auth *Authenticator) InitWithAccessToken(config *commonConfig.ConfigurationInterface,
+	client *http.Client, token access_token.AccessToken) (*Authenticator, error) {
+
 	log.Debug(log.CAKC058)
 	var cfg = (*config).(*Config)
 
-	return NewWithAccessToken(*cfg, token)
+	return newWithAccessToken(cfg, client, token)
 }
 
-// New creates a new authenticator instance from a token file
-func New(config Config) (*Authenticator, error) {
+// new creates a new authenticator instance from a token file
+func new(config *Config, client *http.Client) (*Authenticator, error) {
+
+	log.Debug(log.CAKC058)
+
 	accessToken, err := file.NewAccessToken(config.GetTokenFilePath())
 	if err != nil {
 		return nil, log.RecordedError(log.CAKC001)
 	}
 
-	return NewWithAccessToken(config, accessToken)
+	return newWithAccessToken(config, client, accessToken)
 }
 
-// NewWithAccessToken creates a new authenticator instance from a given access token
-func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*Authenticator, error) {
+// newWithAccessToken creates a new authenticator instance from a given access token
+func newWithAccessToken(config *Config, client *http.Client, accessToken access_token.AccessToken) (*Authenticator, error) {
 	signingKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
 		return nil, log.RecordedError(log.CAKC030, err)
-	}
-
-	client, err := common.NewHTTPSClient(config.Common.SSLCertificate, nil, nil)
-	if err != nil {
-		return nil, err
 	}
 
 	return &Authenticator{
 		client:      client,
 		privateKey:  signingKey,
 		AccessToken: accessToken,
-		Config:      &config,
+		Config:      config,
 	}, nil
 }
 
@@ -103,7 +105,6 @@ func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*A
 func (auth *Authenticator) Authenticate() error {
 	return auth.AuthenticateWithContext(context.TODO())
 }
-
 
 func (auth *Authenticator) AuthenticateWithContext(ctx context.Context) error {
 	log.Info(log.CAKC040, auth.Config.Common.Username)
@@ -327,7 +328,7 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 
 	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: auth.PublicCert.Raw})
 
-	client, err := common.NewHTTPSClient(auth.Config.Common.SSLCertificate, certPEMBlock, keyPEMBlock)
+	client, err := newHTTPSClient(auth.Config.Common.SSLCertificate, certPEMBlock, keyPEMBlock)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
 		return nil, err

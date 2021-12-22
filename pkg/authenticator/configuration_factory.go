@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	k8sAuthenitcator "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/k8s"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
@@ -18,12 +18,12 @@ const AuthnURLVarName string = "CONJUR_AUTHN_URL"
 type AuthnSettings map[string]string
 
 // NewConfigFromEnv returns a config ConfigFromEnv using the standard file reader for reading certs
-func NewConfigFromEnv() (common.ConfigurationInterface, error) {
+func NewConfigFromEnv() (config.ConfigurationInterface, error) {
 	return ConfigFromEnv(ioutil.ReadFile)
 }
 
 // ConfigFromEnv returns a new authenticator configuration object
-func ConfigFromEnv(readFileFunc common.ReadFileFunc) (common.ConfigurationInterface, error) {
+func ConfigFromEnv(readFileFunc config.ReadFileFunc) (config.ConfigurationInterface, error) {
 	authnUrl := os.Getenv(AuthnURLVarName)
 	conf, error := getConfiguration(authnUrl)
 	if error != nil {
@@ -41,7 +41,7 @@ func ConfigFromEnv(readFileFunc common.ReadFileFunc) (common.ConfigurationInterf
 	return conf, nil
 }
 
-func getConfiguration(url string) (common.ConfigurationInterface, error) {
+func getConfiguration(url string) (config.ConfigurationInterface, error) {
 	if strings.Contains(url, k8sAuthenitcator.AuthnType) {
 		return &k8sAuthenitcator.Config{}, nil
 	}
@@ -51,7 +51,7 @@ func getConfiguration(url string) (common.ConfigurationInterface, error) {
 // GatherSettings retrieves authenticator client configuration settings from a slice
 // of arbitrary `func(key string) string` functions. Values received from 'Getter' functions
 // are prioritized in the order that the functions are provided.
-func GatherSettings(conf common.ConfigurationInterface, getters ...func(key string) string) AuthnSettings {
+func GatherSettings(conf config.ConfigurationInterface, getters ...func(key string) string) AuthnSettings {
 	defaultVariables := conf.GetDefaultValues()
 
 	getDefault := func(key string) string {
@@ -72,7 +72,7 @@ func GatherSettings(conf common.ConfigurationInterface, getters ...func(key stri
 
 // Validate confirms that the given AuthnSettings yield a valid authenticator
 // client configuration. Returns a list of Error logs.
-func (settings AuthnSettings) validate(conf common.ConfigurationInterface, readFileFunc common.ReadFileFunc) []error {
+func (settings AuthnSettings) validate(conf config.ConfigurationInterface, readFileFunc config.ReadFileFunc) []error {
 	errorLogs := []error{}
 
 	// ensure required values exist
@@ -84,14 +84,14 @@ func (settings AuthnSettings) validate(conf common.ConfigurationInterface, readF
 
 	// ensure provided values are of the correct type
 	for _, key := range conf.GetEnvVariables() {
-		err := common.ValidateSetting(key, settings[key])
+		err := config.ValidateSetting(key, settings[key])
 		if err != nil {
 			errorLogs = append(errorLogs, err)
 		}
 	}
 
 	// ensure that the certificate settings are valid
-	cert, err := common.ReadSSLCert(settings, readFileFunc)
+	cert, err := config.ReadSSLCert(settings, readFileFunc)
 	if err != nil {
 		errorLogs = append(errorLogs, err)
 	} else {

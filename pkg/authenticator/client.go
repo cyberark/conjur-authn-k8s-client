@@ -1,4 +1,4 @@
-package common
+package authenticator
 
 import (
 	"crypto/tls"
@@ -9,7 +9,7 @@ import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
-func NewHTTPSClient(CACert []byte, certPEMBlock, keyPEMBlock []byte) (*http.Client, error) {
+func newHTTPSClient(CACert []byte, certPEMBlock, keyPEMBlock []byte) (*http.Client, error) {
 	caCertPool := x509.NewCertPool()
 	ok := caCertPool.AppendCertsFromPEM(CACert)
 	if !ok {

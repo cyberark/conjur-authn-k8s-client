@@ -3,19 +3,20 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
 	"os"
 	"time"
 
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
+
 	"github.com/cenkalti/backoff"
 
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 	"github.com/cyberark/secrets-provider-for-k8s/pkg/trace"
 )
 
 func main() {
-	log.Info(log.CAKC048, common.FullVersionName)
+	log.Info(log.CAKC048, config.FullVersionName)
 
 	var err error
 
