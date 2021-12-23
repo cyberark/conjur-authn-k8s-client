@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	jwtAuthenticator "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/jwt"
 	k8sAuthenticator "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/k8s"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
@@ -24,6 +25,8 @@ func NewConfigFromEnv() (Configuration, error) {
 
 // ConfigFromEnv returns a new authenticator configuration object
 func ConfigFromEnv(readFileFunc common.ReadFileFunc) (Configuration, error) {
+	configureLogLevel(os.Getenv("DEBUG"))
+
 	authnUrl := os.Getenv(authnURLVarName)
 	conf, error := getConfiguration(authnUrl)
 	if error != nil {
@@ -42,10 +45,14 @@ func ConfigFromEnv(readFileFunc common.ReadFileFunc) (Configuration, error) {
 }
 
 func getConfiguration(url string) (Configuration, error) {
-	if strings.Contains(url, k8sAuthenticator.AuthnType) {
+	switch {
+	case strings.Contains(url, k8sAuthenticator.AuthnType):
 		return &k8sAuthenticator.Config{}, nil
+	case strings.Contains(url, jwtAuthenticator.AuthnType):
+		return &jwtAuthenticator.Config{}, nil
+	default:
+		return nil, fmt.Errorf(log.CAKC063, url)
 	}
-	return nil, fmt.Errorf(log.CAKC063, url)
 }
 
 // GatherSettings retrieves authenticator client configuration settings from a slice
@@ -119,5 +126,20 @@ func getConfigVariable(getters ...func(key string) string) func(string) string {
 			}
 		}
 		return ""
+	}
+}
+
+func configureLogLevel(level string) {
+	validVal := "true"
+
+	switch level {
+	case validVal:
+		log.EnableDebugMode()
+	case "":
+		// Log level not configured
+		break
+	default:
+		// Log level is configured but it's invalid
+		log.Warn(log.CAKC034, level, validVal)
 	}
 }

@@ -3,6 +3,8 @@ package common
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strconv"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
@@ -25,6 +27,9 @@ func validInt(key, value string) error {
 }
 
 func validUsername(key, value string) error {
+	if len(value) == 0 {
+		return nil
+	}
 	_, err := NewUsername(value)
 	return err
 }
@@ -53,6 +58,8 @@ func ValidateSetting(key string, value string) error {
 		return validTimeout(key, value)
 	case "CONJUR_VERSION":
 		return validConjurVersion(key, value)
+	case "JWT_TOKEN_PATH":
+		return validatePath(value)
 	default:
 		return nil
 	}
@@ -69,4 +76,20 @@ func ReadSSLCert(settings map[string]string, readFile ReadFileFunc) ([]byte, err
 		return []byte(SSLCert), nil
 	}
 	return readFile(SSLCertPath)
+}
+
+func validatePath(path string) error {
+	// Check if file already exists
+	if _, err := os.Stat(path); err == nil {
+		return nil
+	}
+
+	// Attempt to create the file and delete it right after
+	var emptyData []byte
+	if err := ioutil.WriteFile(path, emptyData, 0644); err == nil {
+		os.Remove(path) // And delete it
+		return nil
+	}
+
+	return fmt.Errorf(log.CAKC065, path)
 }

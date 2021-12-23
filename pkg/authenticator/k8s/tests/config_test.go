@@ -1,13 +1,13 @@
 package tests
 
 import (
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/k8s"
-
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/k8s"
 )
 
 var environmentValues = map[string]string{
@@ -32,14 +32,6 @@ var envToAnnot = map[string]string{
 	"DEBUG":              "conjur.org/debug-logging",
 	"CONTAINER_MODE":     "conjur.org/container-mode",
 }
-
-func assertGoodConfig(expected *k8s.Config) func(*testing.T, *k8s.Config) {
-	return func(t *testing.T, result *k8s.Config) {
-		assert.Equal(t, expected, result)
-	}
-}
-
-type errorAssertFunc func(*testing.T, []error)
 
 func setEnv(env map[string]string) {
 	for key, value := range env {

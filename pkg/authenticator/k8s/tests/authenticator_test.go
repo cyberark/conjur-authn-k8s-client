@@ -61,7 +61,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 				)
 
 				// Check that the access token was set correctly
-				token, _ := authn.AccessToken.Read()
+				token, _ := authn.GetAccessToken().Read()
 				assert.Equal(t, token, []byte("some token"))
 			},
 		},
@@ -121,7 +121,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			var loginCsrErr error
 
 			// Start up a test server to mock the Conjur server's auth endpoints
-			ts := NewTestAuthServer(clientCertPath, certLogPath, "some token", tc.skipWritingCSRFile)
+			ts := common.NewTestAuthServer(clientCertPath, certLogPath, "some token", tc.skipWritingCSRFile)
 			ts.HandleLogin = func(csr *x509.CertificateRequest, err error) {
 				loginCsr = csr
 				loginCsrErr = err
