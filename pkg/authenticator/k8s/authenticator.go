@@ -35,8 +35,8 @@ var bufferTime = 30 * time.Second
 type Authenticator struct {
 	client      *http.Client
 	privateKey  *rsa.PrivateKey
-	AccessToken access_token.AccessToken
-	Config      *Config
+	accessToken access_token.AccessToken
+	config      *Config
 	PublicCert  *x509.Certificate
 }
 
@@ -62,9 +62,14 @@ func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*A
 	return &Authenticator{
 		client:      client,
 		privateKey:  signingKey,
-		AccessToken: accessToken,
-		Config:      &config,
+		accessToken: accessToken,
+		config:      &config,
 	}, nil
+}
+
+// GetAccessToken is getter for accessToken
+func (auth *Authenticator) GetAccessToken() access_token.AccessToken {
+	return auth.accessToken
 }
 
 // Authenticate sends Conjur an authenticate request and writes the response
@@ -76,7 +81,7 @@ func (auth *Authenticator) Authenticate() error {
 }
 
 func (auth *Authenticator) AuthenticateWithContext(ctx context.Context) error {
-	log.Info(log.CAKC040, auth.Config.Common.Username)
+	log.Info(log.CAKC040, auth.config.Common.Username)
 
 	tr := trace.NewOtelTracer(otel.Tracer("conjur-authn-k8s-client"))
 	spanCtx, span := tr.Start(ctx, "Authenticate")
@@ -103,7 +108,7 @@ func (auth *Authenticator) AuthenticateWithContext(ctx context.Context) error {
 		return err
 	}
 
-	err = auth.AccessToken.Write(parsedResponse)
+	err = auth.accessToken.Write(parsedResponse)
 	if err != nil {
 		return err
 	}
@@ -114,7 +119,7 @@ func (auth *Authenticator) AuthenticateWithContext(ctx context.Context) error {
 
 // generateCSR prepares the CSR
 func (auth *Authenticator) generateCSR(commonName string) ([]byte, error) {
-	sanURIString, err := generateSANURI(auth.Config.PodNamespace, auth.Config.PodName)
+	sanURIString, err := generateSANURI(auth.config.PodNamespace, auth.config.PodName)
 	sanURI, err := url.Parse(sanURIString)
 	if err != nil {
 		return nil, err
@@ -150,17 +155,17 @@ func (auth *Authenticator) generateCSR(commonName string) ([]byte, error) {
 // successfully retrieved
 func (auth *Authenticator) login(ctx context.Context, tracer trace.Tracer) error {
 
-	log.Debug(log.CAKC041, auth.Config.Common.Username)
+	log.Debug(log.CAKC041, auth.config.Common.Username)
 
 	_, span := tracer.Start(ctx, "Generate CSR")
-	csrRawBytes, err := auth.generateCSR(auth.Config.Common.Username.Suffix)
+	csrRawBytes, err := auth.generateCSR(auth.config.Common.Username.Suffix)
 
 	csrBytes := pem.EncodeToMemory(&pem.Block{
 		Type: "CERTIFICATE REQUEST", Bytes: csrRawBytes,
 	})
 	span.End()
 
-	req, err := LoginRequest(auth.Config.Common.URL, auth.Config.ConjurVersion, csrBytes, auth.Config.Common.Username.Prefix)
+	req, err := LoginRequest(auth.config.Common.URL, auth.config.ConjurVersion, csrBytes, auth.config.Common.Username.Prefix)
 	if err != nil {
 		return err
 	}
@@ -183,8 +188,8 @@ func (auth *Authenticator) login(ctx context.Context, tracer trace.Tracer) error
 	// Ensure client certificate exists before attempting to read it, with a tolerance
 	// for small delays
 	err = utils.WaitForFile(
-		auth.Config.Common.ClientCertPath,
-		auth.Config.Common.ClientCertRetryCountLimit,
+		auth.config.Common.ClientCertPath,
+		auth.config.Common.ClientCertRetryCountLimit,
 	)
 	if err != nil {
 		// The response code was changed from 200 to 202 in the same Conjur version
@@ -192,7 +197,7 @@ func (auth *Authenticator) login(ctx context.Context, tracer trace.Tracer) error
 		// the response code is 202 will verify that we look for the log file only
 		// if we expect it to be there
 		if resp.StatusCode == 202 {
-			injectClientCertError := consumeInjectClientCertError(auth.Config.InjectCertLogPath)
+			injectClientCertError := consumeInjectClientCertError(auth.config.InjectCertLogPath)
 			if injectClientCertError != "" {
 				log.Error(log.CAKC055, injectClientCertError)
 			}
@@ -205,34 +210,34 @@ func (auth *Authenticator) login(ctx context.Context, tracer trace.Tracer) error
 
 	_, span = tracer.Start(ctx, "Load cert file")
 	// load client cert
-	certPEMBlock, err := ioutil.ReadFile(auth.Config.Common.ClientCertPath)
+	certPEMBlock, err := ioutil.ReadFile(auth.config.Common.ClientCertPath)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
 		span.End()
 
 		if os.IsNotExist(err) {
-			return log.RecordedError(log.CAKC011, auth.Config.Common.ClientCertPath)
+			return log.RecordedError(log.CAKC011, auth.config.Common.ClientCertPath)
 		}
 
 		return log.RecordedError(log.CAKC012, err)
 	}
-	log.Debug(log.CAKC049, auth.Config.Common.ClientCertPath)
+	log.Debug(log.CAKC049, auth.config.Common.ClientCertPath)
 
 	certDERBlock, certPEMBlock := pem.Decode(certPEMBlock)
 	cert, err := x509.ParseCertificate(certDERBlock.Bytes)
 	if err != nil {
-		return log.RecordedError(log.CAKC013, auth.Config.Common.ClientCertPath, err)
+		return log.RecordedError(log.CAKC013, auth.config.Common.ClientCertPath, err)
 		span.RecordErrorAndSetStatus(err)
 		span.End()
 
-		return log.RecordedError(log.CAKC013, auth.Config.Common.ClientCertPath, err)
+		return log.RecordedError(log.CAKC013, auth.config.Common.ClientCertPath, err)
 	}
 
 	auth.PublicCert = cert
 	span.End()
 
 	// clean up the client cert so it's only available in memory
-	os.Remove(auth.Config.Common.ClientCertPath)
+	os.Remove(auth.config.Common.ClientCertPath)
 	log.Debug(log.CAKC050)
 
 	return nil
@@ -293,17 +298,17 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 
 	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: auth.PublicCert.Raw})
 
-	client, err := common.NewHTTPSClient(auth.Config.Common.SSLCertificate, certPEMBlock, keyPEMBlock)
+	client, err := common.NewHTTPSClient(auth.config.Common.SSLCertificate, certPEMBlock, keyPEMBlock)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
 		return nil, err
 	}
 
 	req, err := AuthenticateRequest(
-		auth.Config.Common.URL,
-		auth.Config.ConjurVersion,
-		auth.Config.Common.Account,
-		auth.Config.Common.Username.FullUsername,
+		auth.config.Common.URL,
+		auth.config.ConjurVersion,
+		auth.config.Common.Account,
+		auth.config.Common.Username.FullUsername,
 	)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
@@ -335,13 +340,13 @@ func (auth *Authenticator) parseAuthenticationResponse(ctx context.Context, trac
 	var err error
 
 	// Token is only encrypted in Conjur v4
-	if auth.Config.ConjurVersion == "4" {
+	if auth.config.ConjurVersion == "4" {
 		content, err = decodeFromPEM(response, auth.PublicCert, auth.privateKey)
 		if err != nil {
 			span.RecordErrorAndSetStatus(err)
 			return nil, log.RecordedError(log.CAKC020)
 		}
-	} else if auth.Config.ConjurVersion == "5" {
+	} else if auth.config.ConjurVersion == "5" {
 		content = response
 	}
 
@@ -378,7 +383,7 @@ func marshalSANs(dnsNames, emailAddresses []string, ipAddresses []net.IP, uris [
 	return asn1.Marshal(rawValues)
 }
 
-func decodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey crypto.PrivateKey) ([]byte, error) {
+func decodeFromPEM(PEMBlock []byte, PublicCert *x509.Certificate, privateKey crypto.PrivateKey) ([]byte, error) {
 	var decodedPEM []byte
 
 	tokenDerBlock, _ := pem.Decode(PEMBlock)
@@ -387,7 +392,7 @@ func decodeFromPEM(PEMBlock []byte, publicCert *x509.Certificate, privateKey cry
 		return nil, log.RecordedError(log.CAKC026, err)
 	}
 
-	decodedPEM, err = p7.Decrypt(publicCert, privateKey)
+	decodedPEM, err = p7.Decrypt(PublicCert, privateKey)
 	if err != nil {
 		return nil, log.RecordedError(log.CAKC025, err)
 	}

@@ -77,3 +77,6 @@ const CAKC061 string = "CAKC061 Failed to validate setting for Authenticator con
 const CAKC062 string = "CAKC062 Required Authenticator setting %s not provided"
 const CAKC063 string = "CAKC063 Unable to find configuration for URL: %s"
 const CAKC064 string = "CAKC064 Unable to find Authenticator for this configuration"
+const CAKC065 string = "CAKC065 File path is invalid %s"
+const CAKC066 string = "CAKC066 Performing authn-jwt"
+const CAKC067 string = "CAKC067 Failed reading jwt token from %s"

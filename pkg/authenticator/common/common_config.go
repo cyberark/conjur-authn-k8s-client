@@ -27,8 +27,12 @@ func (config *Config) LoadConfig(settings map[string]string) {
 		case "CONJUR_ACCOUNT":
 			config.Account = value
 		case "CONJUR_AUTHN_LOGIN":
-			username, _ := NewUsername(value)
-			config.Username = username
+			if len(value) == 0 {
+				config.Username = nil
+			} else {
+				username, _ := NewUsername(value)
+				config.Username = username
+			}
 		case "CONJUR_AUTHN_URL":
 			config.URL = value
 		case "CONJUR_SSL_CERTIFICATE":

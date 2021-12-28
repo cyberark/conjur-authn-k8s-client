@@ -5,6 +5,7 @@ import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/file"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
+	jwtAuthenticator "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/jwt"
 	k8sAuthenticator "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/k8s"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
@@ -25,9 +26,12 @@ func NewAuthenticatorWithAccessToken(conf config.Configuration, token access_tok
 }
 
 func getAuthenticator(conf config.Configuration, token access_token.AccessToken) (Authenticator, error) {
-	if conf.GetAuthenticationType() == k8sAuthenticator.AuthnType {
-		k8sCfg := (conf).(*k8sAuthenticator.Config)
-		return k8sAuthenticator.NewWithAccessToken(*k8sCfg, token)
+	switch c := conf.(type) {
+	case *k8sAuthenticator.Config:
+		return k8sAuthenticator.NewWithAccessToken(*c, token)
+	case *jwtAuthenticator.Config:
+		return jwtAuthenticator.NewWithAccessToken(*c, token)
+	default:
+		return nil, fmt.Errorf(log.CAKC064)
 	}
-	return nil, fmt.Errorf(log.CAKC064)
 }
