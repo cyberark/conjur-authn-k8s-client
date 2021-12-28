@@ -6,15 +6,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.23.0] - 2022-01-14
 ### Added
 - Add support for tracing with OpenTelemetry. This adds a new function to the authenticator, `AuthenticateWithContext`. The existing funtion, `Authenticate()` is deprecated and will be removed in a future upddate. [cyberark/conjur-authn-k8s-client#423](https://github.com/cyberark/conjur-authn-k8s-client/pull/423)
-- Add support for Authn-JWT flow [cyberark/conjur-authn-k8s-client#426](https://github.com/cyberark/conjur-authn-k8s-client/pull/426)
+- Add support for Authn-JWT flow. [cyberark/conjur-authn-k8s-client#426](https://github.com/cyberark/conjur-authn-k8s-client/pull/426)
+- Add support for configuration via Pod Annotations. [[cyberark/conjur-authn-k8s-client#407](https://github.com/cyberark/conjur-authn-k8s-client/pull/407)
 
 ### Changed
-- The project Golang version is updated from the end-of-life v1.15 to version v1.16. [cyberark/conjur-authn-k8s-client#416](https://github.com/cyberark/conjur-authn-k8s-client/pull/416)
+- The project Golang version is updated from the end-of-life v1.15 to version v1.17.
+  [cyberark/conjur-authn-k8s-client#416](https://github.com/cyberark/conjur-authn-k8s-client/pull/416)
+  [cyberark/conjur-authn-k8s-client#424](https://github.com/cyberark/conjur-authn-k8s-client/pull/424)
 - Reduced default timeout for `waitForFile` from 1s to 50ms. [cyberark/conjur-authn-k8s-client#423](https://github.com/cyberark/conjur-authn-k8s-client/pull/423)
-- Instead of getting K8S config object now you get Config Interface using NewConfigFromEnv() and ConfigFromEnv() [cyberark/conjur-authn-k8s-client#425](https://github.com/cyberark/conjur-authn-k8s-client/pull/425)
-- Instead of getting K8S authenticator object now you get Authenticator Interface using NewAuthenticator() and NewAuthenticatorWithAccessToken() [cyberark/conjur-authn-k8s-client#425](https://github.com/cyberark/conjur-authn-k8s-client/pull/425)
+- Instead of getting K8s config object now you get Config Interface using NewConfigFromEnv() and ConfigFromEnv().
+  This is a breaking change for software that leverages the `github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator`
+  Go package (e.g. Secretless and Secrets Provider for Kubernetes).
+  [cyberark/conjur-authn-k8s-client#425](https://github.com/cyberark/conjur-authn-k8s-client/pull/425)
+- Instead of getting K8s authenticator object now you get Authenticator Interface using NewAuthenticator() and NewAuthenticatorWithAccessToken(). [cyberark/conjur-authn-k8s-client#425](https://github.com/cyberark/conjur-authn-k8s-client/pull/425)
 
 ### Fixed
 - Allows the Conjur certificate path in the conjur-config-cluster-prep Helm chart to be set to
@@ -192,7 +199,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.22.0...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.0...HEAD
+[0.23.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.20.0...v0.21.0
 [0.20.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.19.1...v0.20.0
