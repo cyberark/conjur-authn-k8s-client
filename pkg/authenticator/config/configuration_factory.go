@@ -25,14 +25,17 @@ func NewConfigFromEnv() (Configuration, error) {
 
 // ConfigFromEnv returns a new authenticator configuration object
 func ConfigFromEnv(readFileFunc common.ReadFileFunc) (Configuration, error) {
-	configureLogLevel(os.Getenv("DEBUG"))
+	return NewConfigFromCustomEnv(readFileFunc, os.Getenv)
+}
 
-	authnUrl := os.Getenv(authnURLVarName)
-	conf, error := getConfiguration(authnUrl)
-	if error != nil {
-		return nil, error
+func NewConfigFromCustomEnv(readFileFunc common.ReadFileFunc, customEnv func(key string) string) (Configuration, error) {
+	configureDebugIfNeeded(customEnv)
+	authnUrl := customEnv(authnURLVarName)
+	conf, err := getConfiguration(authnUrl)
+	if err != nil {
+		return nil, err
 	}
-	envSettings := GatherSettings(conf, os.Getenv)
+	envSettings := GatherSettings(conf, customEnv)
 
 	errLogs := envSettings.validate(conf, readFileFunc)
 	if len(errLogs) > 0 {
@@ -42,17 +45,6 @@ func ConfigFromEnv(readFileFunc common.ReadFileFunc) (Configuration, error) {
 
 	conf.LoadConfig(envSettings)
 	return conf, nil
-}
-
-func getConfiguration(url string) (Configuration, error) {
-	switch {
-	case strings.Contains(url, k8sAuthenticator.AuthnType):
-		return &k8sAuthenticator.Config{}, nil
-	case strings.Contains(url, jwtAuthenticator.AuthnType):
-		return &jwtAuthenticator.Config{}, nil
-	default:
-		return nil, fmt.Errorf(log.CAKC063, url)
-	}
 }
 
 // GatherSettings retrieves authenticator client configuration settings from a slice
@@ -75,6 +67,17 @@ func GatherSettings(conf Configuration, getters ...func(key string) string) Auth
 	}
 
 	return settings
+}
+
+func getConfiguration(url string) (Configuration, error) {
+	switch {
+	case strings.Contains(url, k8sAuthenticator.AuthnType):
+		return &k8sAuthenticator.Config{}, nil
+	case strings.Contains(url, jwtAuthenticator.AuthnType):
+		return &jwtAuthenticator.Config{}, nil
+	default:
+		return nil, fmt.Errorf(log.CAKC063, url)
+	}
 }
 
 // Validate confirms that the given AuthnSettings yield a valid authenticator
@@ -129,10 +132,11 @@ func getConfigVariable(getters ...func(key string) string) func(string) string {
 	}
 }
 
-func configureLogLevel(level string) {
+func configureDebugIfNeeded(getConfigFunc func(key string) string) {
 	validVal := "true"
+	debugValue := getConfigFunc("DEBUG")
 
-	switch level {
+	switch debugValue {
 	case validVal:
 		log.EnableDebugMode()
 	case "":
@@ -140,6 +144,6 @@ func configureLogLevel(level string) {
 		break
 	default:
 		// Log level is configured but it's invalid
-		log.Warn(log.CAKC034, level, validVal)
+		log.Warn(log.CAKC034, debugValue, validVal)
 	}
 }
