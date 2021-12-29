@@ -92,10 +92,6 @@ func (config *Config) LoadConfig(settings map[string]string) {
 	}
 }
 
-func (config *Config) GetAuthenticationType() string {
-	return AuthnType
-}
-
 func (config *Config) GetEnvVariables() []string {
 	return envVariables
 }

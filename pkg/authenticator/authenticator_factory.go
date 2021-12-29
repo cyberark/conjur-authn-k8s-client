@@ -28,8 +28,10 @@ func NewAuthenticatorWithAccessToken(conf config.Configuration, token access_tok
 func getAuthenticator(conf config.Configuration, token access_token.AccessToken) (Authenticator, error) {
 	switch c := conf.(type) {
 	case *k8sAuthenticator.Config:
+		log.Info(log.CAKC075, k8sAuthenticator.AuthnType)
 		return k8sAuthenticator.NewWithAccessToken(*c, token)
 	case *jwtAuthenticator.Config:
+		log.Info(log.CAKC075, jwtAuthenticator.AuthnType)
 		return jwtAuthenticator.NewWithAccessToken(*c, token)
 	default:
 		return nil, fmt.Errorf(log.CAKC064)

@@ -99,9 +99,12 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 		return nil, err
 	}
 
+	log.Debug(log.CAKC078)
 	if auth.Config.Common.Username != nil {
 		authenticatingIdentity = auth.Config.Common.Username.FullUsername
+		log.Debug(log.CAKC079, authenticatingIdentity)
 	} else {
+		log.Debug(log.CAKC080)
 		authenticatingIdentity = ""
 	}
 
@@ -117,6 +120,7 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 		return nil, err
 	}
 
+	log.Debug(log.CAKC069, AuthnType)
 	resp, err := auth.client.Do(req)
 
 	if err != nil {
@@ -134,10 +138,14 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 }
 
 func loadJWTToken(path string) (string, error) {
+	log.Debug(log.CAKC076, path)
+
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return "", fmt.Errorf(log.CAKC067, path)
 	}
+
+	log.Debug(log.CAKC077)
 
 	return string(data), nil
 }
