@@ -29,6 +29,7 @@ func ConfigFromEnv(readFileFunc common.ReadFileFunc) (Configuration, error) {
 }
 
 func NewConfigFromCustomEnv(readFileFunc common.ReadFileFunc, customEnv func(key string) string) (Configuration, error) {
+	log.Debug(log.CAKC068)
 	configureDebugIfNeeded(customEnv)
 	authnUrl := customEnv(authnURLVarName)
 	conf, err := getConfiguration(authnUrl)
@@ -42,6 +43,7 @@ func NewConfigFromCustomEnv(readFileFunc common.ReadFileFunc, customEnv func(key
 		logErrors(errLogs)
 		return nil, errors.New(log.CAKC061)
 	}
+	log.Debug(log.CAKC074)
 
 	conf.LoadConfig(envSettings)
 	return conf, nil
@@ -51,6 +53,7 @@ func NewConfigFromCustomEnv(readFileFunc common.ReadFileFunc, customEnv func(key
 // of arbitrary `func(key string) string` functions. Values received from 'Getter' functions
 // are prioritized in the order that the functions are provided.
 func GatherSettings(conf Configuration, getters ...func(key string) string) AuthnSettings {
+	log.Debug(log.CAKC071)
 	defaultVariables := conf.GetDefaultValues()
 
 	getDefault := func(key string) string {
@@ -66,14 +69,17 @@ func GatherSettings(conf Configuration, getters ...func(key string) string) Auth
 		settings[key] = value
 	}
 
+	log.Debug(log.CAKC072)
 	return settings
 }
 
 func getConfiguration(url string) (Configuration, error) {
 	switch {
 	case strings.Contains(url, k8sAuthenticator.AuthnType):
+		log.Info(log.CAKC070, k8sAuthenticator.AuthnType)
 		return &k8sAuthenticator.Config{}, nil
 	case strings.Contains(url, jwtAuthenticator.AuthnType):
+		log.Info(log.CAKC070, jwtAuthenticator.AuthnType)
 		return &jwtAuthenticator.Config{}, nil
 	default:
 		return nil, fmt.Errorf(log.CAKC063, url)
@@ -83,6 +89,7 @@ func getConfiguration(url string) (Configuration, error) {
 // Validate confirms that the given AuthnSettings yield a valid authenticator
 // client configuration. Returns a list of Error logs.
 func (settings AuthnSettings) validate(conf Configuration, readFileFunc common.ReadFileFunc) []error {
+	log.Debug(log.CAKC073)
 	errorLogs := []error{}
 
 	// ensure required values exist

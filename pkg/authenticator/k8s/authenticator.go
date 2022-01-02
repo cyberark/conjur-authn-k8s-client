@@ -315,6 +315,7 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 		return nil, err
 	}
 
+	log.Debug(log.CAKC069, AuthnType)
 	resp, err := client.Do(req)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)

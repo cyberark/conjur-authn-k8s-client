@@ -54,7 +54,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			name: "token doesn't exist",
 			assert: func(t *testing.T, authn *jwt.Authenticator, err error) {
 				assert.NotNil(t, err)
-				assert.True(t, strings.Contains(err.Error(), "Failed reading jwt token from"))
+				assert.True(t, strings.Contains(err.Error(), "Failed to read JWT from"))
 			},
 			jwtTokenPath: "/tmp/nonExistingPath",
 		},
