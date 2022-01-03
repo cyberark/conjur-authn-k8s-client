@@ -38,8 +38,12 @@
 - !grant
   role: !group my-app-db
   members:
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-secrets-provider-init
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-secrets-provider-init
     - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-secrets-provider-p2f
     - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-secrets-provider-p2f
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-secrets-provider-standalone
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-secrets-provider-standalone
 
 - !grant
   role: !group test-secrets-provider-standalone-app-db

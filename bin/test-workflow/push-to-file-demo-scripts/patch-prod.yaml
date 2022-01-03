@@ -2,6 +2,8 @@ spec:
   template:
     metadata:
       annotations:
+        conjur.org/secrets-refresh-interval: 2s
+        conjur.org/restart-app-signal: SIGKILL
         conjur.org/conjur-secrets.db: |
           - db-url: my-app-db/prod/url
           - db-username: my-app-db/prod/username
