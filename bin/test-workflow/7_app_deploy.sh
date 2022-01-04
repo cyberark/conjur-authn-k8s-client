@@ -9,6 +9,8 @@ source utils.sh
 
 check_env_var TEST_APP_NAMESPACE_NAME
 check_env_var CONJUR_AUTHN_LOGIN_PREFIX
+check_env_var SECRETS_PROVIDER_TAG
+check_env_var SECRETLESS_BROKER_TAG
 
 set_namespace "$TEST_APP_NAMESPACE_NAME"
 
@@ -26,6 +28,7 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-summon-sidecar.conjur.authnConfigMap.name=conjur-authn-configmap-summon-sidecar \
     --set app-summon-sidecar.app.platform=$PLATFORM"
   secretless_broker_options="--set app-secretless-broker.enabled=true \
+    --set app-secretless-broker.secretless.image.tag=$SECRETLESS_BROKER_TAG \
     --set app-secretless-broker.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secretless-broker \
     --set app-secretless-broker.conjur.authnConfigMap.name=conjur-authn-configmap-secretless \
     --set app-secretless-broker.app.platform=$PLATFORM"
@@ -35,10 +38,12 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-secrets-provider-standalone.app.image.repository="$TEST_APP_REPO" \
     --set app-secrets-provider-standalone.app.platform=$PLATFORM"
   secrets_provider_init_options="--set app-secrets-provider-init.enabled=true \
+    --set app-secrets-provider-init.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
     --set app-secrets-provider-init.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-init \
     --set app-secrets-provider-init.conjur.authnConfigMap.name=conjur-authn-configmap-secrets-provider-init \
     --set app-secrets-provider-init.app.platform=$PLATFORM"
   secrets_provider_p2f_options="--set app-secrets-provider-p2f.enabled=true \
+    --set app-secrets-provider-p2f.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
     --set app-secrets-provider-p2f.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-p2f \
     --set app-secrets-provider-p2f.app.platform=$PLATFORM"
 
