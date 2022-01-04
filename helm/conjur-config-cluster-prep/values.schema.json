@@ -12,8 +12,7 @@
                 },
                 "certificateFilePath": {
                     "type": "string",
-                    "minLength": 1,
-                    "pattern": "(^files\/(.*))|(^tests\/(.*))"
+                    "minLength": 1
                 },
                 "certificateBase64": {
                     "type": "string",

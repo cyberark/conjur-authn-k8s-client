@@ -4,7 +4,7 @@ set -o pipefail
 
 ### PLATFORM DETAILS
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
-export UNIQUE_TEST_ID="$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)"
+export UNIQUE_TEST_ID="${UNIQUE_TEST_ID:-$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)}"
 
 # PLATFORM is used to differentiate between general Kubernetes platforms (kubernetes, openshift), while
 # CONJUR_PLATFORM is used to differentiate between sub-platforms (kind, gke, jenkins, openshift) for the Conjur deployment
