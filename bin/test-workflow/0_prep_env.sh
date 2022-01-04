@@ -58,6 +58,8 @@ export TEST_APP_DATABASE="${TEST_APP_DATABASE:-postgres}"
 export TEST_APP_REPO="${TEST_APP_REPO:-cyberark/demo-app}"
 export TEST_APP_TAG="${TEST_APP_TAG:-latest}"
 export INSTALL_APPS="${INSTALL_APPS:-summon-sidecar,secretless-broker,secrets-provider-init}"
+export SECRETS_PROVIDER_TAG="${SECRETS_PROVIDER_TAG:-edge}"
+export SECRETLESS_BROKER_TAG="${SECRETLESS_BROKER_TAG:-latest}"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   conjur_service="conjur-oss"

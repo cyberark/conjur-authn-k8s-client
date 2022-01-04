@@ -316,6 +316,8 @@ function run_command_with_platform {
     -e TEST_APP_TAG \
     -e TEST_APP_REPO \
     -e TEST_APP_LOADBALANCER_SVCS \
+    -e SECRETS_PROVIDER_TAG \
+    -e SECRETLESS_BROKER_TAG \
     -e GCLOUD_SERVICE_KEY=/tmp"$GCLOUD_SERVICE_KEY" \
     "$GCLOUD_INCLUDES" \
     -v /var/run/docker.sock:/var/run/docker.sock \
