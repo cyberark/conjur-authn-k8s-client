@@ -97,12 +97,12 @@ function main() {
     cert_file_test "files/conjur-cert.pem"
     update_results "$?"
 
-    announce "Conjur cert file beginning with 'tests/' is accepted"
-    cert_file_test "tests/test-cert.pem"
+    announce "Conjur cert file beginning with 'foo/' is accepted"
+    cert_file_test "foo/foobar.pem"
     update_results "$?"
 
-    announce "Conjur cert file beginning with 'foo/' is rejected"
-    cert_file_test "foo/foobar.pem"
+    announce "Empty Conjur cert file is rejected"
+    cert_file_test ""
     update_results "$?" "$EXPECT_FAILURE"
 
     announce "Base64-encoded Conjur cert with all valid characters is accepted"

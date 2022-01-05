@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Instead of getting K8S config object now you get Config Interface using NewConfigFromEnv() and ConfigFromEnv() [cyberark/conjur-authn-k8s-client#425](https://github.com/cyberark/conjur-authn-k8s-client/pull/425)
 - Instead of getting K8S authenticator object now you get Authenticator Interface using NewAuthenticator() and NewAuthenticatorWithAccessToken() [cyberark/conjur-authn-k8s-client#425](https://github.com/cyberark/conjur-authn-k8s-client/pull/425)
 
+### Fixed
+- Allows the Conjur certificate path in the conjur-config-cluster-prep Helm chart to be set to
+  any user specified directory. [cyberark/conjur-authn-k8s-client#434](https://github.com/cyberark/conjur-authn-k8s-client/pull/434)
+
 ## [0.22.0] - 2021-09-17
 ### Added
 - Introduces the `conjur-config-cluster-prep.yaml` and `conjur-config-namespace-prep.yaml` raw Kubernetes manifests generated from their corresponding Helm charts. These manifests provide an alternative method of configuring a Kubernetes cluster for the deployment of Conjur-authenticated applications for users unable to use  Helm in their environment.
