@@ -1,8 +1,13 @@
 # Grant permission for hosts in the apps group to authenticate via kubernetes authenticator
 - !grant
-  role: !group conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/consumers
+  role: !group conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/k8s-consumers
   members:
     - !group conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps
+
+- !grant
+  role: !group conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/jwt-consumers
+  members:
+    - !group conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps
 
 # Grant permission for the appropriate hosts to read and execute app variables
 - !grant
@@ -18,6 +23,11 @@
     - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-summon-sidecar
 
 - !grant
+  role: !group test-summon-sidecar-jwt-app-db
+  members:
+    - !host conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps/system:serviceaccount:app-test:test-app-summon-sidecar
+
+- !grant
   role: !group test-secretless-app-db
   members:
     - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-secretless-broker
@@ -28,6 +38,11 @@
   members:
     - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-secrets-provider-init
     - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-secrets-provider-init
+
+- !grant
+  role: !group test-secrets-provider-init-jwt-app-db
+  members:
+    - !host conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps/system:serviceaccount:app-test:test-app-secrets-provider-init-jwt
 
 - !grant
   role: !group test-secrets-provider-p2f-app-db

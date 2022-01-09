@@ -20,10 +20,18 @@ dependencies:
       repository: "file://charts/app-summon-sidecar"
       version: ">= 0.0.1"
       condition: app-summon-sidecar.enabled
+    - name: app-summon-sidecar-jwt
+      repository: "file://charts/app-summon-sidecar-jwt"
+      version: ">= 0.0.1"
+      condition: app-summon-sidecar-jwt.enabled
     - name: app-secrets-provider-init
       repository: "file://charts/app-secrets-provider-init"
       version: ">= 0.0.1"
       condition: app-secrets-provider-init.enabled
+    - name: app-secrets-provider-init-jwt
+      repository: "file://charts/app-secrets-provider-init-jwt"
+      version: ">= 0.0.1"
+      condition: app-secrets-provider-init-jwt.enabled
     - name: app-secrets-provider-p2f
       repository: "file://charts/app-secrets-provider-p2f"
       version: ">= 0.0.1"

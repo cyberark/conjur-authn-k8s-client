@@ -15,9 +15,31 @@
     - !variable ca/cert
 
     # define group of whitelisted authn ids permitted to call authn service
-    - !group consumers
+    - !group k8s-consumers
 
     - !permit
       resource: !webservice
       privilege: [ read, authenticate ]
-      role: !group consumers
+      role: !group k8s-consumers
+
+# This policy defines an authn-jwt endpoint
+- !policy
+  id: conjur/authn-jwt/{{ AUTHENTICATOR_ID }}
+  annotations:
+    description: Namespace defs for the Conjur cluster in dev
+  body:
+    - !webservice
+      annotations:
+        description: authn service for cluster
+    - !variable jwks-uri
+    - !variable issuer
+    - !variable token-app-property
+    - !variable identity-path
+
+    # define group of whitelisted authn ids permitted to call authn service
+    - !group jwt-consumers
+
+    - !permit
+      resource: !webservice
+      privilege: [ read, authenticate ]
+      role: !group jwt-consumers

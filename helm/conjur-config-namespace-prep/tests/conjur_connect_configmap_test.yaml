@@ -24,7 +24,7 @@ tests:
       # Set required values
       <<: *defaultRequired
       test.mock.enable: true
-
+      conjurConfigMap.authnStrategy: "authn-k8s"
 
     asserts:
       # Confirm that a ConfigMap has been created

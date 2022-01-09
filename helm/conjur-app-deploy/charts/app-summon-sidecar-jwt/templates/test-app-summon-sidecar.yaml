@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-summon-sidecar
+  labels:
+    app: test-app-summon-sidecar
+spec:
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: test-app-summon-sidecar
+  type: {{ .Values.global.appServiceType }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-app-summon-sidecar
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-app-summon-sidecar
+  name: test-app-summon-sidecar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-app-summon-sidecar
+  template:
+    metadata:
+      labels:
+        app: test-app-summon-sidecar
+    spec:
+      serviceAccountName: test-app-summon-sidecar
+      containers:
+      - image: {{ printf "%s:%s" .Values.app.image.repository .Values.app.image.tag }}
+        imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+        command: ["summon", "--provider", "summon-conjur", "-f", "/etc/conjur/secrets.yml", "java", "-jar", "/app.jar"]
+        name: test-app
+        ports:
+        - name: http
+          containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /pets
+            port: http
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        env:
+          - name: CONJUR_AUTHN_TOKEN_FILE
+            value: /run/conjur/access-token
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.global.conjur.conjurConnConfigMap }}
+        volumeMounts:
+          - mountPath: /run/conjur
+            name: conjur-access-token
+            readOnly: true
+          - mountPath: /etc/conjur
+            name: secrets-config
+            readOnly: true
+      - image: {{ printf "%s:%s" .Values.authnClient.image.repository .Values.authnClient.image.tag }}
+        imagePullPolicy: {{ .Values.authnClient.image.pullPolicy }}
+        name: authenticator
+        env:
+          - name: CONTAINER_MODE
+            value: sidecar
+          - name: JWT_TOKEN_PATH
+            value: /var/run/secrets/tokens/jwt
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.global.conjur.conjurConnConfigMap }}
+        volumeMounts:
+          - mountPath: /run/conjur
+            name: conjur-access-token
+          - mountPath: /etc/conjur/ssl
+            name: conjur-certs
+          - mountPath: /var/run/secrets/tokens
+            name: jwt-token
+      {{- if eq .Values.app.platform "kubernetes" }}
+      imagePullSecrets:
+        - name: dockerpullsecret
+      securityContext:
+        fsGroup: 65534
+        runAsGroup: 65534
+        runAsUser: 65534
+      {{- end }}
+      volumes:
+        - name: conjur-access-token
+          emptyDir:
+            medium: Memory
+        - name: conjur-certs
+          emptyDir:
+            medium: Memory
+        - name: secrets-config
+          configMap:
+            name: secrets-configmap
+            items:
+            - key: "secrets.yml"
+              path: "secrets.yml"
+        - name: jwt-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: jwt
+                  expirationSeconds: 6000
+                  audience: conjur

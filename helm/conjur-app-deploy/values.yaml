@@ -18,10 +18,16 @@ app-summon-init:
 app-summon-sidecar:
   enabled: false
 
+app-summon-sidecar-jwt:
+  enabled: false
+
 app-secretless-broker:
   enabled: false
 
 app-secrets-provider-init:
+  enabled: false
+
+app-secrets-provider-init-jwt:
   enabled: false
 
 app-secrets-provider-p2f:

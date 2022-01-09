@@ -10,6 +10,7 @@ authnRoleBinding:
 conjurConfigMap:
   create: true
   name: conjur-connect
+  authnStrategy: authn-k8s
 
 test:
   mock:

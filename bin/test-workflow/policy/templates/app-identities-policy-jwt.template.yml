@@ -1,0 +1,26 @@
+---
+# This policy defines a group of whitelisted identities permitted to authenticate to the authn-jwt endpoint.
+- !policy
+  id: conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps
+  annotations:
+    description: Identities permitted to authenticate
+  body:
+    - !group
+      annotations:
+        description: Group of authenticator identities permitted to call authn svc
+
+    - &hosts
+      - !host
+        id: system:serviceaccount:app-test:test-app-summon-sidecar
+        annotations:
+          authn-jwt/{{ AUTHENTICATOR_ID }}/kubernetes.io/namespace: app-test
+          authn-jwt/{{ AUTHENTICATOR_ID }}/kubernetes.io/serviceaccount/name: test-app-summon-sidecar
+
+      - !host
+        id: system:serviceaccount:app-test:test-app-secrets-provider-init-jwt
+        annotations:
+          authn-jwt/{{ AUTHENTICATOR_ID }}/sub: system:serviceaccount:app-test:test-app-secrets-provider-init-jwt
+
+    - !grant
+      role: !group
+      members: *hosts

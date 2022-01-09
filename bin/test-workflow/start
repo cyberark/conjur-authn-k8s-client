@@ -37,10 +37,12 @@ Usage: ./start [options]:
                               Excluding this flag runs all supported apps
                               Currently supports:
                                 - summon-sidecar
+                                - summon-sidecar-jwt
                                 - secretless-broker
                                 - secrets-provider-init
                                 - secrets-provider-p2f
                                 - secrets-provider-standalone
+    --jwt                     Perform jwt authentication instead of k8s
     -n, --nocleanup           Do not run the cleanup scripts, all resources are maintained.
                               All other selections are rejected
     -h, --help                Show the help message
@@ -55,7 +57,7 @@ function cleanup {
   fi
 }
 
-declare -a supported_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init" "secrets-provider-p2f")
+declare -a supported_apps=("summon-sidecar" "summon-sidecar-jwt" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init" "secrets-provider-init-jwt" "secrets-provider-p2f")
 declare -a run_in_ci_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init")
 # Default: Test all applications
 declare -a install_apps=("${supported_apps[@]}")
@@ -78,6 +80,7 @@ while true; do
           exit 1
         fi
       done
+      TEST_JWT_FLOW="false"
       install_apps=("${apps[@]}")
       shift
       shift
@@ -87,6 +90,7 @@ while true; do
         echo "Both --ci-apps and --apps flags used."
         echo "Deferring to those apps specified with --apps flag."
       else
+        TEST_JWT_FLOW="false"
         install_apps=("${run_in_ci_apps[@]}")
       fi
       shift
@@ -102,6 +106,11 @@ while true; do
       ;;
     -n|--nocleanup )
       do_cleanup="false"
+      shift
+      ;;
+    --jwt )
+      echo "Going to test authn-jwt instead of authn-k8s"
+      TEST_JWT_FLOW="true"
       shift
       ;;
     -h|--help )
@@ -125,6 +134,7 @@ done
 export INSTALL_APPS=$(IFS=','; echo "${install_apps[*]}")
 
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
+export TEST_JWT_FLOW="${TEST_JWT_FLOW:-false}"
 export RUN_CLIENT_CONTAINER="${RUN_CLIENT_CONTAINER:-true}"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
@@ -193,7 +203,6 @@ elif [[ "$CONJUR_PLATFORM" == "gke" ]]; then
   eval "$conjur_init"
   run_command_with_platform "$conjur_prep"
   run_command_with_platform "$cluster_prep"
-  run_command_with_platform "$test_app_workflow"
 elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
   eval "$conjur_init"
   eval "$conjur_prep"

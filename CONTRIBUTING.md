@@ -33,7 +33,7 @@ For general contribution and community guidelines, please see the [community rep
 
 ### Debug Using Delve
 
-![DebugFlow](/Users/Tamir.Zheleznyak/Documents/Code/conjur-authn-k8s-client/dev/DebugFlow.png)
+![DebugFlow](dev/DebugFlow.png)
 
 For development porupuses you may want to debug your code on K8S pod. There are the steps to do it:
 
@@ -142,6 +142,28 @@ To run the test suite, run `./bin/build` and `./bin/test`.
 To run a sample deployment of the Helm charts located in `/helm`, run `./bin/test-workflow`. This
 will download and run the `conjur-oss-helm-chart` project example, then consecutively install the 
 `helm/conjur-config-cluster-prep`, `helm/conjur-config-namespace-prep`, and `helm/conjur-app-deploy` charts, in that order.
+
+#### Demo Workflow JWT
+
+You can create demo cluster of to check JWT sidecars on K8S. Please be aware this is now only for local kind cluster and not part of the pipleline because it requires open of K8S API for unauthenticated users. These are two options to run it.
+
+1. Test conjur-authn-k8s-client as sidecar container
+
+   `./bin/test-workflow/start  -a summon-sidecar-jwt --jwt` 
+
+2. Test secrets provider as init container :
+
+   `./bin/test-workflow/start  -a secrets-provider-init-jwt --jwt`
+
+Flags explanation :
+
+* -n Can be added for remaing the environment after script finished
+* -a Is for stating the app flow name
+* --jwt To enable jwt needed configurations to the cluster:
+  * Install K8S ca in Conjur so it will be able to fetch jwks from K8S API
+  * Open K8S JWKS API for unauthenticated user
+
+You can use the kubectl edit command to edit the images in the deployment and replacing them with you develop and debug images for development porpuses. And fill free to play with the policy and the application K8S manifests to check convinently things on the sidecars.
 
 ## Releases
 

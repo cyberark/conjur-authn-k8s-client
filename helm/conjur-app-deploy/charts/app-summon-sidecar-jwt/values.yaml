@@ -1,0 +1,23 @@
+# Default values for the Application with Summon sidecar Helm chart
+# This is a YAML-formatted file.
+
+global:
+  conjur:
+    # name of the ConfigMap created by the conjur-config-namespace-prep chart
+    conjurConnConfigMap: "conjur-connect"
+  appServiceType: "NodePort"
+
+app:
+  image:
+    repository: "localhost:5000/test-sidecar-app"
+    tag: "conjur-oss"
+    # supported values: "Always", "IfNotPresent", "Never"
+    pullPolicy: "Always"
+  platform: "kubernetes"
+ 
+authnClient:
+  image:
+    repository: "docker.io/cyberark/conjur-authn-k8s-client"
+    tag: "latest"
+    # supported values: "Always", "IfNotPresent", "Never"
+    pullPolicy: "Always"

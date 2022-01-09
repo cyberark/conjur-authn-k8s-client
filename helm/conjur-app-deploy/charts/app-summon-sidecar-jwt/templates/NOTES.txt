@@ -1,0 +1,5 @@
+The Application deployment is complete.
+The following have been deployed:
+- An authnJWT application with a summon sidecar
+
+Application is now available at test-app-summon-sidecar.{{ .Release.Namespace }}.svc.cluster.local

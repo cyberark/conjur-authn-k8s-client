@@ -27,6 +27,10 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-summon-sidecar.app.image.repository=$TEST_APP_REPO \
     --set app-summon-sidecar.conjur.authnConfigMap.name=conjur-authn-configmap-summon-sidecar \
     --set app-summon-sidecar.app.platform=$PLATFORM"
+  summon_sidecar_jwt_options="--set app-summon-sidecar-jwt.enabled=true \
+    --set app-summon-sidecar-jwt.app.image.tag=$TEST_APP_TAG \
+    --set app-summon-sidecar-jwt.app.image.repository=$TEST_APP_REPO \
+    --set app-summon-sidecar-jwt.app.platform=$PLATFORM"
   secretless_broker_options="--set app-secretless-broker.enabled=true \
     --set app-secretless-broker.secretless.image.tag=$SECRETLESS_BROKER_TAG \
     --set app-secretless-broker.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secretless-broker \
@@ -42,6 +46,9 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-secrets-provider-init.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-init \
     --set app-secrets-provider-init.conjur.authnConfigMap.name=conjur-authn-configmap-secrets-provider-init \
     --set app-secrets-provider-init.app.platform=$PLATFORM"
+  secrets_provider_init_jwt_options="--set app-secrets-provider-init-jwt.enabled=true \
+    --set app-secrets-provider-init-jwt.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
+    --set app-secrets-provider-init-jwt.app.platform=$PLATFORM"
   secrets_provider_p2f_options="--set app-secrets-provider-p2f.enabled=true \
     --set app-secrets-provider-p2f.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
     --set app-secrets-provider-p2f.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-p2f \
@@ -49,9 +56,11 @@ pushd ../../helm/conjur-app-deploy > /dev/null
 
   declare -A app_options
   app_options[summon-sidecar]="$summon_sidecar_options"
+  app_options[summon-sidecar-jwt]="$summon_sidecar_jwt_options"
   app_options[secretless-broker]="$secretless_broker_options"
   app_options[secrets-provider-standalone]="$secrets_provider_standalone_options"
   app_options[secrets-provider-init]="$secrets_provider_init_options"
+  app_options[secrets-provider-init-jwt]="$secrets_provider_init_jwt_options"
   app_options[secrets-provider-p2f]="$secrets_provider_p2f_options"
 
   # restore array of apps to install
