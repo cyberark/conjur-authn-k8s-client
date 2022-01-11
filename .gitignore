@@ -15,3 +15,6 @@ bin/test-workflow/output/
 bin/test-workflow/bash-lib/
 
 .idea/
+
+# Temporary directory to store the CyberArk proxy CA certificate
+build_ca_certificate/
