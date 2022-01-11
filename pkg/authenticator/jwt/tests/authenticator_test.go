@@ -58,6 +58,14 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			},
 			jwtTokenPath: "/tmp/nonExistingPath",
 		},
+		{
+			name: "Token path is empty",
+			assert: func(t *testing.T, authn *jwt.Authenticator, err error) {
+				assert.NotNil(t, err)
+				assert.True(t, strings.Contains(err.Error(), "Failed to read JWT from"))
+			},
+			jwtTokenPath: "",
+		},
 	}
 
 	for _, tc := range testCases {
