@@ -24,7 +24,7 @@ import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
-	"github.com/cyberark/secrets-provider-for-k8s/pkg/trace"
+	"github.com/cyberark/conjur-opentelemetry-tracer/pkg/trace"
 )
 
 var oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}

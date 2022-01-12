@@ -3,15 +3,16 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 	"os"
 	"time"
+
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator"
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/config"
 
 	"github.com/cenkalti/backoff"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
-	"github.com/cyberark/secrets-provider-for-k8s/pkg/trace"
+	"github.com/cyberark/conjur-opentelemetry-tracer/pkg/trace"
 )
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 		printErrorAndExit(log.CAKC018)
 	}
 
-	tracer, _ := trace.NewTracerProvider(trace.NoopProviderType, "", nil, false)
+	tracer, _ := trace.NewTracerProvider(trace.NoopProviderType, false, trace.TracerProviderConfig{})
 	defer tracer.Shutdown(context.Background())
 
 	// Create new Authenticator
