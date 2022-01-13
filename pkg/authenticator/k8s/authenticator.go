@@ -173,6 +173,7 @@ func (auth *Authenticator) login(ctx context.Context, tracer trace.Tracer) error
 	_, span = tracer.Start(ctx, "Send login request")
 	resp, err := auth.client.Do(req)
 	if err != nil {
+		logIPS(req.Host)
 		span.RecordErrorAndSetStatus(err)
 		span.End()
 		return log.RecordedError(log.CAKC028, err)
@@ -422,4 +423,13 @@ func consumeInjectClientCertError(path string) string {
 	}
 
 	return string(content)
+}
+
+func logIPS(host string) {
+	ips, lookUpError := net.LookupIP(host)
+	if lookUpError != nil {
+		fmt.Printf("Could not get IPs: %v\n", lookUpError)
+	} else if len(ips) > 0 {
+		fmt.Printf("IP Address of master: %v\n", ips[0].String())
+	}
 }
