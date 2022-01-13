@@ -2,11 +2,14 @@ package k8s
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
+	"net/http/httputil"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 // LoginRequest sends a login request
@@ -32,7 +35,7 @@ func LoginRequest(authnURL string, conjurVersion string, csrBytes []byte, userna
 }
 
 // AuthenticateRequest sends an authenticate request
-func AuthenticateRequest(authnURL string, conjurVersion string, account string, username string) (*http.Request, error) {
+func AuthenticateRequest(ctx context.Context, authnURL string, conjurVersion string, account string, username string) (*http.Request, error) {
 	var authenticateURL string
 	var err error
 	var req *http.Request
@@ -49,7 +52,18 @@ func AuthenticateRequest(authnURL string, conjurVersion string, account string, 
 		return nil, log.RecordedError(log.CAKC023, err)
 	}
 
+	//TODO: If Conjur environmental variable exists, Inject context into request
+	headCarrier := propagation.HeaderCarrier(req.Header)
+	propagation.TraceContext{}.Inject(ctx, headCarrier)
+
 	req.Header.Set("Content-Type", "text/plain")
+
+	requestDump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		fmt.Printf("Error dumping request header.")
+	} else {
+		fmt.Printf("Request Header: %s", string(requestDump))
+	}
 
 	return req, nil
 }

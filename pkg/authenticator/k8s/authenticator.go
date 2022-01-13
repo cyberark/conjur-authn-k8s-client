@@ -305,6 +305,7 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 	}
 
 	req, err := AuthenticateRequest(
+		ctx,
 		auth.config.Common.URL,
 		auth.config.ConjurVersion,
 		auth.config.Common.Account,
