@@ -5,15 +5,16 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
-	"go.opentelemetry.io/otel"
 	"net/http"
 	"os"
+
+	"go.opentelemetry.io/otel"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
-	"github.com/cyberark/secrets-provider-for-k8s/pkg/trace"
+	"github.com/cyberark/conjur-opentelemetry-tracer/pkg/trace"
 )
 
 // Authenticator contains the configuration and client
