@@ -1,0 +1,146 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "required": [
+    "rbac",
+    "secretsProvider",
+    "environment"
+  ],
+  "properties": {
+    "rbac": {
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "roleName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "roleBindingName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "serviceAccount": {
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "secretsProvider": {
+      "properties": {
+        "image": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tag": {
+          "type": ["string", "number"],
+          "minLength": 1,
+          "pattern": "(^\\d+(\\.\\d+){0,2}|latest)$"
+        },
+        "imagePullPolicy": {
+          "type": "string",
+          "enum": ["Always", "IfNotPresent", "Never"]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "labels": {
+      "type": "object"
+    },
+    "annotations": {
+      "type": "object"
+    },
+    "environment": {
+      "required": [
+        "k8sSecrets",
+        "conjur"
+      ],
+      "properties": {
+        "k8sSecrets": {
+          "type": "array",
+          "minLength": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "conjur": {
+          "anyOf": [
+            {
+              "required": [
+                "authnLogin",
+                "conjurConnConfigMap"
+              ]
+            },{
+              "required": [
+                "authnLogin",
+                "account",
+                "applianceUrl",
+                "authnUrl"
+              ],
+              "properties": {
+                "sslCertificate": {
+                  "required": [ "value" ]
+                }
+              }
+            }
+          ],
+          "properties": {
+            "account": {
+              "type": ["string","null"],
+              "minLength": 1
+            },
+            "applianceUrl": {
+              "type": ["string","null"],
+              "minLength": 1,
+              "pattern": "^https?://[^\\s/$.?#].[^\\s]*$"
+            },
+            "authnUrl": {
+              "type": ["string","null"],
+              "minLength": 1,
+              "pattern": "^https?://[^\\s/$.?#].[^\\s]*$"
+            },
+            "authnLogin": {
+              "type": "string",
+              "minLength": 1
+            },
+            "conjurConnConfigMap": {
+              "type": ["string","null"],
+              "minLength": 1
+            },
+            "retryIntervalSec": {
+              "type": "number",
+              "minimum": 1
+            },
+            "retryCountLimit": {
+              "type": "number",
+              "minimum": 0
+            },
+            "sslCertificate": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": ["string"],
+                  "minLength": 1
+                },
+                "value": {
+                  "type": ["string","null"],
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "debug": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

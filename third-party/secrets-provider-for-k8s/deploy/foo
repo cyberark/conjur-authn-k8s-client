@@ -1,0 +1,6 @@
+TEST_ID_3_SECRETS_DESTINATION_with_incorrect_value.sh
+TEST_ID_4_CONTAINER_MODE_not_exist.sh
+TEST_ID_7_K8S_SECRETS_env_var_not_exist.sh
+TEST_ID_8_K8S_SECRETS_env_var_empty.sh
+TEST_ID_10_SECRETS_DESTINATION_not_exist.sh
+TEST_ID_22_helm_rbac_defaults_taken_successfully.sh

@@ -19,6 +19,7 @@ import (
 
 	"github.com/fullsailor/pkcs7"
 	"go.opentelemetry.io/otel"
+	oteltrace "go.opentelemetry.io/otel/trace"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
@@ -290,7 +291,7 @@ func (auth *Authenticator) loginIfNeeded(ctx context.Context, tracer trace.Trace
 // an authentication request to the Conjur server. It also validates the response
 // code before returning its body
 func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer trace.Tracer) ([]byte, error) {
-	_, span := tracer.Start(ctx, "Send authentication request")
+	ctx, span := tracer.Start(ctx, "Send authentication request")
 	defer span.End()
 
 	privDer := x509.MarshalPKCS1PrivateKey(auth.privateKey)
@@ -304,6 +305,10 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 		return nil, err
 	}
 
+	spanCtx := oteltrace.SpanContextFromContext(ctx)
+	fmt.Printf("***TEMP*** Sending authenticate request with Span Context:\n")
+	fmt.Printf("***TEMP***     TraceID:    %x\n", spanCtx.TraceID())
+	fmt.Printf("***TEMP***     SpanID:     %x\n", spanCtx.SpanID())
 	req, err := AuthenticateRequest(
 		ctx,
 		auth.config.Common.URL,

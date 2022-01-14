@@ -1,0 +1,86 @@
+# Values for secrets-provider. All missing values need to be supplied by the customer.
+
+rbac:
+  # Indicates whether the Secrets Provider service account, Role, and RoleBinding should be created. This should be set
+  # to true unless resources with the proper permissions exist in the namespace.
+  create: true
+  roleName: secrets-provider-role
+  roleBindingName: secrets-provider-role-binding
+  serviceAccount:
+    # Name of the service account for the Secrets Provider.
+    name: secrets-provider-service-account
+
+secretsProvider:
+  image: docker.io/cyberark/secrets-provider-for-k8s
+  tag: 1.2.0
+  imagePullPolicy: IfNotPresent
+  # Container name
+  name: cyberark-secrets-provider-for-k8s
+  # Optional: Kubernetes Job name. Defaults to Helm Release.
+  jobName:
+
+# OPTIONAL: Additional labels to apply to Job resource.
+labels: {}
+annotations: {}
+
+environment:
+  # Array of Kubernetes Secret names that applications consume, and
+  # whose value is sourced in DAP/Conjur.For example, [k8s-secret1,k8s-secret2]
+  # This setting is required.
+  #
+  # k8sSecrets:
+
+  conjur:
+    # There are two ways that you can supply the necessary configuration to
+    # allow Secrets Provider to connect with Conjur (listed in order of
+    # precedence):
+    #
+    # 1. Using a Conjur connection ConfigMap that has been installed
+    #    independently of this Helm chart, that contains the following
+    #    connection parameters:
+    #      CONJUR_ACCOUNT
+    #      CONJUR_APPLIANCE_URL
+    #      CONJUR_AUTHENTICATOR_ID
+    #      CONJUR_AUTHN_URL
+    #      CONJUR_SSL_CERTIFICATE
+    #    To make use of an existing Conjur Connection ConfigMap, set this
+    #    chart value:
+    #      environment.conjur.conjurConnConfigMap
+    #
+    # 2. Providing the connection parameters directly by setting the following
+    #    chart values:
+    #      environment.conjur.account
+    #      environment.conjur.applianceUrl
+    #      environment.conjur.authnUrl
+    #      environment.conjur.sslCertificate.*
+    #
+    # conjurConnConfigMap:
+
+    # DAP/Conjur account name as defined during initial DAP/Conjur configuration.
+    # This setting is required if 'conjurConnConfigMap' is not set.
+    #
+    # account:
+    
+    # URL of service defined for DAP Follower/Conjur.
+    # This setting is required if 'conjurConnConfigMap' is not set.
+    #
+    # applianceUrl:
+ 
+    # URL for the Kubernetes authenticator with which the Secrets Provider will authenticate.
+    # This setting is required if 'conjurConnConfigMap' is not set.
+    #
+    # authnUrl:
+ 
+    sslCertificate:
+      # Name of ConfigMap that holds the public SSL certificate required for connecting to Follower/Conjur.
+      name: cert-config-map
+
+      # Value that stores the public SSL certificate required for connecting to Follower/Conjur.
+      # This setting is required if 'conjurConnConfigMap' is not set.
+      #
+      # value:
+
+    # : Host that authenticates Secrets Provider to DAP/Conjur.
+    # This setting is required.
+    #
+    # authnLogin:

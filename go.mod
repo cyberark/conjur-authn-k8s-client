@@ -22,3 +22,6 @@ require (
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
+
+replace go.opentelemetry.io/otel v1.3.0 => ./third-party/go.opentelemetry.io/otel
+replace github.com/cyberark/secrets-provider-for-k8s v1.3.0 => ./third-party/secrets-provider-for-k8s
