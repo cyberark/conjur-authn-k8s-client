@@ -1,0 +1,8 @@
+The Application deployment is complete.
+The following have been deployed:
+{{ if .Values.conjur.authnConfigMap.create -}}
+- A Conjur authentication configmap
+{{ end -}}
+- A sample application with a Secrets Provider init container
+
+Application is now available at test-app-secrets-provider-init.{{ .Release.Namespace }}.svc.cluster.local

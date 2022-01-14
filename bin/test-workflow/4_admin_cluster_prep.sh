@@ -11,6 +11,7 @@ check_env_var CONJUR_APPLIANCE_URL
 check_env_var CONJUR_NAMESPACE_NAME
 check_env_var CONJUR_ACCOUNT
 check_env_var AUTHENTICATOR_ID
+
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "false" ]]; then
   check_env_var CONJUR_FOLLOWER_URL
 fi
@@ -24,15 +25,15 @@ pushd ../../helm/conjur-config-cluster-prep > /dev/null
   if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
     conjur_url="$CONJUR_APPLIANCE_URL"
     get_cert_options="-v -i -s -u"
-    service_account_options=""
+    additional_options=""
   else
     conjur_url="$CONJUR_FOLLOWER_URL"
     if [[ "$CONJUR_PLATFORM" == "gke" ]]; then
       get_cert_options="-v -i -s -u"
-      service_account_options="--set authnK8s.serviceAccount.create=false --set authnK8s.serviceAccount.name=conjur-cluster"
+      additional_options="--set authnK8s.serviceAccount.create=false --set authnK8s.serviceAccount.name=conjur-cluster"
     elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
       get_cert_options="-v -s -u"
-      service_account_options=""
+      additional_options=""
     fi
   fi
 
@@ -44,6 +45,6 @@ pushd ../../helm/conjur-config-cluster-prep > /dev/null
       --set conjur.certificateFilePath="files/conjur-cert.pem" \
       --set authnK8s.authenticatorID="$AUTHENTICATOR_ID" \
       --set authnK8s.clusterRole.name="conjur-clusterrole-$UNIQUE_TEST_ID" \
-      $service_account_options
+      $additional_options
 
 popd > /dev/null

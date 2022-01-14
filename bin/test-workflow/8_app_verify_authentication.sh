@@ -23,9 +23,11 @@ function finish {
 
   readonly PIDS=(
     "SIDECAR_PORT_FORWARD_PID"
+    "SIDECAR_JWT_PORT_FORWARD_PID"
     "SECRETLESS_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_STANDALONE_PID"
     "SECRETS_PROVIDER_INIT_PORT_FORWARD_PID"
+    "SECRETS_PROVIDER_INIT_JWT_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_P2F_PORT_FORWARD_PID"
   )
 
@@ -88,6 +90,12 @@ if [[ "$PLATFORM" == "openshift" ]]; then
     SIDECAR_PORT_FORWARD_PID=$!
   fi
 
+  if [[ " ${install_apps[*]} " =~ " summon-sidecar-jwt " ]]; then
+    sidecar_jwt_pod=$(get_pod_name test-app-summon-sidecar-jwt)
+    oc port-forward "$sidecar_jwt_pod" 8081:8080 > /dev/null 2>&1 &
+    SIDECAR_JWT_PORT_FORWARD_PID=$!
+  fi
+
   if [[ " ${install_apps[*]} " =~ " secretless-broker " ]]; then
     secretless_pod=$(get_pod_name test-app-secretless)
     oc port-forward "$secretless_pod" 8083:8080 > /dev/null 2>&1 &
@@ -104,6 +112,12 @@ if [[ "$PLATFORM" == "openshift" ]]; then
     secrets_provider_init_pod=$(get_pod_name test-app-secrets-provider-init)
     oc port-forward "$secrets_provider_init_pod" 8086:8080 > /dev/null 2>&1 &
     SECRETS_PROVIDER_INIT_PORT_FORWARD_PID=$!
+  fi
+
+  if [[ " ${install_apps[*]} " =~ " secrets-provider-init-jwt " ]]; then
+    secrets_provider_init_jwt_pod=$(get_pod_name test-app-secrets-provider-init-jwt)
+    oc port-forward "$secrets_provider_init_jwt_pod" 8086:8080 > /dev/null 2>&1 &
+    SECRETS_PROVIDER_INIT_JWT_PORT_FORWARD_PID=$!
   fi
   
   if [[ " ${install_apps[*]} " =~ " secrets-provider-p2f " ]]; then
@@ -137,16 +151,20 @@ check_url(){
 # declare associative arrays of app urls and pet names
 declare -A app_urls
 app_urls[summon-sidecar]="$sidecar_url"
+app_urls[summon-sidecar-jwt]="$sidecar_url"
 app_urls[secretless-broker]="$secretless_url"
 app_urls[secrets-provider-standalone]="$secrets_provider_standalone_url"
 app_urls[secrets-provider-init]="$secrets_provider_init_url"
+app_urls[secrets-provider-init-jwt]="$secrets_provider_init_url"
 app_urls[secrets-provider-p2f]="$secrets_provider_p2f_url"
 
 declare -A app_pets
 app_pets[summon-sidecar]="Mr. Sidecar"
+app_pets[summon-sidecar-jwt]="Mr. Sidecar JWT"
 app_pets[secretless-broker]="Mr. Secretless"
 app_pets[secrets-provider-standalone]="Mr. Standalone"
 app_pets[secrets-provider-init]="Mr. Provider"
+app_pets[secrets-provider-init-jwt]="Mr. JWT Provider"
 app_pets[secrets-provider-p2f]="Mr. FileProvider"
 
 # check connection to each installed test app

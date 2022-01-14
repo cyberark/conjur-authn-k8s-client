@@ -46,7 +46,7 @@ function setup_conjur_enterprise {
         echo """
 CONJUR_MASTER_PORT=\"${CONJUR_MASTER_PORT}\"
 CONJUR_FOLLOWER_PORT=\"${CONJUR_FOLLOWER_PORT}\"
-CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn
+CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn-jwt/\"${AUTHENTICATOR_ID}\",authn
         """ > .env
         ./bin/dap --provision-master
         ./bin/dap --import-custom-certificates
@@ -73,7 +73,14 @@ function setup_conjur_open_source {
         source ../kubernetes-in-docker/0_export_env_vars.sh
         announce "Creating a Kubernetes-in-Docker cluster if necessary"
         ./1_create_kind_cluster.sh
-       fi
+      fi
+
+      if [[ "$TEST_JWT_FLOW" == "true" ]]; then
+        announce "Enable authn-jwt in conjur instead of authn-k8s"
+        export AUTHN_STRATEGY="authn-jwt"
+        announce "Allow access to jwks uri for unauthenticated users"
+        kubectl create clusterrolebinding oidc-reviewer --clusterrole=system:service-account-issuer-discovery --group=system:unauthenticated
+      fi
 
       announce "Helm installing/upgrading Conjur OSS cluster"
       ./2_helm_install_or_upgrade_conjur.sh
@@ -82,9 +89,6 @@ function setup_conjur_open_source {
       # Conjur pods getting terminated as part of Helm upgrade)
       announce "Waiting for Conjur to become ready"
       wait_for_conjur_ready
-
-      announce "Enabling the Conjur Kubernetes authenticator if necessary"
-      ./4_ensure_authn_k8s_enabled.sh
     popd > /dev/null
   popd > /dev/null
 }

@@ -35,6 +35,23 @@
       resources: *sidecar-variables
 
 - !policy
+  id: test-summon-sidecar-jwt-app-db
+  annotations:
+    description: This policy contains the creds to access the summon sidecar app DB
+  body:
+    - !group
+
+    - &sidecar-variables-jwt
+      - !variable password
+      - !variable url
+      - !variable username
+
+    - !permit
+      role: !group
+      privileges: [ read, execute ]
+      resources: *sidecar-variables-jwt
+
+- !policy
   id: test-secretless-app-db
   annotations:
     description: This policy contains the creds to access the secretless app DB
@@ -71,6 +88,23 @@
       role: !group
       privileges: [ read, execute ]
       resources: *secrets-provider-init-variables
+
+- !policy
+  id: test-secrets-provider-init-jwt-app-db
+  annotations:
+    description: This policy contains the creds to access the secrets provider app DB
+  body:
+    - !group
+
+    - &secrets-provider-init-jwt-variables
+      - !variable password
+      - !variable url
+      - !variable username
+
+    - !permit
+      role: !group
+      privileges: [ read, execute ]
+      resources: *secrets-provider-init-jwt-variables
 
 - !policy
   id: test-secrets-provider-p2f-app-db

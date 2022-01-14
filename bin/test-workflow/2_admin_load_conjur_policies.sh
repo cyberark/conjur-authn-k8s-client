@@ -20,6 +20,7 @@ check_env_var AUTHENTICATOR_ID
 check_env_var CONJUR_NAMESPACE_NAME
 check_env_var TEST_APP_DATABASE
 check_env_var SAMPLE_APP_BACKEND_DB_PASSWORD
+TEST_JWT_FLOW="${TEST_JWT_FLOW:-false}"
 
 announce "Generating Conjur policy."
 
@@ -91,11 +92,18 @@ pushd policy > /dev/null
     sed "s#{{ IS_OPENSHIFT }}#$is_openshift#g" |
     sed "s#{{ IS_KUBERNETES }}#$is_kubernetes#g" |
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".app-identities-policy.yml
-  
+
+  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-identities-policy-jwt.template.yml |
+    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g"  > ./generated/"$TEST_APP_NAMESPACE_NAME".app-identities-policy-jwt.yml
+
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-grants.template.yml > ./generated/"$TEST_APP_NAMESPACE_NAME".app-grants.yml
 popd > /dev/null
 
+
+
 if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
+  JWKS_URI="NONE"
+  ISSUER="NONE"
   docker-compose -f "temp/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml" \
     run --rm \
     -v "${PWD}/policy":/policy \
@@ -108,6 +116,9 @@ if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
       DB_PASSWORD='${SAMPLE_APP_BACKEND_DB_PASSWORD}' \
       TEST_APP_NAMESPACE_NAME='${TEST_APP_NAMESPACE_NAME}' \
       TEST_APP_DATABASE='${TEST_APP_DATABASE}' \
+      AUTHENTICATOR_ID='${AUTHENTICATOR_ID}' \
+      JWKS_URI='${JWKS_URI}'\
+      ISSUER='${ISSUER}'\
       /policy/load_policies.sh
     "
 else
@@ -130,6 +141,11 @@ else
   "$cli" exec "$conjur_cli_pod" -- rm -rf /policy
   "$cli" cp ./policy "$conjur_cli_pod:/policy"
 
+  announce "Extracting openid configuration"
+  JWKS_URI=$($cli get --raw /.well-known/openid-configuration | jq '.jwks_uri')
+  ISSUER=$($cli get --raw /.well-known/openid-configuration | jq '.issuer')
+  announce "JWKS URI of this cluster is $JWKS_URI and Issuer is $ISSUER"
+
   wait_for_it 300 "$cli exec $conjur_cli_pod -- \
     bash -c \"
       conjur_appliance_url='${CONJUR_APPLIANCE_URL}' \
@@ -138,6 +154,9 @@ else
       DB_PASSWORD='${SAMPLE_APP_BACKEND_DB_PASSWORD}' \
       TEST_APP_NAMESPACE_NAME='${TEST_APP_NAMESPACE_NAME}' \
       TEST_APP_DATABASE='${TEST_APP_DATABASE}' \
+      AUTHENTICATOR_ID='${AUTHENTICATOR_ID}' \
+      JWKS_URI='${JWKS_URI}'\
+      ISSUER='${ISSUER}'\
       /policy/load_policies.sh
     \"
   "
