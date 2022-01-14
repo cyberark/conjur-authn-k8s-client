@@ -3,12 +3,15 @@
 set -euo pipefail
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
-TIMEOUT="${TIMEOUT:-5m0s}"
-
 source utils.sh
 
 check_env_var TEST_APP_NAMESPACE_NAME
 check_env_var SAMPLE_APP_BACKEND_DB_PASSWORD
+
+TIMEOUT="${TIMEOUT:-5m0s}"
+
+# Upon error, dump kubernetes resources in the application Namespace
+trap dump_application_namespace_upon_error EXIT
 
 announce "Deploying test app postgres backend for $TEST_APP_NAMESPACE_NAME."
 
@@ -39,7 +42,7 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
 
-args=(install "$app_name" bitnami/postgresql -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
+args=(install "$app_name" bitnami/postgresql -n "$TEST_APP_NAMESPACE_NAME" --wait --timeout "$TIMEOUT" \
     --set image.repository="postgres" \
     --set image.tag="9.6" \
     --set postgresqlDataDir="/data/pgdata" \

@@ -16,6 +16,9 @@ if [[ "$CONJUR_OSS_HELM_INSTALLED" == "false" ]]; then
   check_env_var CONJUR_FOLLOWER_URL
 fi
 
+# Upon error, dump kubernetes resources in the Conjur Namespace
+trap dump_conjur_namespace_upon_error EXIT
+
 set_namespace default
 
 # Prepare our cluster with conjur and authnK8s credentials in a golden configmap
@@ -38,7 +41,7 @@ pushd ../../helm/conjur-config-cluster-prep > /dev/null
   fi
 
   ./bin/get-conjur-cert.sh $get_cert_options "$conjur_url"
-  helm upgrade --install "cluster-prep-$UNIQUE_TEST_ID" . -n "$CONJUR_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
+  helm upgrade --install "cluster-prep-$UNIQUE_TEST_ID" . -n "$CONJUR_NAMESPACE_NAME" --wait --timeout "$TIMEOUT" \
       --create-namespace \
       --set conjur.account="$CONJUR_ACCOUNT" \
       --set conjur.applianceUrl="$conjur_url" \

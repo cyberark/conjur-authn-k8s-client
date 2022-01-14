@@ -5,6 +5,9 @@ cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
 source utils.sh
 
+# Upon error, dump kubernetes resources in the Conjur Namespace
+trap dump_conjur_namespace_upon_error EXIT
+
 function setup_conjur_enterprise {
   docker pull "$CONJUR_APPLIANCE_IMAGE"
 

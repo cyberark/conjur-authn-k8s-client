@@ -12,6 +12,9 @@ check_env_var CONJUR_AUTHN_LOGIN_PREFIX
 check_env_var SECRETS_PROVIDER_TAG
 check_env_var SECRETLESS_BROKER_TAG
 
+# Upon error, dump kubernetes resources in the application Namespace
+trap dump_application_namespace_upon_error EXIT
+
 set_namespace "$TEST_APP_NAMESPACE_NAME"
 
 pushd ../../helm/conjur-app-deploy > /dev/null
@@ -84,7 +87,7 @@ pushd ../../helm/conjur-app-deploy > /dev/null
   done
 
   announce "Deploying test apps in $TEST_APP_NAMESPACE_NAME"
-  helm install test-apps . -n "$TEST_APP_NAMESPACE_NAME" --debug --wait --timeout "$TIMEOUT" \
+  helm install test-apps . -n "$TEST_APP_NAMESPACE_NAME" --wait --timeout "$TIMEOUT" \
     --render-subchart-notes \
     --set global.conjur.conjurConnConfigMap="conjur-connect" \
     $options_string
