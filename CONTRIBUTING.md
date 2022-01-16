@@ -7,20 +7,21 @@ For general contribution and community guidelines, please see the [community rep
 
 ## Table of Contents
 
-- [Contributing](#contributing)
-  * [Table of Contents](#table-of-contents)
-  * [Development](#development)
-    + [Prerequisites](#prerequisites)
-    + [Debug Using Delve](#debug-using-delve)
-  * [Testing](#testing)
-    + [Test Suites](#test-suites)
-    + [Demo Workflow](#demo-workflow)
-  * [Releases](#releases)
-    + [Update the version, changelog, and notices](#update-the-version--changelog--and-notices)
-    + [Add a git tag](#add-a-git-tag)
-    + [Publish the git release](#publish-the-git-release)
-    + [Publish the Red Hat image](#publish-the-red-hat-image)
-  * [Contributing](#contributing-1)
+[Contributing](#contributing)
+
+* [Table of Contents](#table-of-contents)
+* [Development](#development)
+  + [Prerequisites](#prerequisites)
+  + [Debug Using Delve](#debug-using-delve)
+* [Testing](#testing)
+  + [Test Suites](#test-suites)
+  + [Demo Workflow](#demo-workflow)
+* [Releases](#releases)
+  + [Update the version, changelog, and notices](#update-the-version--changelog--and-notices)
+  + [Add a git tag](#add-a-git-tag)
+  + [Publish the git release](#publish-the-git-release)
+  + [Publish the Red Hat image](#publish-the-red-hat-image)
+* [Contributing](#contributing-1)
 
 ## Development
 
@@ -154,6 +155,9 @@ You can create demo cluster of to check JWT sidecars on K8S. Please be aware thi
 2. Test secrets provider as init container :
 
    `./bin/test-workflow/start  -a secrets-provider-init-jwt --jwt`
+   
+3. Test secretless broker as sidecar container:
+./bin/test-workflow/start  -a secretess-broker --jwt
 
 Flags explanation :
 

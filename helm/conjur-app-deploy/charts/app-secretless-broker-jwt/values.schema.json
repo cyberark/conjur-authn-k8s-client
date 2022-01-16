@@ -1,0 +1,58 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "properties": {
+      "app": {
+        "properties": {
+          "image": {
+            "properties": {
+              "repository": {
+                "type": "string",
+                "pattern": "^[a-z0-9:./_-]+$"
+              },
+              "tag": {
+                "type": "string"
+              },
+              "pullPolicy": {
+                "type": "string",
+                "pattern": "^(Always|Never|IfNotPresent)$"
+              }
+            }
+          }
+        }
+      },
+      "conjur": {
+        "properties": {
+          "authnConfigMap": {
+            "properties": {
+              "create": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "authnLogin": {
+            "type": "string"
+          }
+        }
+      },
+      "secretless": {
+        "properties": {
+          "image": {
+            "properties": {
+              "repository": {
+                "type": "string"
+              },
+              "tag": {
+                "type": "string"
+              },
+              "pullPolicy": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+}

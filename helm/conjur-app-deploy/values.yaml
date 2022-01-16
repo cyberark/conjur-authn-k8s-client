@@ -24,6 +24,9 @@ app-summon-sidecar-jwt:
 app-secretless-broker:
   enabled: false
 
+app-secretless-broker-jwt:
+  enabled: false
+
 app-secrets-provider-init:
   enabled: false
 
