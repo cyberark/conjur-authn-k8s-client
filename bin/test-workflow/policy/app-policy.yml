@@ -72,6 +72,26 @@
       resources: *secretless-variables
 
 - !policy
+  id: test-secretless-jwt-app-db
+  annotations:
+    description: This policy contains the creds to access the secretless app DB
+
+  body:
+    - !group
+
+    - &secretless-jwt-variables
+      - !variable password
+      - !variable url
+      - !variable port
+      - !variable host
+      - !variable username
+
+    - !permit
+      role: !group
+      privileges: [ read, execute ]
+      resources: *secretless-jwt-variables
+
+- !policy
   id: test-secrets-provider-init-app-db
   annotations:
     description: This policy contains the creds to access the secrets provider app DB

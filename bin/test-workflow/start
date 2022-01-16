@@ -39,7 +39,9 @@ Usage: ./start [options]:
                                 - summon-sidecar
                                 - summon-sidecar-jwt
                                 - secretless-broker
+                                - secretless-broker-jwt
                                 - secrets-provider-init
+                                - secrets-provider-init-jwt
                                 - secrets-provider-p2f
                                 - secrets-provider-standalone
     --jwt                     Perform jwt authentication instead of k8s
@@ -57,7 +59,7 @@ function cleanup {
   fi
 }
 
-declare -a supported_apps=("summon-sidecar" "summon-sidecar-jwt" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init" "secrets-provider-init-jwt" "secrets-provider-p2f")
+declare -a supported_apps=("summon-sidecar" "summon-sidecar-jwt" "secretless-broker" "secretless-broker-jwt" "secrets-provider-standalone" "secrets-provider-init" "secrets-provider-init-jwt" "secrets-provider-p2f")
 declare -a run_in_ci_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init")
 # Default: Test all applications
 declare -a install_apps=("${supported_apps[@]}")

@@ -34,6 +34,11 @@
     - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-secretless-broker
 
 - !grant
+  role: !group test-secretless-jwt-app-db
+  members:
+    - !host conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps/system:serviceaccount:app-test:test-secretless-app-jwt
+
+- !grant
   role: !group test-secrets-provider-init-app-db
   members:
     - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-secrets-provider-init
