@@ -18,7 +18,12 @@ set +e
   docker run --rm -t conjur-authn-k8s-client-test-runner:latest \
              ./cmd/... \
              ./pkg/... \
+             "-tags=integration,e2e" \
              | tee -a "$junit_output_file"
+  # The -tags argument is passed to the `go test` command which is the ENTRYPOINT for the container (Dockerfile.test).
+  # If -tags is not specified, the test runner will run just the tests that don't have a build tag specified.
+  # If -tags contains only one tag, it'll run just the tests with that tag. Multiple tags can be specified
+  # with a comma-separated list.
   echo "Unit test exit status: $?"
 set -e
 
