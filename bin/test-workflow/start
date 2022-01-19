@@ -45,6 +45,7 @@ Usage: ./start [options]:
                                 - secrets-provider-p2f
                                 - secrets-provider-standalone
     --jwt                     Perform jwt authentication instead of k8s
+    --all-jwt
     -n, --nocleanup           Do not run the cleanup scripts, all resources are maintained.
                               All other selections are rejected
     -h, --help                Show the help message
@@ -63,6 +64,7 @@ declare -a supported_apps=("summon-sidecar" "summon-sidecar-jwt" "secretless-bro
 declare -a run_in_ci_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init")
 # Default: Test all applications
 declare -a install_apps=("${supported_apps[@]}")
+declare -a jwt_apps=("summon-sidecar-jwt" "secretless-broker-jwt" "secrets-provider-init-jwt")
 
 while true; do
   case "$1" in
@@ -113,6 +115,12 @@ while true; do
     --jwt )
       echo "Going to test authn-jwt instead of authn-k8s"
       TEST_JWT_FLOW="true"
+      shift
+      ;;
+    --all-jwt )
+      echo "Going to test authn-jwt instead of authn-k8s"
+      TEST_JWT_FLOW="true"
+      install_apps=("${jwt_apps[@]}")
       shift
       ;;
     -h|--help )
