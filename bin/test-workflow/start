@@ -4,7 +4,6 @@ set -eo pipefail
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
 source ./utils.sh
-do_cleanup=true
 
 function print_help {
   cat << EOF
@@ -26,25 +25,27 @@ Usage: ./start [options]:
                                 - Defaults to 'gke'
                                 - Supports 'jenkins'
                               All other selections are rejected
-    -c, --ci-apps             Run the E2E workflow against the subset of apps tested in CI
+    -c, --ci-apps             Run the E2E workflow against the subset of apps tested in CI.
                               These include:
                                 - summon-sidecar
                                 - secretless-broker
                                 - secrets-provider-init
                                 - secrets-provider-standalone
-    -a, --apps <app>[,<app>]  Specify which test apps to install
-                              Multiple apps should be specified as a single comma-delimited string
-                              Excluding this flag runs all supported apps
-                              Currently supports:
+    -a, --apps <app>[,<app>]  Specify which test apps to install.
+                              Multiple apps should be specified as a single comma-delimited string.
+                              Defaults to running all supported 'authn-k8s' apps if '--jwt'
+                              flag is not used, or all JWT based apps if '--jwt' flag is used.
+                              If the '--jwt' flag is NOT used, supported apps include:
                                 - summon-sidecar
-                                - summon-sidecar-jwt
                                 - secretless-broker
-                                - secretless-broker-jwt
                                 - secrets-provider-init
-                                - secrets-provider-init-jwt
                                 - secrets-provider-p2f
                                 - secrets-provider-standalone
-    --jwt                     Perform jwt authentication instead of k8s
+                              If the '--jwt' flag is used, supported apps include:
+                                - summon-sidecar-jwt
+                                - secretless-broker-jwt
+                                - secrets-provider-init-jwt
+    -j, --jwt                 Perform jwt authentication instead of k8s
     -n, --nocleanup           Do not run the cleanup scripts, all resources are maintained.
                               All other selections are rejected
     -h, --help                Show the help message
@@ -59,46 +60,41 @@ function cleanup {
   fi
 }
 
-declare -a supported_apps=("summon-sidecar" "summon-sidecar-jwt" "secretless-broker" "secretless-broker-jwt" "secrets-provider-standalone" "secrets-provider-init" "secrets-provider-init-jwt" "secrets-provider-p2f")
+declare -a supported_authn_k8s_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init" "secrets-provider-p2f")
+declare -a supported_jwt_apps=("summon-sidecar-jwt" "secretless-broker-jwt" "secrets-provider-init-jwt")
 declare -a run_in_ci_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init")
-# Default: Test all applications
-declare -a install_apps=("${supported_apps[@]}")
+# Default: Test all authn-k8s applications
+declare -a install_apps=("${supported_authn_k8s_apps[@]}")
+
+export TEST_JWT_FLOW="${TEST_JWT_FLOW:-false}"
+do_cleanup=true
+apps_flag_used=false
+ci_apps_flag_used=false
 
 while true; do
   case "$1" in
     -a|--apps )
-      if [[ ! "${install_apps[@]}" = "${supported_apps[@]}" ]]; then
+      apps_flag_used=true
+      if [ "$ci_apps_flag_used" = "true" ]; then
         echo "Both --ci-apps and --apps flags used."
         echo "Deferring to those apps specified with --apps flag."
       fi
-      declare -a apps=($(split_on_comma_delimiter "$2"))
-      for app in "${apps[@]}"; do
-        if [[ ! " ${supported_apps[@]} " =~ " $app " ]]; then
-          echo "$app is not a supported test app!"
-          echo "Supported test apps include:"
-          for app in "${supported_apps[@]}"; do
-            echo "  - $app"
-          done
-          exit 1
-        fi
-      done
-      TEST_JWT_FLOW="false"
-      install_apps=("${apps[@]}")
+      install_apps=($(split_on_comma_delimiter "$2"))
       shift
       shift
       ;;
     -c|--ci-apps )
-      if [[ ! "${install_apps[@]}" = "${supported_apps[@]}" ]]; then
+      ci_apps_flag_used=true
+      if [ "$apps_flag_used" = "true" ]; then
         echo "Both --ci-apps and --apps flags used."
         echo "Deferring to those apps specified with --apps flag."
       else
-        TEST_JWT_FLOW="false"
         install_apps=("${run_in_ci_apps[@]}")
       fi
       shift
       ;;
     -e|--enterprise )
-      CONJUR_OSS_HELM_INSTALLED="false"
+      CONJUR_OSS_HELM_INSTALLED=false
       shift
       ;;
     -p|--platform )
@@ -107,12 +103,15 @@ while true; do
       shift
       ;;
     -n|--nocleanup )
-      do_cleanup="false"
+      do_cleanup=false
       shift
       ;;
-    --jwt )
+    -j|--jwt )
       echo "Going to test authn-jwt instead of authn-k8s"
-      TEST_JWT_FLOW="true"
+      if [ "$apps_flag_used" = "false" ] && [ "$ci_apps_flag_used" = "false" ]; then
+        install_apps=("${supported_jwt_apps[@]}")
+      fi
+      TEST_JWT_FLOW=true
       shift
       ;;
     -h|--help )
@@ -130,13 +129,35 @@ while true; do
   esac
 done
 
+# Confirm that the selected apps are valid depending upon authentication mode
+for app in "${install_apps[@]}"; do
+  if [ "$TEST_JWT_FLOW" = "false" ] ; then
+    if [[ ! " ${supported_authn_k8s_apps[@]} " =~ " $app " ]]; then
+      echo "$app is not a supported test app for 'authn-k8s' authentication!"
+      echo "Supported 'authn-k8s' test apps include:"
+      for app in "${supported_authn_k8s_apps[@]}"; do
+        echo "  - $app"
+      done
+      exit 1
+    fi
+  else
+    if [[ ! " ${supported_jwt_apps[@]} " =~ " $app " ]]; then
+      echo "$app is not a supported test app for 'jwt' authentication!"
+      echo "Supported 'jwt' authentication test apps include:"
+      for app in "${supported_jwt_apps[@]}"; do
+        echo "  - $app"
+      done
+      exit 1
+    fi
+  fi
+done
+
 # Bash arrays cannot be exported to the environment for use between scripts.
 # Here, export a version that complies with the bash environment,
 # and can be reassembled when it's needed
 export INSTALL_APPS=$(IFS=','; echo "${install_apps[*]}")
 
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
-export TEST_JWT_FLOW="${TEST_JWT_FLOW:-false}"
 export RUN_CLIENT_CONTAINER="${RUN_CLIENT_CONTAINER:-true}"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
