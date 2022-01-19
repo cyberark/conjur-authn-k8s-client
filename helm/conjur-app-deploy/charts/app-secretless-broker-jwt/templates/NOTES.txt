@@ -1,0 +1,8 @@
+The Application deployment is complete.
+The following have been deployed:
+{{ if .Values.conjur.authnConfigMap.create -}}
+- A Conjur authentication configmap
+{{ end -}}
+- An application with a Secretless Broker sidecar
+
+Application is now available at test-app-secretless-broker.{{ .Release.Namespace }}.svc.cluster.local

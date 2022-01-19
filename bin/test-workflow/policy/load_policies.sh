@@ -33,6 +33,7 @@ readonly APPS=(
   "test-summon-sidecar-app"
   "test-summon-sidecar-jwt-app"
   "test-secretless-app"
+  "test-secretless-jwt-app"
   "test-secrets-provider-init-app"
   "test-secrets-provider-init-jwt-app"
   "test-secrets-provider-p2f-app"
@@ -61,7 +62,7 @@ for app_name in "${APPS[@]}"; do
   db_host="test-app-backend.$TEST_APP_NAMESPACE_NAME.svc.cluster.local"
   db_address="$db_host:$PORT"
 
-  if [[ "$app_name" = "test-secretless-app" ]]; then
+  if [[ "$app_name" = "test-secretless-app"  ||  "$app_name" = "test-secretless-jwt-app" ]]; then
     # Secretless doesn't require the full connection URL, just the host/port
     conjur variable values add "$app_name-db/url" "$db_address"
     conjur variable values add "$app_name-db/port" "$PORT"

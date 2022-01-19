@@ -21,6 +21,11 @@
         annotations:
           authn-jwt/{{ AUTHENTICATOR_ID }}/sub: system:serviceaccount:app-test:test-app-secrets-provider-init-jwt
 
+      - !host
+        id: system:serviceaccount:app-test:test-secretless-app-jwt
+        annotations:
+          authn-jwt/{{ AUTHENTICATOR_ID }}/sub: system:serviceaccount:app-test:test-secretless-app-jwt
+
     - !grant
       role: !group
       members: *hosts

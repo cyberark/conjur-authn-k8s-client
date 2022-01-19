@@ -36,6 +36,9 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-secretless-broker.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secretless-broker \
     --set app-secretless-broker.conjur.authnConfigMap.name=conjur-authn-configmap-secretless \
     --set app-secretless-broker.app.platform=$PLATFORM"
+  secretless_broker_jwt_options="--set app-secretless-broker-jwt.enabled=true \
+      --set app-secretless-broker.secretless.image.tag=$SECRETLESS_BROKER_TAG \
+      --set app-secretless-broker.app.platform=$PLATFORM"
   secrets_provider_standalone_options="--set app-secrets-provider-standalone.enabled=true \
     --set app-secrets-provider-standalone.secrets-provider.environment.conjur.authnLogin="$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-standalone" \
     --set app-secrets-provider-standalone.app.image.tag="$TEST_APP_TAG" \
@@ -58,6 +61,7 @@ pushd ../../helm/conjur-app-deploy > /dev/null
   app_options[summon-sidecar]="$summon_sidecar_options"
   app_options[summon-sidecar-jwt]="$summon_sidecar_jwt_options"
   app_options[secretless-broker]="$secretless_broker_options"
+  app_options[secretless-broker-jwt]="$secretless_broker_jwt_options"
   app_options[secrets-provider-standalone]="$secrets_provider_standalone_options"
   app_options[secrets-provider-init]="$secrets_provider_init_options"
   app_options[secrets-provider-init-jwt]="$secrets_provider_init_jwt_options"

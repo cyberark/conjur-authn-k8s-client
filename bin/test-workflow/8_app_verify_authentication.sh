@@ -25,6 +25,7 @@ function finish {
     "SIDECAR_PORT_FORWARD_PID"
     "SIDECAR_JWT_PORT_FORWARD_PID"
     "SECRETLESS_PORT_FORWARD_PID"
+    "SECRETLESS_JWT_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_STANDALONE_PID"
     "SECRETS_PROVIDER_INIT_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_INIT_JWT_PORT_FORWARD_PID"
@@ -102,6 +103,12 @@ if [[ "$PLATFORM" == "openshift" ]]; then
     SECRETLESS_PORT_FORWARD_PID=$!
   fi
 
+  if [[ " ${install_apps[*]} " =~ " secretless-broker-jwt " ]]; then
+    secretless_jwt_pod=$(get_pod_name test-app-secretless-jwt)
+    oc port-forward "secretless_jwt_pod" 8083:8080 > /dev/null 2>&1 &
+    SECRETLESS_JWT_PORT_FORWARD_PID=$!
+  fi
+
   if [[ " ${install_apps[*]} " =~ " secrets-provider-standalone " ]]; then
     secrets_provider_standalone_pod=$(get_pod_name test-app-secrets-provider-standalone)
     oc port-forward "$secrets_provider_standalone_pod" 8084:8080 > /dev/null 2>&1 &
@@ -153,6 +160,7 @@ declare -A app_urls
 app_urls[summon-sidecar]="$sidecar_url"
 app_urls[summon-sidecar-jwt]="$sidecar_url"
 app_urls[secretless-broker]="$secretless_url"
+app_urls[secretless-broker-jwt]="$secretless_url"
 app_urls[secrets-provider-standalone]="$secrets_provider_standalone_url"
 app_urls[secrets-provider-init]="$secrets_provider_init_url"
 app_urls[secrets-provider-init-jwt]="$secrets_provider_init_url"
@@ -162,6 +170,7 @@ declare -A app_pets
 app_pets[summon-sidecar]="Mr. Sidecar"
 app_pets[summon-sidecar-jwt]="Mr. Sidecar JWT"
 app_pets[secretless-broker]="Mr. Secretless"
+app_pets[secretless-broker-jwt]="Mr. Secretless JWT"
 app_pets[secrets-provider-standalone]="Mr. Standalone"
 app_pets[secrets-provider-init]="Mr. Provider"
 app_pets[secrets-provider-init-jwt]="Mr. JWT Provider"
