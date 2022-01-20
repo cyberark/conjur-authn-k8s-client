@@ -19,7 +19,13 @@ RETRIES=150
 RETRY_WAIT=2
 
 function finish {
-  exit_code=$?
+  if [ $? -eq 0 ]; then
+    announce "Test PASSED!!!!"
+  else
+    announce "Test FAILED!!!! Displaying resources in application Namespace"
+    dump_kubernetes_resources "$TEST_APP_NAMESPACE_NAME"
+    dump_authentication_policy
+  fi
 
   readonly PIDS=(
     "SIDECAR_PORT_FORWARD_PID"
@@ -32,12 +38,6 @@ function finish {
     "SECRETS_PROVIDER_P2F_PORT_FORWARD_PID"
   )
 
-  # Upon error, dump some kubernetes resources and Conjur authentication policy
-  if [ $exit_code -ne 0 ]; then
-    dump_kubernetes_resources
-    dump_authentication_policy
-  fi
-
   set +u
 
   echo -e "\n\nStopping all port-forwarding"
@@ -47,12 +47,6 @@ function finish {
       kill "${!pid}" > /dev/null 2>&1
     fi
   done
-
-  if [ $exit_code -eq 0 ]; then
-    announce "Test PASSED!!!!"
-  else
-    announce "Test FAILED!!!!"
-  fi
 }
 trap finish EXIT
 
