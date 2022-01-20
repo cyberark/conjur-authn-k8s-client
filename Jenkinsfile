@@ -119,7 +119,7 @@ pipeline {
                 expression { params.TEST_OCP_NEXT }
               }
               steps {
-                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift'
+                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift --ci-apps'
               }
             }
           }
