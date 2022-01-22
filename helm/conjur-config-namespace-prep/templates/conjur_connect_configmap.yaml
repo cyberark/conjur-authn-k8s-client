@@ -1,6 +1,6 @@
 {{- if .Values.conjurConfigMap.create }}
-# The Conjur Connection Configmap contains references to Conjur credentials,
-# taken from the "Golden Configmap". These can be used to enable Conjur
+# The Conjur Connection ConfigMap contains references to Conjur credentials,
+# taken from the "Golden ConfigMap". These can be used to enable Conjur
 # authentication for applications to retrieve secrets securely.
 {{ $config := required "Both authnK8s.namespace and authnK8s.configMap are required" .Values.authnK8s -}}
 
@@ -19,10 +19,10 @@ metadata:
     app.kubernetes.io/part-of: "conjur-config"
     conjur.org/name: "conjur-connect-configmap"
 data:
-  CONJUR_ACCOUNT: {{ get $g "conjurAccount" }}
-  CONJUR_APPLIANCE_URL: {{ get $g "conjurApplianceUrl" }}
+  CONJUR_ACCOUNT: {{ get $g "conjurAccount" | required "conjurAccount must be set in Golden ConfigMap" }}
+  CONJUR_APPLIANCE_URL: {{ get $g "conjurApplianceUrl" | required "conjurApplianceUrl must be set in Golden ConfigMap" }}
   CONJUR_AUTHN_URL: {{ printf "%s/%s/%s" (get $g "conjurApplianceUrl" | trimSuffix "/") (.Values.conjurConfigMap.authnStrategy) (get $g "authnK8sAuthenticatorID") }}
   CONJUR_SSL_CERTIFICATE: |- 
-{{ get $g "conjurSslCertificate" | indent 4 }}
-  CONJUR_AUTHENTICATOR_ID: {{ get $g "authnK8sAuthenticatorID" }}
+{{ get $g "conjurSslCertificate" | required "conjurSslCertificate must be set in Golden ConfigMap" | indent 4 }}
+  CONJUR_AUTHENTICATOR_ID: {{ get $g "authnK8sAuthenticatorID" | required "authnK8sAuthenticatorID must be set in Golden ConfigMap" }}
 {{- end }}
