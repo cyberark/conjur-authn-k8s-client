@@ -1,7 +1,7 @@
 ---
 # Source: conjur-config-namespace-prep/templates/conjur_connect_configmap.yaml
-# The Conjur Connection Configmap contains references to Conjur credentials,
-# taken from the "Golden Configmap". These can be used to enable Conjur
+# The Conjur Connection ConfigMap contains references to Conjur credentials,
+# taken from the "Golden ConfigMap". These can be used to enable Conjur
 # authentication for applications to retrieve secrets securely.
 apiVersion: v1
 kind: ConfigMap
