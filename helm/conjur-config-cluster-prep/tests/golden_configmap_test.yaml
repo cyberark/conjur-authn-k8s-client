@@ -67,6 +67,21 @@ tests:
           value: default
 
   #=======================================================================
+  - it: should trim any trailing '/' from Conjur Appliance URL
+  #=======================================================================
+    set:
+      # Set required values, and include a trailing '/' for appliance URL
+      conjur.applianceUrl: "https://conjur.example.com/"
+      conjur.certificateFilePath: "tests/test-cert.pem"
+      authnK8s.authenticatorID: "my-authenticator-id"
+
+    asserts:
+      # Confirm that trailing '/' has been trimmed
+      - equal:
+          path: data.conjurApplianceUrl
+          value: "https://conjur.example.com"
+
+  #=======================================================================
   - it: should fail if Conjur Appliance URL is not set
   #=======================================================================
     set:
