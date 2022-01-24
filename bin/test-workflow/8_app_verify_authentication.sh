@@ -36,6 +36,7 @@ function finish {
     "SECRETS_PROVIDER_INIT_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_INIT_JWT_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_P2F_PORT_FORWARD_PID"
+    "SECRETS_PROVIDER_P2F_JWT_PORT_FORWARD_PID"
   )
 
   set +u
@@ -127,6 +128,12 @@ if [[ "$PLATFORM" == "openshift" ]]; then
     SECRETS_PROVIDER_P2F_PORT_FORWARD_PID=$!
   fi
 
+  if [[ " ${install_apps[*]} " =~ " secrets-provider-p2f-jwt " ]]; then
+    secrets_provider_p2f_jwt_pod=$(get_pod_name test-app-secrets-provider-p2f-jwt)
+    oc port-forward "$secrets_provider_p2f_jwt_pod" 8087:8080 > /dev/null 2>&1 &
+    SECRETS_PROVIDER_P2F_JWT_PORT_FORWARD_PID=$!
+  fi
+
   curl_cmd=curl
   sidecar_url="localhost:8081"
   secretless_url="localhost:8083"
@@ -159,6 +166,7 @@ app_urls[secrets-provider-standalone]="$secrets_provider_standalone_url"
 app_urls[secrets-provider-init]="$secrets_provider_init_url"
 app_urls[secrets-provider-init-jwt]="$secrets_provider_init_url"
 app_urls[secrets-provider-p2f]="$secrets_provider_p2f_url"
+app_urls[secrets-provider-p2f-jwt]="$secrets_provider_p2f_url"
 
 declare -A app_pets
 app_pets[summon-sidecar]="Mr. Sidecar"
@@ -169,6 +177,7 @@ app_pets[secrets-provider-standalone]="Mr. Standalone"
 app_pets[secrets-provider-init]="Mr. Provider"
 app_pets[secrets-provider-init-jwt]="Mr. JWT Provider"
 app_pets[secrets-provider-p2f]="Mr. FileProvider"
+app_pets[secrets-provider-p2f-jwt]="Mr. JWT FileProvider"
 
 # check connection to each installed test app
 for app in "${install_apps[@]}"; do

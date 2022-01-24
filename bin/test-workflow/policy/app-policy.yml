@@ -144,6 +144,24 @@
       resources: *secrets-provider-p2f-variables
 
 - !policy
+  id: test-secrets-provider-p2f-jwt-app-db
+  annotations:
+    description: This policy contains the creds to access the secrets provider app DB
+
+  body:
+    - !group
+
+    - &secrets-provider-p2f-jwt-variables
+      - !variable password
+      - !variable url
+      - !variable username
+
+    - !permit
+      role: !group
+      privileges: [ read, execute ]
+      resources: *secrets-provider-p2f-jwt-variables
+
+- !policy
   id: my-app-db
   annotations:
     description: This policy contains the creds to access the DB for an imaginary "my-app"

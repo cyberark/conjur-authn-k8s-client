@@ -1,0 +1,2 @@
+# Helm Chart to Deploy an Application that uses a Secrets Provider for K8S init container in Push-to-File mode using JWT flow
+

@@ -55,6 +55,9 @@ pushd ../../helm/conjur-app-deploy > /dev/null
   secrets_provider_init_jwt_options="--set app-secrets-provider-init-jwt.enabled=true \
     --set app-secrets-provider-init-jwt.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
     --set app-secrets-provider-init-jwt.app.platform=$PLATFORM"
+  secrets_provider_p2f_jwt_options="--set app-secrets-provider-p2f-jwt.enabled=true \
+    --set app-secrets-provider-init-jwt.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
+    --set app-secrets-provider-init-jwt.app.platform=$PLATFORM"
   secrets_provider_p2f_options="--set app-secrets-provider-p2f.enabled=true \
     --set app-secrets-provider-p2f.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
     --set app-secrets-provider-p2f.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-p2f \
@@ -69,6 +72,7 @@ pushd ../../helm/conjur-app-deploy > /dev/null
   app_options[secrets-provider-init]="$secrets_provider_init_options"
   app_options[secrets-provider-init-jwt]="$secrets_provider_init_jwt_options"
   app_options[secrets-provider-p2f]="$secrets_provider_p2f_options"
+  app_options[secrets-provider-p2f-jwt]="$secrets_provider_p2f_jwt_options"
 
   # restore array of apps to install
   declare -a install_apps=($(split_on_comma_delimiter $INSTALL_APPS))
