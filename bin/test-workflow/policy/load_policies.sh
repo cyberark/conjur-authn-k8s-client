@@ -37,6 +37,7 @@ readonly APPS=(
   "test-secrets-provider-init-app"
   "test-secrets-provider-init-jwt-app"
   "test-secrets-provider-p2f-app"
+  "test-secrets-provider-p2f-jwt-app"
   "test-secrets-provider-standalone-app"
 )
 

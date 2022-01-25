@@ -36,6 +36,10 @@ dependencies:
       repository: "file://charts/app-secrets-provider-p2f"
       version: ">= 0.0.1"
       condition: app-secrets-provider-p2f.enabled
+    - name: app-secrets-provider-p2f-jwt
+      repository: "file://charts/app-secrets-provider-p2f"
+      version: ">= 0.0.1"
+      condition: app-secrets-provider-p2f-jwt.enabled
     - name: app-secretless-broker
       repository: "file://charts/app-secretless-broker"
       version: ">= 0.0.1"

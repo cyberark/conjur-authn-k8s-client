@@ -36,5 +36,8 @@ app-secrets-provider-init-jwt:
 app-secrets-provider-p2f:
   enabled: false
 
+app-secrets-provider-p2f-jwt:
+  enabled: false
+
 app-secrets-provider-standalone:
   enabled: false
