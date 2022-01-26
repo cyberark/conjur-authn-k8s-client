@@ -23,7 +23,7 @@
                 "name": {
                     "type": "string"
                 },
-                "authnStrategy": {
+                "authnMethod": {
                     "type": "string"
                 }
             }

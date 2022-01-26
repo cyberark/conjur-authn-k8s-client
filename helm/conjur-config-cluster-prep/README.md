@@ -209,9 +209,9 @@ The steps are as follows:
    kubectl exec -it conjur-oss-7ddbb984c9-j96nb  -- bash -c "apt-get update;apt-get install openssl;openssl x509 -fingerprint -noout -in /opt/conjur/etc/ssl/cert/tls.crt"
    ```
 
-1. Create a Namespace for the authn-k8s authenticator.
+1. Create a Namespace for the conjur authenticator.
 
-   __NOTE: If a Conjur Namespace already exists, and only one authn-k8s
+   __NOTE: If a Conjur Namespace already exists, and only one conjur
      authenticator is being used in this cluster, then that Conjur Namespace
      can be reused as the authenticator Namespace).__
 
@@ -414,7 +414,7 @@ The following table lists the configurable parameters of the Conjur Open Source 
 |`conjur.applianceUrl:`|Conjur Appliance URL||Yes|
 |`conjur.ssl.certificateFile`|Path to a Conjur certificate file||Either certificateFile or certificateBase64|
 |`conjur.ssl.certificateBase64`|Base64-encoded Conjur certificate file||Either certificateFile or certificateBase64|
-|`authnK8s.authenticatorID`|Conjur authn-k8s authenticator ID to use for authentication||Yes|
+|`authnK8s.authenticatorID`|Conjur authenticator ID to use for authentication||Yes|
 |`authnK8s.configMap.create`|Flag to generate the Golden ConfigMap |`true`||
 |`authnK8s.configMap.name`|The name of the Conjur ConfigMap|`"conjur-configmap"`||
 |`authnK8s.clusterRole.create`|Flag to generate the ClusterRole |`true`||

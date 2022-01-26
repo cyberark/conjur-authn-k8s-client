@@ -221,21 +221,6 @@ tests:
           value: "my-awesome-clusterrole"
 
   #=======================================================================
-  - it: should fail if ClusterRole creation is disabled and ClusterRole
-        name is not set
-  #=======================================================================
-    set:
-      # Set required values
-      <<: *defaultRequired
-
-      # Disable ClusterRole creation, but don't set ClusterRole name
-      authnK8s.clusterRole.create: false
-
-    asserts:
-      - failedTemplate:
-          errorMessage: "A valid authnK8s.clusterRole.name is required!"
-
-  #=======================================================================
   - it: should allow ServiceAccount name to be set explicitly
   #=======================================================================
     set:
@@ -249,18 +234,3 @@ tests:
       - equal:
           path: data.authnK8sServiceAccount
           value: "my-awesome-serviceaccount"
-
-  #=======================================================================
-  - it: should fail if ServiceAccount creation is disabled and
-        ServiceAccount name is not set
-  #=======================================================================
-    set:
-      # Set required values
-      <<: *defaultRequired
-
-      # Disable ClusterRole creation, but don't set ClusterRole name
-      authnK8s.serviceAccount.create: false
-
-    asserts:
-      - failedTemplate:
-          errorMessage: "A valid authnK8s.serviceAccount.name is required!"
