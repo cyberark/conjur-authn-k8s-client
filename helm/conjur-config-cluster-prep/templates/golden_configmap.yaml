@@ -32,7 +32,7 @@ data:
 
     # Conjur Configuration 
     conjurAccount: {{ .Values.conjur.account }}
-    conjurApplianceUrl: {{ required "A valid conjur.applianceUrl is required!" .Values.conjur.applianceUrl }}
+    conjurApplianceUrl: {{ required "A valid conjur.applianceUrl is required!" .Values.conjur.applianceUrl | trimSuffix "/" }}
     {{- if .Values.conjur.certificateFilePath }}
     {{- if .Values.conjur.certificateBase64 }}
     {{- fail "Only one of 'certificateFilePath' or 'certificateBase64' may be set!" }}

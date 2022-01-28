@@ -56,6 +56,26 @@ tests:
 
 
   #=======================================================================
+  - it: should trim any trailing '/' characters from the appliance URL
+  #=======================================================================
+    set:
+      # Set required values
+      <<: *defaultRequired
+      test.mock.enable: true
+      conjurConfigMap.authnStrategy: "authn-k8s"
+
+      # Set an authenticator ID and an appliance URL with a trailing '/'
+      test.mock.conjurApplianceUrl: "https://test.example.com/"
+      test.mock.authnK8sAuthenticatorID: "test-authenticator-id"
+
+    asserts:
+      # Confirm that trailing '/' character has been trimmed
+      - equal:
+          path: data.CONJUR_AUTHN_URL
+          value: "https://test.example.com/authn-k8s/test-authenticator-id"
+
+
+  #=======================================================================
   - it: should fail if both Golden ConfigMap and NameSpace are not set
   #=======================================================================
 

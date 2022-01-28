@@ -21,7 +21,7 @@ metadata:
 data:
   CONJUR_ACCOUNT: {{ get $g "conjurAccount" }}
   CONJUR_APPLIANCE_URL: {{ get $g "conjurApplianceUrl" }}
-  CONJUR_AUTHN_URL: {{ printf "%s/%s/%s" (get $g "conjurApplianceUrl") (.Values.conjurConfigMap.authnStrategy) (get $g "authnK8sAuthenticatorID") }}
+  CONJUR_AUTHN_URL: {{ printf "%s/%s/%s" (get $g "conjurApplianceUrl" | trimSuffix "/") (.Values.conjurConfigMap.authnStrategy) (get $g "authnK8sAuthenticatorID") }}
   CONJUR_SSL_CERTIFICATE: |- 
 {{ get $g "conjurSslCertificate" | indent 4 }}
   CONJUR_AUTHENTICATOR_ID: {{ get $g "authnK8sAuthenticatorID" }}
