@@ -29,6 +29,6 @@ pushd ../../helm/conjur-config-namespace-prep > /dev/null
         --create-namespace \
         --set authnK8s.goldenConfigMap="conjur-configmap" \
         --set authnK8s.namespace="$CONJUR_NAMESPACE_NAME" \
-        --set conjurConfigMap.authnStrategy=$AUTHN_STRATEGY
+        --set conjurConfigMap.authnMethod=$AUTHN_STRATEGY
 
 popd > /dev/null

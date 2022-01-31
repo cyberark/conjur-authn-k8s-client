@@ -69,6 +69,7 @@ The following table lists the configurable parameters of the Conjur Namespace-pr
 |`authnRoleBinding.name`|Name for the RoleBinding generated if the `create` flag is set to `true`.|`"conjur-RoleBinding"`|
 |`authnRoleBinding.create`|Flag to generate the ConfigMap with credentials for accessing Conjur instance.|`true`|
 |`authnRoleBinding.name`|Name for the ConfigMap generated if the `create` flag is set to `true`|`"conjur-configmap"`|
+|`conjurConfigMap.authnMethod`|Authentication method to conjur. Can be either `"authn-k8s"` or `"authn-jwt"`|`"authn-k8s"`|
 
 ## Examples
 
