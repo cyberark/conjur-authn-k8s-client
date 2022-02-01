@@ -157,6 +157,32 @@ tests:
           pattern: "^LS[0-9a-zA-Z=]*JUSUZJQ0FURS0tLS0tCg==$"
 
   #=======================================================================
+  - it: should fail if certificate file path points to file outside of chart repo
+  #=======================================================================
+    set:
+      # Set required values, with cert file path pointing to file outside of repo
+      conjur.applianceUrl: "https://conjur.example.com"
+      conjur.certificateFilePath: "../foobar"
+      authnK8s.authenticatorID: "my-authenticator-id"
+
+    asserts:
+      - failedTemplate:
+          errorMessage: "If you are using helm install with a (remote) chart reference, please use conjur.certficateBase64 instead of conjur.certificateFilePath. If you are using helm install with a local chart directory, then conjur.certificateFilePath must point to an existing file within the chart directory/subdirectories"
+
+  #=======================================================================
+  - it: should fail if certificate file path points to non-existent file inside repo
+  #=======================================================================
+    set:
+      # Set required values, with cert file path pointing to non-existent file inside repo
+      conjur.applianceUrl: "https://conjur.example.com"
+      conjur.certificateFilePath: "non-existent-file"
+      authnK8s.authenticatorID: "my-authenticator-id"
+
+    asserts:
+     - failedTemplate:
+         errorMessage: "If you are using helm install with a (remote) chart reference, please use conjur.certficateBase64 instead of conjur.certificateFilePath. If you are using helm install with a local chart directory, then conjur.certificateFilePath must point to an existing file within the chart directory/subdirectories"
+
+  #=======================================================================
   - it: should allow Conjur certificate to be set as Base-64 encoded value
   #=======================================================================
     set:
