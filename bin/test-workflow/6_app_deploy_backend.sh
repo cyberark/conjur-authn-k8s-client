@@ -42,7 +42,7 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
 
-args=(install "$app_name" bitnami/postgresql -n "$TEST_APP_NAMESPACE_NAME" --wait --timeout "$TIMEOUT" \
+args=(install "$app_name" bitnami/postgresql --version 10.16.2 -n "$TEST_APP_NAMESPACE_NAME" --wait --timeout "$TIMEOUT" \
     --set image.repository="postgres" \
     --set image.tag="9.6" \
     --set postgresqlDataDir="/data/pgdata" \
