@@ -45,18 +45,15 @@ helm repo update
 args=(install "$app_name" bitnami/postgresql -n "$TEST_APP_NAMESPACE_NAME" --wait --timeout "$TIMEOUT" \
     --set image.repository="postgres" \
     --set image.tag="9.6" \
-    --set postgresqlDataDir="/data/pgdata" \
-    --set persistence.mountPath="/data/" \
     --set fullnameOverride="test-app-backend" \
     --set tls.enabled=true \
     --set volumePermissions.enabled=true \
     --set tls.certificatesSecret="test-app-backend-certs" \
     --set tls.certFilename="server.crt" \
     --set tls.certKeyFilename="server.key" \
-    --set securityContext.fsGroup="999" \
-    --set postgresqlDatabase="test_app" \
-    --set postgresqlUsername="test_app" \
-    --set postgresqlPassword="$SAMPLE_APP_BACKEND_DB_PASSWORD")
+    --set auth.database="test_app" \
+    --set auth.username="test_app" \
+    --set auth.password="$SAMPLE_APP_BACKEND_DB_PASSWORD")
 
 # For Openshift the runAsUser and fsgroup values are different than Kubernetes,
 # and we opt to use the dynamic settings. See the below link for nore info. 
