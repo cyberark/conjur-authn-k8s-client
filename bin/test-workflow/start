@@ -227,6 +227,7 @@ elif [[ "$CONJUR_PLATFORM" == "gke" ]]; then
   eval "$conjur_init"
   run_command_with_platform "$conjur_prep"
   run_command_with_platform "$cluster_prep"
+  run_command_with_platform "$test_app_workflow"
 elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
   eval "$conjur_init"
   eval "$conjur_prep"
