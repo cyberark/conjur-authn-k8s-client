@@ -345,3 +345,32 @@ function run_command_with_platform {
       $*
     "
 }
+
+function retrieve_cyberark_ca_cert() {
+  # On CyberArk dev laptops, golang module dependencies are downloaded with a
+  # corporate proxy in the middle. For these connections to succeed we need to
+  # configure the proxy CA certificate in build containers.
+  #
+  # To allow this script to also work on non-CyberArk laptops where the CA
+  # certificate is not available, we update container certificates based on
+  # a (potentially empty) certificate directory, rather than relying on the
+  # CA file itself.
+  build_cert_dir="$(repo_root)/bin/test-workflow/build_ca_certificate"
+  mkdir -p "$build_cert_dir"
+
+  # Only attempt to extract the certificate if the security
+  # command is available.
+  #
+  # The certificate file must have the .crt extension to be imported
+  # by `update-ca-certificates`.
+  if command -v security &> /dev/null
+  then
+    security find-certificate \
+      -a -c "CyberArk Enterprise Root CA" \
+      -p > "$build_cert_dir/cyberark_root.crt"
+  fi
+}
+
+repo_root() {
+  git rev-parse --show-toplevel
+}

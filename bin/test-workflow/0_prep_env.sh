@@ -2,6 +2,10 @@
 
 set -o pipefail
 
+cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
+
+source utils.sh
+
 ### PLATFORM DETAILS
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
 export UNIQUE_TEST_ID="${UNIQUE_TEST_ID:-$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)}"
@@ -109,6 +113,7 @@ elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
 fi
 
 if [[ "$RUN_CLIENT_CONTAINER" == "true" ]]; then
+  retrieve_cyberark_ca_cert
   docker build --tag "$PLATFORM_CONTAINER:$CONJUR_NAMESPACE_NAME" \
       --file Dockerfile \
       --build-arg KUBECTL_VERSION="$KUBECTL_VERSION" \
