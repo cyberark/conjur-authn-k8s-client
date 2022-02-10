@@ -144,6 +144,25 @@
       resources: *secrets-provider-p2f-variables
 
 - !policy
+  id: test-secrets-provider-rotation-app-db
+  annotations:
+    description: This policy contains the creds to access the secrets provider app DB
+
+  body:
+    - !group
+
+    - &secrets-provider-rotation-variables
+      - !variable password
+      - !variable url
+      - !variable username
+      - !variable counter
+
+    - !permit
+      role: !group
+      privileges: [ read, execute ]
+      resources: *secrets-provider-rotation-variables
+
+- !policy
   id: test-secrets-provider-p2f-jwt-app-db
   annotations:
     description: This policy contains the creds to access the secrets provider app DB

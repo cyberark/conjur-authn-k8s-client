@@ -1,0 +1,5 @@
+The Application deployment is complete.
+The following have been deployed:
+- A sample application with a Secrets Provider sidecar container in Push-to-File mode with secrets rotation
+
+Application is now available at test-app-secrets-provider-rotation.{{ .Release.Namespace }}.svc.cluster.local

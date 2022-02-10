@@ -56,6 +56,12 @@
     - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-secrets-provider-p2f
 
 - !grant
+  role: !group test-secrets-provider-rotation-app-db
+  members:
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-secrets-provider-rotation
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-secrets-provider-rotation
+
+- !grant
   role: !group test-secrets-provider-p2f-jwt-app-db
   members:
     - !host conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps/system:serviceaccount:app-test:test-app-secrets-provider-p2f-jwt
