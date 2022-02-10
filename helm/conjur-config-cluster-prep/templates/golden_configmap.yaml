@@ -18,13 +18,9 @@ metadata:
 data:
     # authn-k8s Configuration 
     authnK8sAuthenticatorID: {{ required "A valid authnK8s.authenticatorID is required!" .Values.authnK8s.authenticatorID }}
-    {{- if eq .Values.authnK8s.clusterRole.create true }}
     authnK8sClusterRole: {{ .Values.authnK8s.clusterRole.name | default "conjur-clusterrole" }}
-    {{- end }}
     authnK8sNamespace: {{ .Release.Namespace }}
-    {{- if eq .Values.authnK8s.serviceAccount.create true }}
     authnK8sServiceAccount: {{ .Values.authnK8s.serviceAccount.name | default "conjur-serviceaccount" }}
-    {{- end }}
 
     # Conjur Configuration 
     conjurAccount: {{ .Values.conjur.account }}
