@@ -28,13 +28,13 @@ print_usage() {
   echo "    -r <release>   Specify the Helm release"
   echo "                   (defaults to 'authn-k8s')"
   echo "    -v <host-ID>   Specify validator host ID to use for testing"
-  echo "                   authentication (defaults to 'validator')"
+  echo "                   authentication (defaults to 'apps/validator')"
 }
 
 test_authentication=false
 namespace="conjur-oss"
 helm_release="authn-k8s"
-validator_id="validator"
+validator_id="apps/validator"
 
 function main() {
   # Process command line options

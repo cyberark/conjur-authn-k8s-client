@@ -9,6 +9,10 @@ export GCLOUD_ZONE="${GCLOUD_ZONE:-gke}"
 export GCLOUD_CLUSTER_NAME="${GCLOUD_CLUSTER_NAME:-gke}"
 export GCLOUD_SERVICE_KEY="${GCLOUD_SERVICE_KEY:-gke}"
 
+# ***TEMP*** Add in anticipated DNS hostnames
+MASTER_DNS_HOSTNAME="${MASTER_DNS_HOSTNAME:-conjur-master.ux-test.itd-google.conjur.net}"
+FOLLOWER_DNS_HOSTNAME="${FOLLOWER_DNS_HOSTNAME:-conjur-follower.ux-test.itd-google.conjur.net}"
+
 print_usage() {
   echo "Usage:"
   echo "    This script will run start for the various platforms"
@@ -60,7 +64,12 @@ function main() {
     echo "Invalid arguments, cannot set -g and -o at the same time" >&2; print_usage ; exit 1;
   fi
   if [[ "$gke_selected" = true ]]; then
-    cmd=("./start -p gke")
+    cmd=("./start -e -p gke")
+    if [[ "$no_cleanup" = true ]]; then
+      cmd+=" -n"
+    fi
+    echo "***TEMP*** Using start command via summon: $cmd"
+    summon -e gke sh -c "${cmd}"
   elif [[ "$oc_selected" = true ]]; then
     if [[ $cmd == "" ]]; then
       cmd=("./start -p oc" )

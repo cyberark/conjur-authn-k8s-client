@@ -61,6 +61,10 @@ function cleanup {
   fi
 }
 
+# ***TEMP*** Add in anticipated DNS hostnames
+MASTER_DNS_HOSTNAME="${MASTER_DNS_HOSTNAME:-conjur-master.ux-test.itd-google.conjur.net}"
+FOLLOWER_DNS_HOSTNAME="${FOLLOWER_DNS_HOSTNAME:-conjur-follower.ux-test.itd-google.conjur.net}"
+
 declare -a supported_authn_k8s_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init" "secrets-provider-p2f")
 declare -a supported_jwt_apps=("summon-sidecar-jwt" "secretless-broker-jwt" "secrets-provider-init-jwt" "secrets-provider-p2f-jwt")
 declare -a run_in_ci_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init")
@@ -225,8 +229,14 @@ if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   fi
 elif [[ "$CONJUR_PLATFORM" == "gke" ]]; then
   eval "$conjur_init"
-  run_command_with_platform "$conjur_prep"
-  run_command_with_platform "$cluster_prep"
+  #run_command_with_platform "$conjur_prep"
+  #run_command_with_platform "$cluster_prep"
+  eval "$conjur_prep"
+  eval "$cluster_prep"
+  # ***TEMP*** Set variables for testing external K8s access 
+  # ***TODO*** Get this to work using kubectl exec. Currently uses docker-compose.
+  #./conjur_outside_k8s_vars.sh
+  eval "$test_app_workflow"
 elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
   eval "$conjur_init"
   eval "$conjur_prep"

@@ -109,7 +109,7 @@ function validate_info_endpoint_field() {
 }
 
 @test "Conjur Authenticator ID is valid" {
-  yaml_path=".services.authn-k8s.name"
+  yaml_path=".authenticators.enabled"
   exp_value="$authnK8sAuthenticatorID"
   description="Authenticator ID"
   chart_value="authnK8s.authenticatorID"

@@ -7,7 +7,7 @@
 #     ./test-helm -r my-test-release
 #
 # Example: Run test including authentication with a Conjur instance:
-#     ./test-helm -r my-test-release -a -v "validator"
+#     ./test-helm -r my-test-release -a
 
 source ../common/utils.sh
 

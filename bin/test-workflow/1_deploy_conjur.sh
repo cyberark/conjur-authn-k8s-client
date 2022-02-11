@@ -5,6 +5,10 @@ cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
 source utils.sh
 
+# ***TEMP*** Add in anticipated DNS hostnames
+MASTER_DNS_HOSTNAME="${MASTER_DNS_HOSTNAME:-conjur-master.ux-test.itd-google.conjur.net}"
+FOLLOWER_DNS_HOSTNAME="${FOLLOWER_DNS_HOSTNAME:-conjur-follower.ux-test.itd-google.conjur.net}"
+
 # Upon error, dump kubernetes resources in the Conjur Namespace
 trap dump_conjur_namespace_upon_error EXIT
 
@@ -20,11 +24,13 @@ function setup_conjur_enterprise {
     check_env_var GCLOUD_CLUSTER_NAME
     check_env_var GCLOUD_SERVICE_KEY
 
+    # ***TEMP*** Use 'kube-conjur-demo-altnames' branch
     pushd temp > /dev/null
-      git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy "kubernetes-conjur-deploy-$UNIQUE_TEST_ID"
+      git clone --single-branch --branch kube-conjur-demo-altnames git@github.com:cyberark/kubernetes-conjur-deploy "kubernetes-conjur-deploy-$UNIQUE_TEST_ID"
     popd > /dev/null
 
-    run_command_with_platform "cd temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
+    #run_command_with_platform "cd temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
+    cd temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start
 
   # deploy Conjur locally
   elif [[ "${CONJUR_PLATFORM}" == "jenkins" ]]; then

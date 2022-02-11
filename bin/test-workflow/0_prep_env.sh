@@ -8,7 +8,9 @@ source utils.sh
 
 ### PLATFORM DETAILS
 export CONJUR_OSS_HELM_INSTALLED="${CONJUR_OSS_HELM_INSTALLED:-true}"
-export UNIQUE_TEST_ID="${UNIQUE_TEST_ID:-$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)}"
+#export UNIQUE_TEST_ID="${UNIQUE_TEST_ID:-$(uuidgen | tr "[:upper:]" "[:lower:]" | head -c 10)}"
+echo "***TEMP*** Hardcoding unique test id to ux-test"
+export UNIQUE_TEST_ID="ux-test"
 
 # PLATFORM is used to differentiate between general Kubernetes platforms (kubernetes, openshift), while
 # CONJUR_PLATFORM is used to differentiate between sub-platforms (kind, gke, jenkins, openshift) for the Conjur deployment
@@ -27,11 +29,12 @@ else
 fi
 export PLATFORM
 
-if [[ "$CONJUR_PLATFORM" == "kind" ]]; then
-  RUN_CLIENT_CONTAINER="false"
-else
-  RUN_CLIENT_CONTAINER="true"
-fi
+#if [[ "$CONJUR_PLATFORM" == "kind" ]]; then
+#  RUN_CLIENT_CONTAINER="false"
+#else
+#  RUN_CLIENT_CONTAINER="true"
+#fi
+RUN_CLIENT_CONTAINER="false"
 
 if [[ "$CONJUR_PLATFORM" != "kind" ]]; then
   if [[ "$CONJUR_PLATFORM" != "jenkins" ]]; then
