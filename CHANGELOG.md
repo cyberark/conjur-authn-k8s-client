@@ -6,6 +6,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.23.1] - 2022-02-11
+### Added
+- Authenticator client logs request IP address after login error.
+  [cyberark/conjur-authn-k8s-client#439](https://github.com/cyberark/conjur-authn-k8s-client/pull/439)
+
+### Changed
+- If Cluster Prep Helm chart value `authnK8s.clusterRole.create` or
+  `authnK8s.serviceAccount.create` is `false`, their corresponding `name` is no
+  longer required, as these objects are not required for Authn-JWT.
+  [cyberark/conjur-authn-k8s-client#445](https://github.com/cyberark/conjur-authn-k8s-client/pull/445)
+  [cyberark/conjur-authn-k8s-client#452](https://github.com/cyberark/conjur-authn-k8s-client/pull/452)
+
+### Fixed
+- Fixes bug in Namespace Prep Helm chart's `conjur_connect_configmap.yaml`,
+  which silently accepted missing values from the referenced Golden ConfigMap.
+  [cyberark/conjur-authn-k8s-client#447](https://github.com/cyberark/conjur-authn-k8s-client/pull/447)
+
 ## [0.23.0] - 2022-01-14
 ### Added
 - Add support for tracing with OpenTelemetry. This adds a new function to the authenticator, `AuthenticateWithContext`. The existing funtion, `Authenticate()` is deprecated and will be removed in a future upddate. [cyberark/conjur-authn-k8s-client#423](https://github.com/cyberark/conjur-authn-k8s-client/pull/423)
@@ -199,7 +216,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.0...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.1...HEAD
+[0.23.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.0...v0.23.1
 [0.23.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.20.0...v0.21.0
