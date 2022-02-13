@@ -81,8 +81,6 @@ function setup_conjur_open_source {
       if [[ "$TEST_JWT_FLOW" == "true" ]]; then
         announce "Enable authn-jwt in conjur instead of authn-k8s"
         export AUTHN_STRATEGY="authn-jwt"
-        announce "Allow access to jwks uri for unauthenticated users"
-        kubectl create clusterrolebinding oidc-reviewer --clusterrole=system:service-account-issuer-discovery --group=system:unauthenticated
       fi
 
       announce "Helm installing/upgrading Conjur OSS cluster"

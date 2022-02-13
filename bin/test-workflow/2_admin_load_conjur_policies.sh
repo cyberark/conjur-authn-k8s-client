@@ -103,7 +103,7 @@ pushd policy > /dev/null
 popd > /dev/null
 
 if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
-  JWKS_URI="NONE"
+  PUBLIC_KEYS="NONE"
   ISSUER="NONE"
   docker-compose -f "temp/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml" \
     run --rm \
@@ -118,7 +118,7 @@ if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
       TEST_APP_NAMESPACE_NAME='${TEST_APP_NAMESPACE_NAME}' \
       TEST_APP_DATABASE='${TEST_APP_DATABASE}' \
       AUTHENTICATOR_ID='${AUTHENTICATOR_ID}' \
-      JWKS_URI='${JWKS_URI}'\
+      PUBLIC_KEYS='${PUBLIC_KEYS}'\
       ISSUER='${ISSUER}'\
       /policy/load_policies.sh
     "
@@ -143,9 +143,9 @@ else
   "$cli" cp ./policy "$conjur_cli_pod:/policy"
 
   announce "Extracting openid configuration"
-  JWKS_URI=$($cli get --raw /.well-known/openid-configuration | jq '.jwks_uri')
+  PUBLIC_KEYS=$($cli get --raw /openid/v1/jwks)
   ISSUER=$($cli get --raw /.well-known/openid-configuration | jq '.issuer')
-  announce "JWKS URI of this cluster is $JWKS_URI and Issuer is $ISSUER"
+  announce "Public Keys of this cluster are $PUBLIC_KEYS and Issuer is $ISSUER"
 
   wait_for_it 300 "$cli exec $conjur_cli_pod -- \
     bash -c \"
@@ -156,7 +156,7 @@ else
       TEST_APP_NAMESPACE_NAME='${TEST_APP_NAMESPACE_NAME}' \
       TEST_APP_DATABASE='${TEST_APP_DATABASE}' \
       AUTHENTICATOR_ID='${AUTHENTICATOR_ID}' \
-      JWKS_URI='${JWKS_URI}'\
+      PUBLIC_KEYS='${PUBLIC_KEYS}'\
       ISSUER='${ISSUER}'\
       /policy/load_policies.sh
     \"

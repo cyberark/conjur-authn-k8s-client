@@ -31,7 +31,7 @@
     - !webservice
       annotations:
         description: authn service for cluster
-    - !variable jwks-uri
+    - !variable public-keys
     - !variable issuer
     - !variable token-app-property
     - !variable identity-path

@@ -47,6 +47,7 @@ Usage: ./start [options]:
                                 - secrets-provider-init-jwt
                                 - secrets-provider-p2f-jwt
     -j, --jwt                 Perform jwt authentication instead of k8s
+    --all-jwt                 Runs all the supported jwt sidecars. -j/--jwt flag not needed when this flag is being used.
     -n, --nocleanup           Do not run the cleanup scripts, all resources are maintained.
                               All other selections are rejected
     -h, --help                Show the help message
@@ -92,6 +93,11 @@ while true; do
       else
         install_apps=("${run_in_ci_apps[@]}")
       fi
+      shift
+      ;;
+    --all-jwt )
+      TEST_JWT_FLOW=true
+      install_apps=("${supported_jwt_apps[@]}")
       shift
       ;;
     -e|--enterprise )
