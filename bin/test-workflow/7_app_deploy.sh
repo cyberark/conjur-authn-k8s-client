@@ -62,6 +62,10 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-secrets-provider-p2f.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
     --set app-secrets-provider-p2f.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-p2f \
     --set app-secrets-provider-p2f.app.platform=$PLATFORM"
+  secrets_provider_rotation_options="--set app-secrets-provider-rotation.enabled=true \
+    --set app-secrets-provider-rotation.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
+    --set app-secrets-provider-rotation.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-rotation \
+    --set app-secrets-provider-rotation.app.platform=$PLATFORM"
 
   declare -A app_options
   app_options[summon-sidecar]="$summon_sidecar_options"
@@ -73,6 +77,7 @@ pushd ../../helm/conjur-app-deploy > /dev/null
   app_options[secrets-provider-init-jwt]="$secrets_provider_init_jwt_options"
   app_options[secrets-provider-p2f]="$secrets_provider_p2f_options"
   app_options[secrets-provider-p2f-jwt]="$secrets_provider_p2f_jwt_options"
+  app_options[secrets-provider-rotation]="$secrets_provider_rotation_options"
 
   # restore array of apps to install
   declare -a install_apps=($(split_on_comma_delimiter $INSTALL_APPS))

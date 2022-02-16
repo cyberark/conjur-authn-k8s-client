@@ -37,6 +37,7 @@ function finish {
     "SECRETS_PROVIDER_INIT_JWT_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_P2F_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_P2F_JWT_PORT_FORWARD_PID"
+    "SECRETS_PROVIDER_ROTATION_PORT_FORWARD_PID"
   )
 
   set +u
@@ -134,12 +135,19 @@ if [[ "$PLATFORM" == "openshift" ]]; then
     SECRETS_PROVIDER_P2F_JWT_PORT_FORWARD_PID=$!
   fi
 
+  if [[ " ${install_apps[*]} " =~ " secrets-provider-rotation " ]]; then
+    secrets_provider_rotation_pod=$(get_pod_name test-app-secrets-provider-rotation)
+    oc port-forward "$secrets_provider_rotation_pod" 8088:8080 > /dev/null 2>&1 &
+    SECRETS_PROVIDER_ROTATION_PORT_FORWARD_PID=$!
+  fi
+
   curl_cmd=curl
   sidecar_url="localhost:8081"
   secretless_url="localhost:8083"
   secrets_provider_standalone_url="localhost:8084"
   secrets_provider_init_url="localhost:8086"
   secrets_provider_p2f_url="localhost:8087"
+  secrets_provider_rotation_url="localhost:8088"
 else
   # Test by curling from a pod that is inside the KinD cluster.
   curl_cmd=pod_curl
@@ -148,6 +156,7 @@ else
   secrets_provider_standalone_url="test-app-secrets-provider-standalone.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secrets_provider_init_url="test-app-secrets-provider-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secrets_provider_p2f_url="test-app-secrets-provider-p2f.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
+  secrets_provider_rotation_url="test-app-secrets-provider-rotation.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
 fi
 
 echo "Waiting for urls to be ready"
@@ -167,6 +176,7 @@ app_urls[secrets-provider-init]="$secrets_provider_init_url"
 app_urls[secrets-provider-init-jwt]="$secrets_provider_init_url"
 app_urls[secrets-provider-p2f]="$secrets_provider_p2f_url"
 app_urls[secrets-provider-p2f-jwt]="$secrets_provider_p2f_url"
+app_urls[secrets-provider-rotation]="$secrets_provider_rotation_url"
 
 declare -A app_pets
 app_pets[summon-sidecar]="Mr. Sidecar"
@@ -178,6 +188,7 @@ app_pets[secrets-provider-init]="Mr. Provider"
 app_pets[secrets-provider-init-jwt]="Mr. JWT Provider"
 app_pets[secrets-provider-p2f]="Mr. FileProvider"
 app_pets[secrets-provider-p2f-jwt]="Mr. JWT FileProvider"
+app_pets[secrets-provider-rotation]="Mr. Rotation"
 
 # check connection to each installed test app
 for app in "${install_apps[@]}"; do
@@ -195,3 +206,27 @@ for app in "${install_apps[@]}"; do
   echo -e "\n\nQuerying $app app\n"
   $curl_cmd "${app_urls[$app]}"/pets
 done
+
+
+if [[ " ${install_apps[*]} " =~ " secrets-provider-rotation " ]]; then
+  # Test secrets rotation
+  echo "Testing secrets provider with rotation"
+  # Change secret values in conjur
+  "$cli" exec "$(get_conjur_cli_pod_name)" -n "$CONJUR_NAMESPACE_NAME" -- bash -c "\
+    conjur authn login -u admin -p $(get_admin_password) && \
+    conjur variable values add 'test-secrets-provider-rotation-app-db/counter' '1'" > /dev/null
+  # Check if SP picks up the new values
+  sleep 10
+  pod_name=$(get_pod_name test-app-secrets-provider-rotation)
+  content="$($cli exec "$pod_name" -c test-app -- cat /mounted/secrets/dummy.yaml)"
+  if [[ "$content" == "counter: 1" ]]; then
+    echo "Success: Secrets Provider picked up new values"
+  else
+    echo "Failure: Secrets Provider did not pick up new values"
+    echo "Secret file content:
+      $content"
+    echo "Secrets Provider logs:"
+    "$cli" logs "$pod_name" -c cyberark-secrets-provider-for-k8s
+    exit 1
+  fi
+fi

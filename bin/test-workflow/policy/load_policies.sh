@@ -37,6 +37,7 @@ readonly APPS=(
   "test-secrets-provider-init-app"
   "test-secrets-provider-init-jwt-app"
   "test-secrets-provider-p2f-app"
+  "test-secrets-provider-rotation-app"
   "test-secrets-provider-p2f-jwt-app"
   "test-secrets-provider-standalone-app"
 )
@@ -72,6 +73,11 @@ for app_name in "${APPS[@]}"; do
     # The authenticator sidecar injects the full pg connection string into the
     # app environment using Summon
     conjur variable values add "$app_name-db/url" "$PROTOCOL://$db_address/test_app"
+  fi
+
+  if [[ "$app_name" = "test-secrets-provider-rotation-app" ]]; then
+    # The rotation test uses an additional value which will be changed later
+    conjur variable values add "$app_name-db/counter" "0"
   fi
 
   # Add some secrets that can be used in demos
