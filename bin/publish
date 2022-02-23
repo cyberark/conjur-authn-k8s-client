@@ -2,53 +2,93 @@
 
 . bin/build_utils
 
-REDHAT_IMAGE='scan.connect.redhat.com/ospid-1c46a2de-1d88-40e6-a433-7114ad0099cb/conjur-openshift-authenticator-client'
+function print_help() {
+  echo "Release Usage: $0"
+  echo "Promote Usage: $0 --source <VERSION> --target <VERSION>"
+  echo " --source <VERSION>: specify version number of local image"
+  echo " --target <VERSION>: specify version number of remote image"
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  --source)
+    SOURCE_TAG=$2
+    shift
+    ;;
+  --target)
+    REMOTE_TAG=$2
+    shift
+    ;;
+  *)
+    echo "Unknown option: ${1}"
+    print_help
+    exit 1
+    ;;
+  esac
+  shift
+done
+
+REDHAT_CLIENT='scan.connect.redhat.com/ospid-1c46a2de-1d88-40e6-a433-7114ad0099cb/conjur-openshift-authenticator-client'
 
 readonly REGISTRY="cyberark"
 
-if [[ $1 = "--edge" ]]; then
-    tag=edge
-    push_conjur-k8s-cluster-test
-    exit 0
-fi
-
-# We take the version from the TAG_NAME variable - removing the "v" prefix
-readonly VERSION="${TAG_NAME//"v"}"
-
 # we changed the name to `conjur-authn-k8s-client`. Leaving `conjur-kubernetes-authenticator`
 # for backwards-compatibility.
-readonly DESTINATION_IMAGES=(
+readonly DOCKER_IMAGES=(
   "conjur-kubernetes-authenticator"
   "conjur-authn-k8s-client"
 )
 
+readonly REDHAT_IMAGE="conjur-authn-k8s-client-redhat"
+
+push_docker_images() {
+  echo "Pushing to Dockerhub..."
+  for image in "${DOCKER_IMAGES[@]}"; do
+    if [[ $1 == "edge" ]]; then
+      for tag in "${VERSION}" "edge"; do
+        tag_and_push "${image}:${SOURCE_TAG}" "${REGISTRY}/${image}:${tag}"
+      done
+    else
+      for tag in "${VERSION}" $(gen_versions "${VERSION}"); do
+        tag_and_push "${image}:${SOURCE_TAG}" "${REGISTRY}/${image}:${tag}"
+      done
+    fi
+  done
+}
+
+# Defaults to edge release
+if [[ -z ${REMOTE_TAG:-} || -z ${SOURCE_TAG:-} ]]; then
+  echo "Performing edge release."
+  # Always set/overwrite tags for edge releases
+  REMOTE_TAG=edge
+  SOURCE_TAG=dev
+
+  push_conjur-k8s-cluster-test
+
+  # Version derived from CHANGLEOG and automated release library
+  VERSION=$(<VERSION)
+
+  push_docker_images edge
+  exit 0
+fi
+
+echo "Promoting image to ${REMOTE_TAG}"
 readonly TAGS=(
-  "$VERSION"
+  "$REMOTE_TAG"
   "latest"
 )
 
-if [[ -z "${TAG_NAME:-}" ]]; then
-  echo "This script should only run in a tag-triggered build controlled by the JenkinsFile"
-  exit 1
-fi
+# This will allow usage of the push_docker_images function
+VERSION=${REMOTE_TAG}
 
-echo "Pushing to Dockerhub..."
-source_image=conjur-authn-k8s-client:dev
-for destination_image_name in "${DESTINATION_IMAGES[@]}"; do
-  for tag in "${TAGS[@]}" $(gen_versions "$VERSION"); do
-    echo "Tagging and pushing $REGISTRY/$destination_image_name:$tag"
-    docker tag $source_image "$REGISTRY/$destination_image_name:$tag"
-    docker push "$REGISTRY/$destination_image_name:$tag"
-  done
-done
+push_docker_images
 
 echo "Pushing to RedHat container registry..."
-source_redhat_image=conjur-authn-k8s-client-redhat:dev
-docker tag $source_redhat_image "$REDHAT_IMAGE:$VERSION"
+echo "docker tag ${REDHAT_IMAGE}:${SOURCE_TAG} '${REDHAT_CLIENT}:${REMOTE_TAG}'"
 
-if docker login scan.connect.redhat.com -u unused -p "$REDHAT_API_KEY"; then
+if docker login scan.connect.redhat.com -u unused -p "${REDHAT_API_KEY}"; then
   # you can't push the same tag twice to redhat registry, so ignore errors
-  if ! docker push "${REDHAT_IMAGE}:${VERSION}"; then
+  if ! echo "docker push '${REDHAT_CLIENT}:${REMOTE_TAG}'"; then
     echo 'RedHat push FAILED! (maybe the image was pushed already?)'
     exit 0
   fi
@@ -57,7 +97,6 @@ else
   exit 1
 fi
 
-for tag in "${TAGS[@]}" $(gen_versions "$VERSION"); do
-    push_conjur-k8s-cluster-test
+for REMOTE_TAG in "${TAGS[@]}" $(gen_versions "${REMOTE_TAG}"); do
+  push_conjur-k8s-cluster-test
 done
-
