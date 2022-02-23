@@ -1,5 +1,29 @@
 #!/usr/bin/env groovy
 
+// Automated release, promotion and dependencies
+properties([
+  // Include the automated release parameters for the build
+  release.addParams(),
+  // Dependencies of the project that should trigger builds
+  dependencies(['cyberark/conjur-opentelemetry-tracer'])
+])
+
+// Performs release promotion.  No other stages will be run
+if (params.MODE == "PROMOTE") {
+  release.promote(params.VERSION_TO_PROMOTE) { sourceVersion, targetVersion, assetDirectory ->
+    // Any assets from sourceVersion Github release are available in assetDirectory
+    // Any version number updates from sourceVersion to targetVersion occur here
+    // Any publishing of targetVersion artifacts occur here
+    // Anything added to assetDirectory will be attached to the Github Release
+
+    //sh "docker pull cyberark/conjur-authn-k8s-client:${sourceVersion}"
+    //sh "summon ./bin/publish --source ${sourceVersion} --target ${targetVersion}"
+    sh "docker pull cyberark/conjur-authn-k8s-client:0.23.1"
+    sh "summon ./bin/publish --source '0.23.1' --target ${targetVersion}"
+  }
+  return
+}
+
 pipeline {
   agent { label 'executor-v2' }
 
@@ -12,6 +36,11 @@ pipeline {
     cron(getDailyCronString())
   }
 
+  environment {
+    // Sets the MODE to the specified or autocalculated value as appropriate
+    MODE = release.canonicalizeMode()
+  }
+
   parameters { 
     booleanParam(
       name: 'TEST_OCP_NEXT',
@@ -20,6 +49,21 @@ pipeline {
   }
 
   stages {
+    // Aborts any builds triggered by another project that wouldn't include any changes
+    stage ("Skip build if triggering job didn't create a release") {
+      when {
+        expression {
+          MODE == "SKIP"
+        }
+      }
+      steps {
+        script {
+          currentBuild.result = 'ABORTED'
+          error("Aborting build because this build was triggered from upstream, but no release was built")
+        }
+      }
+    }
+
     stage('Validate') {
       parallel {
         stage('Changelog') {
@@ -40,12 +84,20 @@ pipeline {
       }
     }
 
+    // Generates a VERSION file based on the current build number and latest version in CHANGELOG.md
+    stage('Validate Changelog and set version') {
+      steps {
+        updateVersion("CHANGELOG.md", "${BUILD_NUMBER}")
+      }
+    }
+
     stage('Build client Docker image') {
       steps {
         sh './bin/build'
       }
     }
 
+  /*
     stage('Run Tests') {
       steps {
         sh './bin/test'
@@ -92,12 +144,6 @@ pipeline {
     stage('E2E Workflow Tests') {
       stages {
         stage('Update Helm dependencies') {
-          /*
-           * Helm dependency update is done before running E2E tests in parallel
-           * since this is not currently thread-safe (Helm chart downloads use
-           * a non-uniquely named 'tmpcharts' directory and fail if the directory
-           * already exists).
-           */
           steps {
             sh './bin/helm-dependency-update-in-docker'
           }
@@ -160,22 +206,26 @@ pipeline {
         }
       }
     }
+    */
 
-    stage('Publish client Docker images') {
-      parallel {
-        stage('On a master build') {
-          when { branch 'master' }
-
-          steps {
-            sh 'summon ./bin/publish --edge'
-          }
+    stage('Release') {
+      when {
+        expression {
+          MODE == "RELEASE"
         }
-        stage('On a new tag') {
-          when { tag "v*" }
+      }
 
-          steps {
-            sh 'summon ./bin/publish --latest'
-          }
+      steps {
+        release { billOfMaterialsDirectory, assetDirectory, toolsDirectory ->
+          // Publish release artifacts to all the appropriate locations
+          // Copy any artifacts to assetDirectory to attach them to the Github release
+          
+          // Create Go application SBOM using the go.mod version for the golang container image
+          sh """go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --main "cmd/authenticator/" --output "${billOfMaterialsDirectory}/go-app-bom.json" """
+          // Create Go module SBOM
+          sh """go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --output "${billOfMaterialsDirectory}/go-mod-bom.json" """
+          // Publish edge release
+          sh 'summon ./bin/publish'
         }
       }
     }

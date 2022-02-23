@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.0.1] - 2022-02-23
+### Changed
+- Update to automated release process
+
 ## [0.23.1] - 2022-02-11
 ### Added
 - Authenticator client logs request IP address after login error.
