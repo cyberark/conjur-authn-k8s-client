@@ -171,13 +171,12 @@ You can use the kubectl edit command to edit the images in the deployment and re
 
 ## Releases
 
-Releases should be created by maintainers only. To create a tag and release,
-follow the instructions in this section.
+Releases should be created by maintainers only. To create and promote a
+release, follow the instructions in this section.
 
-### Update the version, changelog, and notices
+### Update the changelog and notices
 1. Create a new branch for the version bump.
-1. Based on the unreleased content, determine the new version number and update
-   the [version.go](pkg/authenticator/version.go) file.
+1. Based on the changelog content, determine the new version number and update.
 1. Determine the new version number and update the Helm `Chart.yaml` files in the `helm/conjur-*/` directories.
 1. Review the git log and ensure the [changelog](CHANGELOG.md) contains all
    relevant recent changes with references to GitHub issues or PRs, if possible.
@@ -187,18 +186,10 @@ follow the instructions in this section.
 1. Commit these changes - `Bump version to x.y.z` is an acceptable commit
    message - and open a PR for review.
 
-### Add a git tag
-1. Once your changes have been reviewed and merged into master, tag the version
-   using `git tag -s v0.1.1`. Note this requires you to be  able to sign releases.
-   Consult the [github documentation on signing commits](https://help.github.com/articles/signing-commits-with-gpg/)
-   on how to set this up. `vx.y.z` is an acceptable tag message.
-1. Push the tag: `git push vx.y.z` (or `git push origin vx.y.z` if you are working
-   from your local machine).
-
-### Publish the git release
-1. In the GitHub UI, create a release from the new tag and copy the change log
-   for the new version into the GitHub release description. The Jenkins pipeline 
-   will auto-publish new images to DockerHub.
+### Release and Promote
+1. Merging into main/master branches will automatically trigger a release. If successful, this release can be promoted at a later time.
+1. Jenkins build parameters can be utilized to promote a successful release or manually trigger aditional releases as needed.
+1. Reference the [internal automated release doc](https://github.com/conjurinc/docs/blob/master/reference/infrastructure/automated_releases.md#release-and-promotion-process) for releasing and promoting.
 ### Publish the Red Hat image
 1. Visit the [Red Hat project page](https://connect.redhat.com/project/795581/view) once the images have
    been pushed and manually choose to publish the latest release.

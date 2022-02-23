@@ -13,6 +13,10 @@ RUN apk add -u curl \
 
 COPY go.mod go.sum /conjur-authn-k8s-client/
 
+# Use latest dependency for automated release process
+RUN go get github.com/cyberark/conjur-opentelemetry-tracer@latest
 RUN go mod download
 
 COPY . .
+# Add required cyberark/conjur-opentelemetry-tracer package to go.mod
+RUN go mod tidy

@@ -211,6 +211,9 @@ test_app_workflow="
 ./7_app_deploy.sh &&
 ./8_app_verify_authentication.sh"
 
+# Setup temp testing environment before tests are executed.
+mkdir -p temp
+
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   if [[ "$CONJUR_PLATFORM" == "openshift" && "$RUN_CLIENT_CONTAINER" == "true" ]]; then
     source "./0_prep_env.sh"

@@ -383,6 +383,9 @@ function main() {
     exit 1
   fi
 
+  # Setup temp testing environment before tests are executed.
+  mkdir -p "$TEST_WORKFLOW_DIR/temp"
+
   # Create the KinD cluster and deploy Conjur OSS if requested
   if [ "$create_kind" = true ] ; then
     if ! create_cluster_and_conjur; then

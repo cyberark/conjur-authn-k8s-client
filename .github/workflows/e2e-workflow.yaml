@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: Install Helm
         uses: azure/setup-helm@v1

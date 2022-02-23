@@ -1,10 +1,9 @@
 module github.com/cyberark/conjur-authn-k8s-client
 
-go 1.17
+go 1.16
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/cyberark/conjur-opentelemetry-tracer v0.0.0-20220113161145-73452511df0c
 	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
 	github.com/stretchr/testify v1.7.0
 	go.opentelemetry.io/otel v1.3.0
