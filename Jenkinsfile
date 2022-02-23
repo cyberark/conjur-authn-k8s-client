@@ -1,5 +1,26 @@
 #!/usr/bin/env groovy
 
+// Automated release, promotion and dependencies
+properties([
+  // Include the automated release parameters for the build
+  release.addParams(),
+  // Dependencies of the project that should trigger builds
+  dependencies(['cyberark/conjur-opentelemetry-tracer'])
+])
+
+// Performs release promotion.  No other stages will be run
+if (params.MODE == "PROMOTE") {
+  release.promote(params.VERSION_TO_PROMOTE) { sourceVersion, targetVersion, assetDirectory ->
+    // Any assets from sourceVersion Github release are available in assetDirectory
+    // Any version number updates from sourceVersion to targetVersion occur here
+    // Any publishing of targetVersion artifacts occur here
+    // Anything added to assetDirectory will be attached to the Github Release
+
+    sh "summon ./bin/publish --latest ${sourceVersion}"
+  }
+  return
+}
+
 pipeline {
   agent { label 'executor-v2' }
 
@@ -12,6 +33,11 @@ pipeline {
     cron(getDailyCronString())
   }
 
+  environment {
+    // Sets the MODE to the specified or autocalculated value as appropriate
+    MODE = release.canonicalizeMode()
+  }
+
   parameters { 
     booleanParam(
       name: 'TEST_OCP_NEXT',
@@ -20,6 +46,21 @@ pipeline {
   }
 
   stages {
+    // Aborts any builds triggered by another project that wouldn't include any changes
+    stage ("Skip build if triggering job didn't create a release") {
+      when {
+        expression {
+          MODE == "SKIP"
+        }
+      }
+      steps {
+        script {
+          currentBuild.result = 'ABORTED'
+          error("Aborting build because this build was triggered from upstream, but no release was built")
+        }
+      }
+    }
+
     stage('Validate') {
       parallel {
         stage('Changelog') {
@@ -37,6 +78,13 @@ pipeline {
         stage('Helm Chart Unit Tests') {
           steps { sh './bin/test-helm-unit-in-docker' }
         }
+      }
+    }
+
+    // Generates a VERSION file based on the current build number and latest version in CHANGELOG.md
+    stage('Validate Changelog and set version') {
+      steps {
+        updateVersion("CHANGELOG.md", "${BUILD_NUMBER}")
       }
     }
 
@@ -161,21 +209,18 @@ pipeline {
       }
     }
 
-    stage('Publish client Docker images') {
-      parallel {
-        stage('On a master build') {
-          when { branch 'master' }
-
-          steps {
-            sh 'summon ./bin/publish --edge'
-          }
+    stage('Release') {
+      when {
+        expression {
+          MODE == "RELEASE"
         }
-        stage('On a new tag') {
-          when { tag "v*" }
+      }
 
-          steps {
-            sh 'summon ./bin/publish --latest'
-          }
+      steps {
+        release { billOfMaterialsDirectory, assetDirectory, toolsDirectory ->
+          // Publish release artifacts to all the appropriate locations
+          // Copy any artifacts to assetDirectory to attach them to the Github release
+          sh 'summon ./bin/publish --edge'
         }
       }
     }

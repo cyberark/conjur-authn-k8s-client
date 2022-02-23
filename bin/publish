@@ -12,8 +12,15 @@ if [[ $1 = "--edge" ]]; then
     exit 0
 fi
 
-# We take the version from the TAG_NAME variable - removing the "v" prefix
-readonly VERSION="${TAG_NAME//"v"}"
+if [[ $1 = "--latest" ]]; then
+  VERSION=$2
+  readonly "${VERSION}"
+fi
+
+if [[ -z ${VERSION} ]]; then
+  echo "Version not specified."
+  exit 1
+fi
 
 # we changed the name to `conjur-authn-k8s-client`. Leaving `conjur-kubernetes-authenticator`
 # for backwards-compatibility.
@@ -27,13 +34,8 @@ readonly TAGS=(
   "latest"
 )
 
-if [[ -z "${TAG_NAME:-}" ]]; then
-  echo "This script should only run in a tag-triggered build controlled by the JenkinsFile"
-  exit 1
-fi
-
 echo "Pushing to Dockerhub..."
-source_image=conjur-authn-k8s-client:dev
+source_image=conjur-authn-k8s-client:${VERSION}
 for destination_image_name in "${DESTINATION_IMAGES[@]}"; do
   for tag in "${TAGS[@]}" $(gen_versions "$VERSION"); do
     echo "Tagging and pushing $REGISTRY/$destination_image_name:$tag"
@@ -43,7 +45,7 @@ for destination_image_name in "${DESTINATION_IMAGES[@]}"; do
 done
 
 echo "Pushing to RedHat container registry..."
-source_redhat_image=conjur-authn-k8s-client-redhat:dev
+source_redhat_image=conjur-authn-k8s-client-redhat:${VERSION}
 docker tag $source_redhat_image "$REDHAT_IMAGE:$VERSION"
 
 if docker login scan.connect.redhat.com -u unused -p "$REDHAT_API_KEY"; then
