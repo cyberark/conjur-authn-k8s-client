@@ -94,6 +94,7 @@ pipeline {
       }
     }
 
+  /*
     stage('Run Tests') {
       steps {
         sh './bin/test'
@@ -140,12 +141,6 @@ pipeline {
     stage('E2E Workflow Tests') {
       stages {
         stage('Update Helm dependencies') {
-          /*
-           * Helm dependency update is done before running E2E tests in parallel
-           * since this is not currently thread-safe (Helm chart downloads use
-           * a non-uniquely named 'tmpcharts' directory and fail if the directory
-           * already exists).
-           */
           steps {
             sh './bin/helm-dependency-update-in-docker'
           }
@@ -208,6 +203,7 @@ pipeline {
         }
       }
     }
+    */
 
     stage('Release') {
       when {
