@@ -18,7 +18,7 @@ function gen_versions() {
   local version=$1
   while [[ $version = *.* ]]; do
     version=${version%.*}
-    echo $version
+    echo "${version}"
   done
 }
 
@@ -39,11 +39,20 @@ function git_commit_short() {
 
 function push_conjur-k8s-cluster-test() {
     echo "Pushing Helm test image to Dockerhub..."
-    source_image=conjur-k8s-cluster-test:dev
-    destination_image_name=conjur-k8s-cluster-test
-    echo "Tagging and pushing $REGISTRY/$destination_image_name:$tag"
-    docker tag $source_image "$REGISTRY/$destination_image_name:$tag"
-    docker push "$REGISTRY/$destination_image_name:$tag"
+    local source_image=conjur-k8s-cluster-test:${SOURCE_TAG}
+    local destination_image_name=conjur-k8s-cluster-test
+    echo "Tagging and pushing ${REGISTRY}/${destination_image_name}:${REMOTE_TAG}"
+    echo "docker tag $source_image '${REGISTRY}/${destination_image_name}:${REMOTE_TAG}'"
+    echo "docker push '${REGISTRY}/${destination_image_name}:${REMOTE_TAG}'"
+}
+
+function tag_and_push() {
+  local source="$1"; shift
+  local target="$1"; shift
+
+  echo "Tagging and pushing $target..."
+  echo "docker tag '${source}' '${target}'"
+  echo "docker push '${target}'"
 }
 
 function retrieve_cyberark_ca_cert() {
