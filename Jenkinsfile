@@ -16,7 +16,8 @@ if (params.MODE == "PROMOTE") {
     // Any publishing of targetVersion artifacts occur here
     // Anything added to assetDirectory will be attached to the Github Release
 
-    sh "docker pull cyberark/conjur-authn-k8s-client:${sourceVersion}"
+    sh "docker pull cyberark/conjur-authn-k8s-client:0.23.1"
+    //sh "docker pull cyberark/conjur-authn-k8s-client:${sourceVersion}"
     sh "summon ./bin/publish --latest ${targetVersion}"
   }
   return
