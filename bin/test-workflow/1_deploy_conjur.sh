@@ -51,8 +51,11 @@ CONJUR_MASTER_PORT=\"${CONJUR_MASTER_PORT}\"
 CONJUR_FOLLOWER_PORT=\"${CONJUR_FOLLOWER_PORT}\"
 CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn-jwt/\"${AUTHENTICATOR_ID}\",authn
         """ > .env
+        announce "Provisioning Conjur leader"
         ./bin/dap --provision-master
+        announce "Importing custom certificates"
         ./bin/dap --import-custom-certificates
+        announce "Provisioning Conjur follower"
         ./bin/dap --provision-follower
       popd > /dev/null
 
