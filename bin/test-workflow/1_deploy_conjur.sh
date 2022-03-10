@@ -32,7 +32,7 @@ function setup_conjur_enterprise {
 
     pushd temp > /dev/null
       # TODO - once these changes are merged, this branch has to be updated to main
-      git clone --single-branch --branch custom-port-follower git@github.com:conjurdemos/conjur-intro.git "conjur-intro-$UNIQUE_TEST_ID"
+      git clone --single-branch --branch dap-cert-import-debug git@github.com:conjurdemos/conjur-intro.git "conjur-intro-$UNIQUE_TEST_ID"
 
       pushd "conjur-intro-$UNIQUE_TEST_ID" > /dev/null
 
