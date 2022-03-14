@@ -96,7 +96,9 @@ if [[ "$CONJUR_PLATFORM" == "gke" ]]; then
   export DEPLOY_MASTER_CLUSTER=true
   export CONFIGURE_CONJUR_MASTER=true
 elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
-  export HOST_IP="${HOST_IP:-$(curl http://169.254.169.254/latest/meta-data/public-ipv4)}"
+  echo "HOST_IP: ${HOST_IP}"
+  export HOST_IP="${HOST_IP:-$(curl http://169.254.169.254/latest/meta-data/local-ipv4)}"
+  echo "HOST_IP: ${HOST_IP}"
   export CONJUR_MASTER_PORT="${CONJUR_MASTER_PORT:-40001}"
   export CONJUR_FOLLOWER_PORT="${CONJUR_FOLLOWER_PORT:-40002}"
   export CONJUR_APPLIANCE_URL="https://${HOST_IP}:${CONJUR_MASTER_PORT}"
