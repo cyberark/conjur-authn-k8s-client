@@ -242,6 +242,17 @@ command is run using a local copy of the Helm chart. You can use
 
 - Helm Install Using A Conjur Certificate From a File
 
+  _**NOTE: The certificate file MUST exist within the Helm chart's
+   root directory or its subdirectories.**_
+
+  _**NOTE: Setting the Conjur certificate via the `conjur.certificateFilePath`
+   chart value will not work if you are using `helm install ...` command
+   with a `cyberark/conjur-config-cluster-prep` chart reference
+   (see [Helm install documentation](https://helm.sh/docs/helm/helm_install/)
+   for a description of chart references). In this case, the
+   `conjur.certificateBase64` chart value must be used instead to set the
+   Conjur certificate.**_
+
   ```
   helm install my-conjur-release . \
        --set conjur.applianceUrl="https://conjur.example.com" \
@@ -412,8 +423,8 @@ The following table lists the configurable parameters of the Conjur Open Source 
 |---------|-----------|-------|---------|
 |`conjur.account`|Conjur account to be used by the Kubernetes authenticator|`"default"`||
 |`conjur.applianceUrl:`|Conjur Appliance URL||Yes|
-|`conjur.ssl.certificateFile`|Path to a Conjur certificate file||Either certificateFile or certificateBase64|
-|`conjur.ssl.certificateBase64`|Base64-encoded Conjur certificate file||Either certificateFile or certificateBase64|
+|`conjur.ssl.certificateFile`|Path to a Conjur certificate file. The certificate file must exist within the Helm chart's root directory or its subdirectories. ||Either certificateFile or certificateBase64 must be supplied|
+|`conjur.ssl.certificateBase64`|Base64-encoded Conjur certificate file||Either certificateFile or certificateBase64 must be supplied|
 |`authnK8s.authenticatorID`|Conjur authenticator ID to use for authentication||Yes|
 |`authnK8s.configMap.create`|Flag to generate the Golden ConfigMap |`true`||
 |`authnK8s.configMap.name`|The name of the Conjur ConfigMap|`"conjur-configmap"`||
