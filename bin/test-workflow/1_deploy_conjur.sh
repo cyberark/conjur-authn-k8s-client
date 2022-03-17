@@ -3,6 +3,8 @@
 set -eo pipefail
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
+export CONJUR_LOADBALANCER_SVCS=false
+
 source utils.sh
 
 # Upon error, dump kubernetes resources in the Conjur Namespace
