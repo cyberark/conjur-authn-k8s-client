@@ -129,7 +129,7 @@ pipeline {
             stage('Test app in GKE') {
               steps {
                 sh '''
-                  HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
+                  HOST_IP="$(curl https://checkip.amazonaws.com)";
                   echo "HOST_IP=${HOST_IP}"
                   cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins --ci-apps
                 '''
@@ -138,7 +138,7 @@ pipeline {
             stage('Test app in OpenShift v(current)') {
               steps {
                 sh '''
-                  HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
+                  HOST_IP="$(curl https://checkip.amazonaws.com)";
                   echo "HOST_IP=${HOST_IP}"
                   cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins --ci-apps
                 '''
@@ -150,7 +150,7 @@ pipeline {
               }
               steps {
                 sh '''
-                  HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
+                  HOST_IP="$(curl https://checkip.amazonaws.com)";
                   echo "HOST_IP=${HOST_IP}"
                   cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --ci-apps
                 '''
