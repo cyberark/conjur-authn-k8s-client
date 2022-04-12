@@ -43,19 +43,15 @@ The per-Kubernetes-NameSpace resources created by this Helm chart include:
 
 - _Conjur Connection Configmap_
 
-    The [Conjur Connection Configmap](templates/conjur-connect-configmap.yml) 
+    The [Conjur Connection Configmap](templates/conjur_connect_configmap.yaml)
     contains references to Conjur credentials, taken from the 
     "Golden Configmap". These can be used to enable Conjur authentication for 
     applications to retrieve secrets securely.
 
 - _Authenticator RoleBinding_
 
-    The [Authenticator RoleBinding](templates/authenticator-RoleBinding.yml) 
+    The [Authenticator RoleBinding](templates/authenticator_rolebinding.yaml)
     grants permissions to the Conjur Authenticator ServiceAccount for the Authn-Kubernetes ClusterRole, which provides a list of Kubernetes API access permissions. This is required to validate application identities.
-
-### Conjur Enterprise Documentation Reference
-
-Installation of this Helm chart replaces the manual creation of the Kubernetes resources outlined in [Steps 4 and 5 of the Conjur Enterprise Kubernetes Authenticator Documentation](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client.htm?tocpath=Integrations%7COpenShift%252FKubernetes%7CSet%20Up%20Applications%7C_____1#Setuptheapplicationtoretrievesecrets).
 
 ## Configuration
 
