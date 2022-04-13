@@ -26,6 +26,12 @@ pipeline {
           steps { sh './bin/parse-changelog.sh' }
         }
 
+        stage('Log messages') {
+          steps {
+            validateLogMessages()
+          }
+        }
+
         stage('Cluster-Prep Schema') {
           steps { sh './bin/validate-schema ./helm/conjur-config-cluster-prep/values.schema.json'}
         }
