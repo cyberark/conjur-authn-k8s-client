@@ -7,6 +7,8 @@ RUN go install github.com/cespare/reflex@latest
 
 WORKDIR /work
 COPY .  /work/
+
+RUN go get github.com/cyberark/conjur-opentelemetry-tracer@latest
 RUN go mod download
 
 COPY dev/dev.sh /work/

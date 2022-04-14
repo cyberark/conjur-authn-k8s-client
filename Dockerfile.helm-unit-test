@@ -21,6 +21,9 @@ RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
 RUN mkdir -p /conjur-authn-k8s-client
 WORKDIR /conjur-authn-k8s-client
 
+# Workaround for CVE-2022-24765 when running git inside a docker container
+RUN git config --global --add safe.directory /conjur-authn-k8s-client
+
 LABEL name="conjur-k8s-helm-unit-test"
 LABEL vendor="CyberArk"
 LABEL version="$VERSION"

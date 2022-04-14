@@ -26,7 +26,13 @@ EXPOSE 8080
 
 RUN apt-get update && apt-get install -y jq
 
+# Use latest dependency for automated release process
+RUN go get github.com/cyberark/conjur-opentelemetry-tracer@latest
+
 RUN go mod download
+
+# Add required cyberark/conjur-opentelemetry-tracer package to go.mod
+RUN go mod tidy
 
 RUN go get -u github.com/jstemmer/go-junit-report
 

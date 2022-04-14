@@ -1,7 +1,32 @@
 #!/usr/bin/env groovy
 
+// Automated release, promotion and dependencies
+properties([
+  // Include the automated release parameters for the build
+  release.addParams(),
+  // Dependencies of the project that should trigger builds
+  dependencies(['cyberark/conjur-opentelemetry-tracer'])
+])
+
+// Performs release promotion.  No other stages will be run
+if (params.MODE == "PROMOTE") {
+  release.promote(params.VERSION_TO_PROMOTE) { sourceVersion, targetVersion, assetDirectory ->
+    // Any assets from sourceVersion Github release are available in assetDirectory
+    // Any version number updates from sourceVersion to targetVersion occur here
+    // Any publishing of targetVersion artifacts occur here
+    // Anything added to assetDirectory will be attached to the Github Release
+
+    // Pull existing images from internal registry in order to promote
+    sh "docker pull registry.tld/conjur-authn-k8s-client:${sourceVersion}"
+    sh "docker pull registry.tld/conjur-authn-k8s-client-redhat:${sourceVersion}"
+    // Promote source version to target version.
+    sh "summon ./bin/publish --promote --source ${sourceVersion} --target ${targetVersion}"
+  }
+  return
+}
+
 pipeline {
-  agent { label 'executor-v2' }
+  agent { label 'azure-linux' }
 
   options {
     timestamps()
@@ -12,6 +37,11 @@ pipeline {
     cron(getDailyCronString())
   }
 
+  environment {
+    // Sets the MODE to the specified or autocalculated value as appropriate
+    MODE = release.canonicalizeMode()
+  }
+
   parameters { 
     booleanParam(
       name: 'TEST_OCP_NEXT',
@@ -20,6 +50,21 @@ pipeline {
   }
 
   stages {
+    // Aborts any builds triggered by another project that wouldn't include any changes
+    stage ("Skip build if triggering job didn't create a release") {
+      when {
+        expression {
+          MODE == "SKIP"
+        }
+      }
+      steps {
+        script {
+          currentBuild.result = 'ABORTED'
+          error("Aborting build because this build was triggered from upstream, but no release was built")
+        }
+      }
+    }
+
     stage('Validate') {
       parallel {
         stage('Changelog') {
@@ -43,6 +88,13 @@ pipeline {
         stage('Helm Chart Unit Tests') {
           steps { sh './bin/test-helm-unit-in-docker' }
         }
+      }
+    }
+
+    // Generates a VERSION file based on the current build number and latest version in CHANGELOG.md
+    stage('Validate Changelog and set version') {
+      steps {
+        updateVersion("CHANGELOG.md", "${BUILD_NUMBER}")
       }
     }
 
@@ -103,7 +155,7 @@ pipeline {
            * since this is not currently thread-safe (Helm chart downloads use
            * a non-uniquely named 'tmpcharts' directory and fail if the directory
            * already exists).
-           */
+          */
           steps {
             sh './bin/helm-dependency-update-in-docker'
           }
@@ -135,7 +187,7 @@ pipeline {
             stage('Test app in GKE') {
               steps {
                 sh '''
-                  HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
+                  HOST_IP="$(curl https://checkip.amazonaws.com)";
                   echo "HOST_IP=${HOST_IP}"
                   cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins --ci-apps
                 '''
@@ -144,7 +196,7 @@ pipeline {
             stage('Test app in OpenShift v(current)') {
               steps {
                 sh '''
-                  HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
+                  HOST_IP="$(curl https://checkip.amazonaws.com)";
                   echo "HOST_IP=${HOST_IP}"
                   cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins --ci-apps
                 '''
@@ -156,7 +208,7 @@ pipeline {
               }
               steps {
                 sh '''
-                  HOST_IP="$(curl http://169.254.169.254/latest/meta-data/public-ipv4)";
+                  HOST_IP="$(curl https://checkip.amazonaws.com)";
                   echo "HOST_IP=${HOST_IP}"
                   cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --ci-apps
                 '''
@@ -167,21 +219,31 @@ pipeline {
       }
     }
 
-    stage('Publish client Docker images') {
-      parallel {
-        stage('On a master build') {
-          when { branch 'master' }
+    // Internal images will be used for promoting releases.
+    stage('Push images to internal registry') {
+      steps {
+        sh './bin/publish --internal'
+      }
+    }
 
-          steps {
-            sh 'summon ./bin/publish --edge'
-          }
+    stage('Release') {
+      when {
+        expression {
+          MODE == "RELEASE"
         }
-        stage('On a new tag') {
-          when { tag "v*" }
+      }
 
-          steps {
-            sh 'summon ./bin/publish --latest'
-          }
+      steps {
+        release { billOfMaterialsDirectory, assetDirectory, toolsDirectory ->
+          // Publish release artifacts to all the appropriate locations
+          // Copy any artifacts to assetDirectory to attach them to the Github release
+          
+          // Create Go application SBOM using the go.mod version for the golang container image
+          sh """go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --main "cmd/authenticator/" --output "${billOfMaterialsDirectory}/go-app-bom.json" """
+          // Create Go module SBOM
+          sh """go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --output "${billOfMaterialsDirectory}/go-mod-bom.json" """
+          // Publish edge release
+          sh 'summon ./bin/publish --edge'
         }
       }
     }

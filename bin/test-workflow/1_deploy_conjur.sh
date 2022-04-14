@@ -96,7 +96,6 @@ function setup_conjur_open_source {
   popd > /dev/null
 }
 
-mkdir -p temp
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   setup_conjur_open_source
 else
