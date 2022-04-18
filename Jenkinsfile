@@ -84,10 +84,6 @@ pipeline {
         stage('Application Namespace-Prep Schema') {
           steps { sh './bin/validate-schema ./helm/conjur-config-namespace-prep/values.schema.json'}
         }
-
-        stage('Helm Chart Unit Tests') {
-          steps { sh './bin/test-helm-unit-in-docker' }
-        }
       }
     }
 
@@ -110,131 +106,6 @@ pipeline {
       }
     }
 
-    stage('Run Tests') {
-      steps {
-        sh './bin/test'
-        sh 'cp ./test/c.out ./c.out'
-
-        junit 'test/junit.xml'
-        cobertura autoUpdateHealth: true, autoUpdateStability: true, coberturaReportFile: 'test/coverage.xml', conditionalCoverageTargets: '70, 0, 70', failUnhealthy: true, failUnstable: true, maxNumberOfBuilds: 0, lineCoverageTargets: '70, 70, 70', methodCoverageTargets: '70, 0, 70', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
-        ccCoverage("gocov", "--prefix github.com/cyberark/conjur-authn-k8s-client")
-      }
-    }
-
-    stage("Scan images") {
-      parallel {
-        stage ("Scan main image for fixable vulns") {
-          steps {
-            scanAndReport("conjur-authn-k8s-client:dev", "HIGH", false)
-          }
-        }
-        stage ("Scan main image for total vulns") {
-          steps {
-            scanAndReport("conjur-authn-k8s-client:dev", "NONE", true)
-          }
-        }
-        stage ("Scan redhat image for fixable vulns") {
-          steps {
-            scanAndReport("conjur-authn-k8s-client-redhat:dev", "HIGH", false)
-          }
-        }
-        stage ("Scan redhat image for total vulns") {
-          steps {
-            scanAndReport("conjur-authn-k8s-client-redhat:dev", "NONE", true)
-          }
-        }
-        stage ("Scan helm test image for fixable vulns") {
-          steps {
-            scanAndReport("conjur-k8s-cluster-test:dev", "HIGH", false)
-          }
-        }
-        stage ("Scan helm test image for total vulns") {
-          steps {
-            scanAndReport("conjur-k8s-cluster-test:dev", "NONE", true)
-          }
-        }
-      }
-    }
-
-    stage('E2E Workflow Tests') {
-      stages {
-        stage('Update Helm dependencies') {
-          /*
-           * Helm dependency update is done before running E2E tests in parallel
-           * since this is not currently thread-safe (Helm chart downloads use
-           * a non-uniquely named 'tmpcharts' directory and fail if the directory
-           * already exists).
-          */
-          steps {
-            sh './bin/helm-dependency-update-in-docker'
-          }
-        }
-        stage('Test app with') {
-          parallel {
-            stage('Enterprise in GKE') {
-              steps {
-                sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --ci-apps'
-              }
-            }
-            stage('OSS in OpenShift v(current)') {
-              steps {
-                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --ci-apps'
-              }
-            }
-            stage('OSS in OpenShift v(next)') {
-              when {
-                expression { params.TEST_OCP_NEXT }
-              }
-              steps {
-                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift --ci-apps'
-              }
-            }
-          }
-        }
-        stage('Enterprise in Jenkins') {
-          stages {
-            stage('Test app in GKE') {
-              steps {
-                sh '''
-                  HOST_IP="$(curl https://checkip.amazonaws.com)";
-                  echo "HOST_IP=${HOST_IP}"
-                  cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins --ci-apps
-                '''
-              }
-            }
-            stage('Test app in OpenShift v(current)') {
-              steps {
-                sh '''
-                  HOST_IP="$(curl https://checkip.amazonaws.com)";
-                  echo "HOST_IP=${HOST_IP}"
-                  cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins --ci-apps
-                '''
-              }
-            }
-            stage('Test app in OpenShift v(next)') {
-              when {
-                expression { params.TEST_OCP_NEXT }
-              }
-              steps {
-                sh '''
-                  HOST_IP="$(curl https://checkip.amazonaws.com)";
-                  echo "HOST_IP=${HOST_IP}"
-                  cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --ci-apps
-                '''
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Internal images will be used for promoting releases.
-    stage('Push images to internal registry') {
-      steps {
-        sh './bin/publish --internal'
-      }
-    }
-
     stage('Release') {
       when {
         expression {
@@ -251,8 +122,7 @@ pipeline {
           sh """go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --main "cmd/authenticator/" --output "${billOfMaterialsDirectory}/go-app-bom.json" """
           // Create Go module SBOM
           sh """go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --output "${billOfMaterialsDirectory}/go-mod-bom.json" """
-          // Publish edge release
-          sh 'summon ./bin/publish --edge'
+          sh 'exit 1'
         }
       }
     }
