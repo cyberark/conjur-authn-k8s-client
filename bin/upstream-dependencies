@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+# Upstream dependencies
+deps=('github.com/cyberark/conjur-opentelemetry-tracer@latest')
+
+function get-dependencies() {
+    for d in "${deps[@]}"; do
+        go get "${d}"
+    done
+}
+
+get-dependencies

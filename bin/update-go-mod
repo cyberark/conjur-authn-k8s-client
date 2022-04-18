@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -e
+
+# Adds dependencies to go.mod
+usage() {
+  echo "Usage: $0 --go-mod /my/go.mod"
+  echo " <--go-mod> - Location of go.mod file to extract the go project version from."
+  exit 1
+}
+
+if [[ $# -lt 1 ]]; then
+    usage
+fi
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+    -h|--help)
+        usage
+        ;;
+    -gm|--go-mod)
+        GOMOD=$2
+        shift
+        ;;
+    *)
+        usage
+        ;;
+    esac
+    shift
+done
+
+# Check for required variables.
+flag_check() {
+    if [[ -z ${GOMOD} ]]; then
+        usage
+    fi
+}
+
+# Extract golang version from go.mod
+GO_VERSION=$(grep -P "^go\s\d+\.\d+" "${GOMOD}" | grep -oP "\d+\.\d+")
+
+# Run container with matching version
+docker run \
+        --rm \
+        --volume "$(pwd)":"$(pwd)" \
+        --workdir "$(pwd)" \
+        --entrypoint \
+            "./bin/upstream-dependencies" \
+        "golang:${GO_VERSION}"
