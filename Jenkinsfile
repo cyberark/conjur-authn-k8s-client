@@ -124,6 +124,7 @@ pipeline {
           sh """go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --output "${billOfMaterialsDirectory}/go-mod-bom.json" """
           sh "cat '${billOfMaterialsDirectory}/go-app-bom.json'"
           sh "cat '${billOfMaterialsDirectory}/go-mod-bom.json'"
+          sh "cat ./go.bom"
           sh 'exit 1'
         }
       }
