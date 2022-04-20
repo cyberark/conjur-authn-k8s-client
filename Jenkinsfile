@@ -94,12 +94,6 @@ pipeline {
       }
     }
     
-    stage('Get Upstream Dependencies') {
-      steps {
-        sh './bin/update-go-mod --go-mod ./go.mod'
-      }
-    }
-
     stage('Get latest upstream dependencies') {
        steps {
          updateGoDependencies('${WORKSPACE}/go.mod')
