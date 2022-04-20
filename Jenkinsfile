@@ -122,8 +122,8 @@ pipeline {
           sh """go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --main "cmd/authenticator/" --output "${billOfMaterialsDirectory}/go-app-bom.json" """
           // Create Go module SBOM
           sh """go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --output "${billOfMaterialsDirectory}/go-mod-bom.json" """
-          cat '${billOfMaterialsDirectory}/go-app-bom.json'
-          cat '${billOfMaterialsDirectory}/go-mod-bom.json'
+          sh "cat '${billOfMaterialsDirectory}/go-app-bom.json'"
+          sh "cat '${billOfMaterialsDirectory}/go-mod-bom.json'"
           sh 'exit 1'
         }
       }
