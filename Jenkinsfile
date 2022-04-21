@@ -97,6 +97,12 @@ pipeline {
         updateVersion("CHANGELOG.md", "${BUILD_NUMBER}")
       }
     }
+    
+    stage('Get latest upstream dependencies') {
+      steps {
+        updateGoDependencies('${WORKSPACE}/go.mod')
+      }
+    }
 
     stage('Build client Docker image') {
       steps {
