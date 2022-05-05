@@ -61,6 +61,7 @@ done
 REDHAT_REMOTE_IMAGE='scan.connect.redhat.com/ospid-1c46a2de-1d88-40e6-a433-7114ad0099cb/conjur-openshift-authenticator-client'
 readonly REGISTRY="cyberark"
 readonly REDHAT_LOCAL_IMAGE="conjur-authn-k8s-client-redhat"
+readonly INTERNAL_REGISTRY="registry.tld"
 
 # we changed the name to `conjur-authn-k8s-client`. Leaving `conjur-kubernetes-authenticator`
 # for backwards-compatibility.
@@ -78,9 +79,9 @@ if [[ ${PUBLISH_INTERNAL} = true ]]; then
   SOURCE_TAG=dev
   REMOTE_TAG=$VERSION
 
-  tag_and_push "conjur-authn-k8s-client:${SOURCE_TAG}" "registry.tld/conjur-authn-k8s-client:${REMOTE_TAG}"
+  tag_and_push "conjur-authn-k8s-client:${SOURCE_TAG}" "${INTERNAL_REGISTRY}/conjur-authn-k8s-client:${REMOTE_TAG}"
 
-  tag_and_push ${REDHAT_LOCAL_IMAGE}:${SOURCE_TAG} "registry.tld/${REDHAT_LOCAL_IMAGE}:${REMOTE_TAG}"
+  tag_and_push ${REDHAT_LOCAL_IMAGE}:${SOURCE_TAG} "${INTERNAL_REGISTRY}/${REDHAT_LOCAL_IMAGE}:${REMOTE_TAG}"
 fi
 
 if [[ ${PUBLISH_EDGE} = true ]]; then
@@ -123,12 +124,12 @@ if [[ ${PROMOTE} = true ]]; then
   for image in "${DOCKER_IMAGES[@]}"; do
     echo "Tagging and pushing ${image} to docker hub."
     for tag in "${TAGS[@]}" $(gen_versions "${REMOTE_TAG}"); do
-      tag_and_push "conjur-authn-k8s-client:${SOURCE_TAG}" "${REGISTRY}/${image}:${tag}"
+      tag_and_push "${INTERNAL_REGISTRY}/conjur-authn-k8s-client:${SOURCE_TAG}" "${REGISTRY}/${image}:${tag}"
     done
   done
 
   echo "Pushing to RedHat container registry..."
-  docker tag "${REDHAT_LOCAL_IMAGE}:${SOURCE_TAG}" "${REDHAT_REMOTE_IMAGE}:${REMOTE_TAG}"
+  docker tag "${INTERNAL_REGISTRY}/${REDHAT_LOCAL_IMAGE}:${SOURCE_TAG}" "${REDHAT_REMOTE_IMAGE}:${REMOTE_TAG}"
 
   if docker login scan.connect.redhat.com -u unused -p "${REDHAT_API_KEY}"; then
     # you can't push the same tag twice to redhat registry, so ignore errors
