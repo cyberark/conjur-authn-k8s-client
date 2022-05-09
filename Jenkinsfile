@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+@Library('conjur@go-mod-tidy-fix') _
 
 // Automated release, promotion and dependencies
 properties([
