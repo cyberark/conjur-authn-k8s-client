@@ -14,7 +14,10 @@ function build_docker_images {
   # dev build (env GOOS=darwin GOARCH=amd64 go build) of project binaries
   IMAGE_NAME=conjur-authn-k8s-client
   TAG=dev
-  VERSION=$(<VERSION)
+  VERSION=unreleased
+
+  # Version derived from CHANGELOG and automated release library
+  [ -f VERSION ] && VERSION=$(<VERSION)
   readonly VERSION="${VERSION//"v"}"
 
   echo "---"
