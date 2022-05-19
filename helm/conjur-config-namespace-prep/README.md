@@ -63,8 +63,8 @@ The following table lists the configurable parameters of the Conjur Namespace-pr
 |`authnK8s.namespace:`|The NameSpace name where the "Golden Configmap" resides. (*Required*)|`""`|
 |`authnRoleBinding.create`|Flag to generate the authenticator RoleBinding.|`true`|
 |`authnRoleBinding.name`|Name for the RoleBinding generated if the `create` flag is set to `true`.|`"conjur-RoleBinding"`|
-|`authnRoleBinding.create`|Flag to generate the ConfigMap with credentials for accessing Conjur instance.|`true`|
-|`authnRoleBinding.name`|Name for the ConfigMap generated if the `create` flag is set to `true`|`"conjur-configmap"`|
+|`conjurConfigMap.create`|Flag to generate the ConfigMap with credentials for accessing Conjur instance.|`true`|
+|`conjurConfigMap.name`|Name for the ConfigMap generated if the `create` flag is set to `true`|`"conjur-connect"`|
 |`conjurConfigMap.authnMethod`|Authentication method to conjur. Can be either `"authn-k8s"` or `"authn-jwt"`|`"authn-k8s"`|
 
 ## Examples
