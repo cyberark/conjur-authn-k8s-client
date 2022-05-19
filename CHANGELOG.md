@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.23.3] - 2022-05-19
+### Security
+- Update base image in bin/test-workflow/test_app_summon/Dockerfile.builder to Ruby 3
+  [cyberark/conjur-authn-k8s-client#464](https://github.com/cyberark/conjur-authn-k8s-client/pull/464)
+
 ## [0.23.2] - 2022-03-23
 ### Changed
 - Update to automated release process.[cyberark/conjur-authn-k8s-client#457](https://github.com/cyberark/conjur-authn-k8s-client/pull/457)
