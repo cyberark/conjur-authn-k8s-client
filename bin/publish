@@ -97,8 +97,9 @@ if [[ ${PUBLISH_EDGE} = true ]]; then
 
   for image in "${DOCKER_IMAGES[@]}"; do
     echo "Tagging and pushing ${image} to docker hub."
-    for tag in "${TAGS[@]}"; do
-      tag_and_push "conjur-authn-k8s-client:${SOURCE_TAG}" "${REGISTRY}/${image}:${tag}"
+    for REMOTE_TAG in "${TAGS[@]}"; do
+      tag_and_push "conjur-authn-k8s-client:${SOURCE_TAG}" "${REGISTRY}/${image}:${REMOTE_TAG}"
+      push_conjur-k8s-cluster-test
     done
   done
 fi
