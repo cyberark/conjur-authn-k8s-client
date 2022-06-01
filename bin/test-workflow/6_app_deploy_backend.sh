@@ -38,11 +38,7 @@ $cli --namespace "$TEST_APP_NAMESPACE_NAME" \
   --from-file=server.crt=./etc/ca.pem \
   --from-file=server.key=./etc/ca-key.pem
 
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-
-
-args=(install "$app_name" bitnami/postgresql --version 10.16.2 -n "$TEST_APP_NAMESPACE_NAME" --wait --timeout "$TIMEOUT" \
+args=(install "$app_name" ../../vendor_helm/postgresql-10.16.2.tgz -n "$TEST_APP_NAMESPACE_NAME" --wait --timeout "$TIMEOUT" \
     --set image.repository="postgres" \
     --set image.tag="9.6" \
     --set postgresqlDataDir="/data/pgdata" \
