@@ -19,7 +19,8 @@ if (params.MODE == "PROMOTE") {
     // Pull existing images from internal registry in order to promote
     sh "docker pull registry.tld/conjur-authn-k8s-client:${sourceVersion}"
     sh "docker pull registry.tld/conjur-authn-k8s-client-redhat:${sourceVersion}"
-    sh "docker pull cyberark/conjur-authn-k8s-cluster-test:${sourceVersion}"
+    sh "docker pull cyberark/conjur-k8s-cluster-test:${sourceVersion}"
+    sh "docker tag cyberark/conjur-k8s-cluster-test:${sourceVersion} conjur-k8s-cluster-test:${sourceVersion}"
     // Promote source version to target version.
     sh "summon ./bin/publish --promote --source ${sourceVersion} --target ${targetVersion}"
   }
