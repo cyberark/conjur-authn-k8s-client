@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.24.4] - 2022-05-31
+
 ## [0.23.3] - 2022-05-19
 ### Security
 - Update base image in bin/test-workflow/test_app_summon/Dockerfile.builder to Ruby 3
@@ -225,7 +227,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.1...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.3...HEAD
+[0.23.3]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.2...v0.23.3
+[0.23.2]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.1...v0.23.2
 [0.23.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.0...v0.23.1
 [0.23.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.21.0...v0.22.0
