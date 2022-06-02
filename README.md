@@ -112,3 +112,13 @@ We welcome contributions of all kinds to this repository. For instructions on ho
 guide][contrib].
 
 [contrib]: https://github.com/cyberark/conjur-authn-k8s-client/blob/master/CONTRIBUTING.md
+
+## Update postgresql chart for testing
+```
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+helm pull bitnami/postgresql --version <version to update to>
+cp postgresql-<version>.tgz vendor_helm/.
+```
+
+Update `bin/test-workflow/6_app_deploy_backend.sh` to reference the new file
