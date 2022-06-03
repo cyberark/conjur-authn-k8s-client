@@ -29,7 +29,7 @@ Usage: ./start [options]:
                               These include:
                                 - summon-sidecar
                                 - secretless-broker
-                                - secrets-provider-init
+                                - secrets-provider-k8s
                                 - secrets-provider-standalone
     -a, --apps <app>[,<app>]  Specify which test apps to install.
                               Multiple apps should be specified as a single comma-delimited string.
@@ -38,14 +38,14 @@ Usage: ./start [options]:
                               If the '--jwt' flag is NOT used, supported apps include:
                                 - summon-sidecar
                                 - secretless-broker
-                                - secrets-provider-init
+                                - secrets-provider-k8s
                                 - secrets-provider-p2f
                                 - secrets-provider-rotation
                                 - secrets-provider-standalone
                               If the '--jwt' flag is used, supported apps include:
                                 - summon-sidecar-jwt
                                 - secretless-broker-jwt
-                                - secrets-provider-init-jwt
+                                - secrets-provider-k8s-jwt
                                 - secrets-provider-p2f-jwt
     -j, --jwt                 Perform jwt authentication instead of k8s
     -n, --nocleanup           Do not run the cleanup scripts, all resources are maintained.
@@ -64,10 +64,10 @@ function cleanup {
 
 declare -a supported_authn_k8s_apps=(
   "summon-sidecar" "secretless-broker" "secrets-provider-standalone"
-  "secrets-provider-init" "secrets-provider-p2f" "secrets-provider-rotation"
+  "secrets-provider-k8s" "secrets-provider-p2f" "secrets-provider-rotation"
 )
-declare -a supported_jwt_apps=("summon-sidecar-jwt" "secretless-broker-jwt" "secrets-provider-init-jwt" "secrets-provider-p2f-jwt")
-declare -a run_in_ci_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-init")
+declare -a supported_jwt_apps=("summon-sidecar-jwt" "secretless-broker-jwt" "secrets-provider-k8s-jwt" "secrets-provider-p2f-jwt")
+declare -a run_in_ci_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-k8s")
 # Default: Test all authn-k8s applications
 declare -a install_apps=("${supported_authn_k8s_apps[@]}")
 

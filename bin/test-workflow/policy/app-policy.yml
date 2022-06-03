@@ -91,14 +91,14 @@
       resources: *secretless-jwt-variables
 
 - !policy
-  id: test-secrets-provider-init-app-db
+  id: test-secrets-provider-k8s-app-db
   annotations:
     description: This policy contains the creds to access the secrets provider app DB
 
   body:
     - !group
 
-    - &secrets-provider-init-variables
+    - &secrets-provider-k8s-variables
       - !variable password
       - !variable url
       - !variable username
@@ -106,16 +106,16 @@
     - !permit
       role: !group
       privileges: [ read, execute ]
-      resources: *secrets-provider-init-variables
+      resources: *secrets-provider-k8s-variables
 
 - !policy
-  id: test-secrets-provider-init-jwt-app-db
+  id: test-secrets-provider-k8s-jwt-app-db
   annotations:
     description: This policy contains the creds to access the secrets provider app DB
   body:
     - !group
 
-    - &secrets-provider-init-jwt-variables
+    - &secrets-provider-k8s-jwt-variables
       - !variable password
       - !variable url
       - !variable username
@@ -123,7 +123,7 @@
     - !permit
       role: !group
       privileges: [ read, execute ]
-      resources: *secrets-provider-init-jwt-variables
+      resources: *secrets-provider-k8s-jwt-variables
 
 - !policy
   id: test-secrets-provider-p2f-app-db

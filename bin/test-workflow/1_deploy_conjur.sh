@@ -82,6 +82,7 @@ function setup_conjur_open_source {
         announce "Enable authn-jwt in conjur instead of authn-k8s"
         export AUTHN_STRATEGY="authn-jwt"
         announce "Allow access to jwks uri for unauthenticated users"
+        kubectl delete clusterrolebinding oidc-reviewer --ignore-not-found
         kubectl create clusterrolebinding oidc-reviewer --clusterrole=system:service-account-issuer-discovery --group=system:unauthenticated
       fi
 

@@ -33,8 +33,8 @@ function finish {
     "SECRETLESS_PORT_FORWARD_PID"
     "SECRETLESS_JWT_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_STANDALONE_PID"
-    "SECRETS_PROVIDER_INIT_PORT_FORWARD_PID"
-    "SECRETS_PROVIDER_INIT_JWT_PORT_FORWARD_PID"
+    "SECRETS_PROVIDER_K8S_PORT_FORWARD_PID"
+    "SECRETS_PROVIDER_K8S_JWT_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_P2F_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_P2F_JWT_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_ROTATION_PORT_FORWARD_PID"
@@ -111,16 +111,16 @@ if [[ "$PLATFORM" == "openshift" ]]; then
     SECRETS_PROVIDER_STANDALONE_PID=$!
   fi
   
-  if [[ " ${install_apps[*]} " =~ " secrets-provider-init " ]]; then
-    secrets_provider_init_pod=$(get_pod_name test-app-secrets-provider-init)
-    oc port-forward "$secrets_provider_init_pod" 8086:8080 > /dev/null 2>&1 &
-    SECRETS_PROVIDER_INIT_PORT_FORWARD_PID=$!
+  if [[ " ${install_apps[*]} " =~ " secrets-provider-k8s " ]]; then
+    secrets_provider_k8s_pod=$(get_pod_name test-app-secrets-provider-k8s)
+    oc port-forward "$secrets_provider_k8s_pod" 8086:8080 > /dev/null 2>&1 &
+    SECRETS_PROVIDER_K8S_PORT_FORWARD_PID=$!
   fi
 
-  if [[ " ${install_apps[*]} " =~ " secrets-provider-init-jwt " ]]; then
-    secrets_provider_init_jwt_pod=$(get_pod_name test-app-secrets-provider-init-jwt)
-    oc port-forward "$secrets_provider_init_jwt_pod" 8086:8080 > /dev/null 2>&1 &
-    SECRETS_PROVIDER_INIT_JWT_PORT_FORWARD_PID=$!
+  if [[ " ${install_apps[*]} " =~ " secrets-provider-k8s-jwt " ]]; then
+    secrets_provider_k8s_jwt_pod=$(get_pod_name test-app-secrets-provider-k8s-jwt)
+    oc port-forward "$secrets_provider_k8s_jwt_pod" 8086:8080 > /dev/null 2>&1 &
+    SECRETS_PROVIDER_K8S_JWT_PORT_FORWARD_PID=$!
   fi
   
   if [[ " ${install_apps[*]} " =~ " secrets-provider-p2f " ]]; then
@@ -145,7 +145,7 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   sidecar_url="localhost:8081"
   secretless_url="localhost:8083"
   secrets_provider_standalone_url="localhost:8084"
-  secrets_provider_init_url="localhost:8086"
+  secrets_provider_k8s_url="localhost:8086"
   secrets_provider_p2f_url="localhost:8087"
   secrets_provider_rotation_url="localhost:8088"
 else
@@ -154,7 +154,7 @@ else
   sidecar_url="test-app-summon-sidecar.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secretless_url="test-app-secretless-broker.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secrets_provider_standalone_url="test-app-secrets-provider-standalone.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
-  secrets_provider_init_url="test-app-secrets-provider-init.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
+  secrets_provider_k8s_url="test-app-secrets-provider-k8s.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secrets_provider_p2f_url="test-app-secrets-provider-p2f.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secrets_provider_rotation_url="test-app-secrets-provider-rotation.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
 fi
@@ -172,8 +172,8 @@ app_urls[summon-sidecar-jwt]="$sidecar_url"
 app_urls[secretless-broker]="$secretless_url"
 app_urls[secretless-broker-jwt]="$secretless_url"
 app_urls[secrets-provider-standalone]="$secrets_provider_standalone_url"
-app_urls[secrets-provider-init]="$secrets_provider_init_url"
-app_urls[secrets-provider-init-jwt]="$secrets_provider_init_url"
+app_urls[secrets-provider-k8s]="$secrets_provider_k8s_url"
+app_urls[secrets-provider-k8s-jwt]="$secrets_provider_k8s_url"
 app_urls[secrets-provider-p2f]="$secrets_provider_p2f_url"
 app_urls[secrets-provider-p2f-jwt]="$secrets_provider_p2f_url"
 app_urls[secrets-provider-rotation]="$secrets_provider_rotation_url"
@@ -184,8 +184,8 @@ app_pets[summon-sidecar-jwt]="Mr. Sidecar JWT"
 app_pets[secretless-broker]="Mr. Secretless"
 app_pets[secretless-broker-jwt]="Mr. Secretless JWT"
 app_pets[secrets-provider-standalone]="Mr. Standalone"
-app_pets[secrets-provider-init]="Mr. Provider"
-app_pets[secrets-provider-init-jwt]="Mr. JWT Provider"
+app_pets[secrets-provider-k8s]="Mr. Provider"
+app_pets[secrets-provider-k8s-jwt]="Mr. JWT Provider"
 app_pets[secrets-provider-p2f]="Mr. FileProvider"
 app_pets[secrets-provider-p2f-jwt]="Mr. JWT FileProvider"
 app_pets[secrets-provider-rotation]="Mr. Rotation"

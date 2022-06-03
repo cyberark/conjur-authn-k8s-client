@@ -47,21 +47,21 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-secrets-provider-standalone.app.image.tag="$TEST_APP_TAG" \
     --set app-secrets-provider-standalone.app.image.repository="$TEST_APP_REPO" \
     --set app-secrets-provider-standalone.app.platform=$PLATFORM"
-  secrets_provider_init_options="--set app-secrets-provider-init.enabled=true \
-    --set app-secrets-provider-init.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
-    --set app-secrets-provider-init.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-init \
-    --set app-secrets-provider-init.conjur.authnConfigMap.name=conjur-authn-configmap-secrets-provider-init \
-    --set app-secrets-provider-init.app.platform=$PLATFORM"
-  secrets_provider_init_jwt_options="--set app-secrets-provider-init-jwt.enabled=true \
-    --set app-secrets-provider-init-jwt.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
-    --set app-secrets-provider-init-jwt.app.platform=$PLATFORM"
-  secrets_provider_p2f_jwt_options="--set app-secrets-provider-p2f-jwt.enabled=true \
-    --set app-secrets-provider-init-jwt.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
-    --set app-secrets-provider-init-jwt.app.platform=$PLATFORM"
+  secrets_provider_k8s_options="--set app-secrets-provider-k8s.enabled=true \
+    --set app-secrets-provider-k8s.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
+    --set app-secrets-provider-k8s.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-k8s \
+    --set app-secrets-provider-k8s.conjur.authnConfigMap.name=conjur-authn-configmap-secrets-provider-k8s \
+    --set app-secrets-provider-k8s.app.platform=$PLATFORM"
+  secrets_provider_k8s_jwt_options="--set app-secrets-provider-k8s-jwt.enabled=true \
+    --set app-secrets-provider-k8s-jwt.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
+    --set app-secrets-provider-k8s-jwt.app.platform=$PLATFORM"
   secrets_provider_p2f_options="--set app-secrets-provider-p2f.enabled=true \
     --set app-secrets-provider-p2f.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
     --set app-secrets-provider-p2f.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-p2f \
     --set app-secrets-provider-p2f.app.platform=$PLATFORM"
+  secrets_provider_p2f_jwt_options="--set app-secrets-provider-p2f-jwt.enabled=true \
+    --set app-secrets-provider-p2f-jwt.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
+    --set app-secrets-provider-p2f-jwt.app.platform=$PLATFORM"
   secrets_provider_rotation_options="--set app-secrets-provider-rotation.enabled=true \
     --set app-secrets-provider-rotation.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
     --set app-secrets-provider-rotation.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-rotation \
@@ -73,8 +73,8 @@ pushd ../../helm/conjur-app-deploy > /dev/null
   app_options[secretless-broker]="$secretless_broker_options"
   app_options[secretless-broker-jwt]="$secretless_broker_jwt_options"
   app_options[secrets-provider-standalone]="$secrets_provider_standalone_options"
-  app_options[secrets-provider-init]="$secrets_provider_init_options"
-  app_options[secrets-provider-init-jwt]="$secrets_provider_init_jwt_options"
+  app_options[secrets-provider-k8s]="$secrets_provider_k8s_options"
+  app_options[secrets-provider-k8s-jwt]="$secrets_provider_k8s_jwt_options"
   app_options[secrets-provider-p2f]="$secrets_provider_p2f_options"
   app_options[secrets-provider-p2f-jwt]="$secrets_provider_p2f_jwt_options"
   app_options[secrets-provider-rotation]="$secrets_provider_rotation_options"

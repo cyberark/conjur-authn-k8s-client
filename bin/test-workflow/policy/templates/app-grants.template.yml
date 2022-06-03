@@ -25,7 +25,7 @@
 - !grant
   role: !group test-summon-sidecar-jwt-app-db
   members:
-    - !host conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps/system:serviceaccount:app-test:test-app-summon-sidecar
+    - !host conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps/system:serviceaccount:{{ TEST_APP_NAMESPACE_NAME }}:test-app-summon-sidecar
 
 - !grant
   role: !group test-secretless-app-db
@@ -36,18 +36,18 @@
 - !grant
   role: !group test-secretless-jwt-app-db
   members:
-    - !host conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps/system:serviceaccount:app-test:test-secretless-app-jwt
+    - !host conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps/system:serviceaccount:{{ TEST_APP_NAMESPACE_NAME }}:test-secretless-app-jwt
 
 - !grant
-  role: !group test-secrets-provider-init-app-db
+  role: !group test-secrets-provider-k8s-app-db
   members:
-    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-secrets-provider-init
-    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-secrets-provider-init
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/test-app-secrets-provider-k8s
+    - !host conjur/authn-k8s/{{ AUTHENTICATOR_ID }}/apps/oc-test-app-secrets-provider-k8s
 
 - !grant
-  role: !group test-secrets-provider-init-jwt-app-db
+  role: !group test-secrets-provider-k8s-jwt-app-db
   members:
-    - !host conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps/system:serviceaccount:app-test:test-app-secrets-provider-init-jwt
+    - !host conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps/system:serviceaccount:{{ TEST_APP_NAMESPACE_NAME }}:test-app-secrets-provider-k8s-jwt
 
 - !grant
   role: !group test-secrets-provider-p2f-app-db
@@ -64,7 +64,7 @@
 - !grant
   role: !group test-secrets-provider-p2f-jwt-app-db
   members:
-    - !host conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps/system:serviceaccount:app-test:test-app-secrets-provider-p2f-jwt
+    - !host conjur/authn-jwt/{{ AUTHENTICATOR_ID }}/apps/system:serviceaccount:{{ TEST_APP_NAMESPACE_NAME }}:test-app-secrets-provider-p2f-jwt
 
 - !grant
   role: !group my-app-db

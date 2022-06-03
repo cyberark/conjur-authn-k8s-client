@@ -28,7 +28,7 @@ pushd helm
 
         declare -a subcharts=("app-summon-sidecar"
                               "app-secretless-broker"
-                              "app-secrets-provider-init"
+                              "app-secrets-provider-k8s"
                               "app-secrets-provider-standalone")
         for subchart in "${subcharts[@]}"; do
             pushd charts/"$subchart"
