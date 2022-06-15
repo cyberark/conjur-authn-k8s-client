@@ -94,6 +94,8 @@ ENTRYPOINT [ "/usr/local/bin/authenticator" ]
 FROM registry.access.redhat.com/ubi8/ubi as authenticator-client-redhat
 MAINTAINER CyberArk Software Ltd.
 
+RUN yum -y distro-sync
+
     # Add Limited user
 RUN groupadd -r authenticator \
              -g 777 && \
