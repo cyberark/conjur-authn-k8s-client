@@ -7,11 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ## [0.23.5] - 2022-06-14
+### Changed
+- Update github.com/stretchr/testify to v1.7.2 and go.opentelemetry.io/otel to v1.7.0
+  [cyberark/conjur-authn-k8s-client#472](https://github.com/cyberark/conjur-authn-k8s-client/pull/472)
+
 ### Security
 - Update the Red Hat ubi image in Dockerfile
   [cyberark/conjur-authn-k8s-client#471](https://github.com/cyberark/conjur-authn-k8s-client/pull/471)
-
-## [0.24.4] - 2022-05-31
 
 ## [0.23.3] - 2022-05-19
 ### Security
