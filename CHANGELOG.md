@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.23.6] - 2022-06-16
+
 ## [0.23.5] - 2022-06-14
 ### Changed
 - Update github.com/stretchr/testify to v1.7.2 and go.opentelemetry.io/otel to v1.7.0
@@ -234,7 +236,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.3...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.5...HEAD
+[0.23.6]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.5...v0.23.6
+[0.23.5]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.3...v0.23.5
 [0.23.3]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.2...v0.23.3
 [0.23.2]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.1...v0.23.2
 [0.23.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.0...v0.23.1
