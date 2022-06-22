@@ -11,6 +11,8 @@ require (
 
 require (
 	// Requires latest version for automated release process
-	github.com/cyberark/conjur-opentelemetry-tracer latest
+	github.com/cyberark/conjur-opentelemetry-tracer v0.0.1-336
 	github.com/davecgh/go-spew v1.1.1 // indirect
 )
+
+replace gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c => gopkg.in/yaml.v3 v3.0.1
