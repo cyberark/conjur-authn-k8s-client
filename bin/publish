@@ -58,7 +58,7 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-REDHAT_REMOTE_IMAGE='scan.connect.redhat.com/ospid-1c46a2de-1d88-40e6-a433-7114ad0099cb/conjur-openshift-authenticator-client'
+REDHAT_REMOTE_IMAGE='scan.connect.redhat.com/ospid-1c46a2de-1d88-40e6-a433-7114ad0099cb/conjur-openshift-authenticator'
 readonly REGISTRY="cyberark"
 readonly REDHAT_LOCAL_IMAGE="conjur-authn-k8s-client-redhat"
 readonly INTERNAL_REGISTRY="registry.tld"
@@ -82,6 +82,20 @@ if [[ ${PUBLISH_INTERNAL} = true ]]; then
   tag_and_push "conjur-authn-k8s-client:${SOURCE_TAG}" "${INTERNAL_REGISTRY}/conjur-authn-k8s-client:${REMOTE_TAG}"
 
   tag_and_push ${REDHAT_LOCAL_IMAGE}:${SOURCE_TAG} "${INTERNAL_REGISTRY}/${REDHAT_LOCAL_IMAGE}:${REMOTE_TAG}"
+
+  echo "Pushing to RedHat container registry..."
+  docker tag "${INTERNAL_REGISTRY}/${REDHAT_LOCAL_IMAGE}:${REMOTE_TAG}" "${REDHAT_REMOTE_IMAGE}:${REMOTE_TAG}"
+
+  if docker login scan.connect.redhat.com -u unused -p "${REDHAT_API_KEY}"; then
+    # you can't push the same tag twice to redhat registry, so ignore errors
+    if ! docker push "${REDHAT_REMOTE_IMAGE}:${REMOTE_TAG}"; then
+      echo 'RedHat push FAILED! (maybe the image was pushed already?)'
+      exit 0
+    fi
+  else
+    echo 'Failed to log in to scan.connect.redhat.com'
+    exit 1
+  fi
 fi
 
 if [[ ${PUBLISH_EDGE} = true ]]; then
