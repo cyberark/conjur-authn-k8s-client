@@ -154,7 +154,7 @@ You can create demo cluster of to check JWT sidecars on K8S. Please be aware thi
 
 2. Test secrets provider as init container :
 
-   `./bin/test-workflow/start  -a secrets-provider-init-jwt --jwt`
+   `./bin/test-workflow/start  -a secrets-provider-k8s-jwt --jwt`
    
 3. Test secretless broker as sidecar container:
 ./bin/test-workflow/start  -a secretess-broker --jwt

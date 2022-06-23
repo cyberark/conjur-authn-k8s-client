@@ -3,6 +3,12 @@ set -uo pipefail
 
 source utils.sh
 
+if [[ "$CONJUR_PLATFORM" == "kind" ]]; then
+  RUN_CLIENT_CONTAINER="false"
+else
+  RUN_CLIENT_CONTAINER="true"
+fi
+
 check_env_var RUN_CLIENT_CONTAINER
 
 if [[ "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then

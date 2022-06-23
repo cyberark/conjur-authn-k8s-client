@@ -209,6 +209,7 @@ function urlencode() {
 
 function dump_kubernetes_resources() {
   namespace="$1"
+  announce "Kubernetes Resources"
   echo "Status of pods in namespace $namespace:"
   "$cli" get -n "$namespace" pods
   echo "Display pods in namespace $namespace:"

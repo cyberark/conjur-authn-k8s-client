@@ -27,10 +27,10 @@ app-secretless-broker:
 app-secretless-broker-jwt:
   enabled: false
 
-app-secrets-provider-init:
+app-secrets-provider-k8s:
   enabled: false
 
-app-secrets-provider-init-jwt:
+app-secrets-provider-k8s-jwt:
   enabled: false
 
 app-secrets-provider-p2f:

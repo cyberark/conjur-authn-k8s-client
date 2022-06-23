@@ -78,7 +78,7 @@ Deployment Helm chart and their default values.
 | `app-summon-init.enabled` | Flag to enable installation of a demo application that uses Summon and a Conjur Authenticator client init container | `false` |
 | `app-summon-sidecar.enabled` | Flag to enable installation of a demo application that uses Summon and a Conjur Authenticator client sidecar | `false` |
 | `app-secretless-broker.enabled` | Flag to enable installation of a demo application that uses a Secretless Broker sidecar | `false` |
-| `app-secrets-provider-init.enabled` | Flag to enable installation of a demo application that uses a Secrets Provider init container | `false` |
+| `app-secrets-provider-k8s.enabled` | Flag to enable installation of a demo application that uses a Secrets Provider init container | `false` |
 | `app-secrets-provider-standalone.enabled` | Flag to enable installation of a demo application that uses a Secrets Provider standalone container | `false` |
 
 ### Application Subchart Configurable Values
@@ -112,7 +112,7 @@ The following values are unique to their subchart:
 | `secretless.image.tag` | Secretless Broker image tag | `latest` |
 | `secretless.image.pullPolicy` | Secretless Broker image pull policy | `Always` |
 
-#### app-secrets-provider-init
+#### app-secrets-provider
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|

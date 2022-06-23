@@ -99,7 +99,8 @@ pushd policy > /dev/null
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-identities-policy-jwt.template.yml |
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g"  > ./generated/"$TEST_APP_NAMESPACE_NAME".app-identities-policy-jwt.yml
 
-  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-grants.template.yml > ./generated/"$TEST_APP_NAMESPACE_NAME".app-grants.yml
+  sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g"  ./templates/app-grants.template.yml |
+    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".app-grants.yml
 popd > /dev/null
 
 if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then

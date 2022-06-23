@@ -26,7 +26,7 @@
         "type":"boolean"
       }
     },
-    "app-secrets-provider-init":{
+    "app-secrets-provider-k8s":{
       "enabled": {
         "type":"boolean"
       }

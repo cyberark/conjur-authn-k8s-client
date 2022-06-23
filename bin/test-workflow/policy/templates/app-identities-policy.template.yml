@@ -54,11 +54,11 @@
           authn-k8s/authentication-container-name: secretless
           kubernetes: "{{ IS_KUBERNETES }}"
       - !host
-        id: test-app-secrets-provider-init
+        id: test-app-secrets-provider-k8s
         annotations:
           authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
-          authn-k8s/service-account: test-app-secrets-provider-init
-          authn-k8s/deployment: test-app-secrets-provider-init
+          authn-k8s/service-account: test-app-secrets-provider-k8s
+          authn-k8s/deployment: test-app-secrets-provider-k8s
           authn-k8s/authentication-container-name: cyberark-secrets-provider-for-k8s
           kubernetes: "{{ IS_KUBERNETES }}"
       - !host
@@ -107,10 +107,10 @@
           authn-k8s/authentication-container-name: secretless
           openshift: "{{ IS_OPENSHIFT }}"
       - !host
-        id: oc-test-app-secrets-provider-init
+        id: oc-test-app-secrets-provider-k8s
         annotations:
           authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
-          authn-k8s/service-account: oc-test-app-secrets-provider-init
+          authn-k8s/service-account: oc-test-app-secrets-provider-k8s
           authn-k8s/authentication-container-name: cyberark-secrets-provider-for-k8s
           kubernetes: "{{ IS_OPENSHIFT }}"
       - !host

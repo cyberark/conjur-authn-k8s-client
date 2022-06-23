@@ -57,7 +57,7 @@ export CONJUR_VERSION="${CONJUR_VERSION:-5}"
 export TEST_APP_DATABASE="${TEST_APP_DATABASE:-postgres}"
 export TEST_APP_REPO="${TEST_APP_REPO:-cyberark/demo-app}"
 export TEST_APP_TAG="${TEST_APP_TAG:-latest}"
-export INSTALL_APPS="${INSTALL_APPS:-summon-sidecar,secretless-broker,secrets-provider-init}"
+export INSTALL_APPS="${INSTALL_APPS:-summon-sidecar,secretless-broker,secrets-provider-k8s}"
 export SECRETS_PROVIDER_TAG="${SECRETS_PROVIDER_TAG:-edge}"
 export SECRETLESS_BROKER_TAG="${SECRETLESS_BROKER_TAG:-latest}"
 
