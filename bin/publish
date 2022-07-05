@@ -58,7 +58,8 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-REDHAT_REMOTE_IMAGE='scan.connect.redhat.com/ospid-1c46a2de-1d88-40e6-a433-7114ad0099cb/conjur-openshift-authenticator-client'
+REDHAT_REMOTE_IMAGE='scan.connect.redhat.com/ospid-1c46a2de-1d88-40e6-a433-7114ad0099cb/conjur-openshift-authenticator'
+REDHAT_CERT_PID="5e621f6502235d3f505f6093"
 readonly REGISTRY="cyberark"
 readonly REDHAT_LOCAL_IMAGE="conjur-authn-k8s-client-redhat"
 readonly INTERNAL_REGISTRY="registry.tld"
@@ -138,6 +139,9 @@ if [[ ${PROMOTE} = true ]]; then
       echo 'RedHat push FAILED! (maybe the image was pushed already?)'
       exit 0
     fi
+
+    # scan image with preflight tool
+    scan_redhat_image "${REDHAT_REMOTE_IMAGE}:${REMOTE_TAG}" "${REDHAT_CERT_PID}"
   else
     echo 'Failed to log in to scan.connect.redhat.com'
     exit 1
