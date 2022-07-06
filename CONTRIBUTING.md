@@ -140,7 +140,7 @@ To run the test suite, run `./bin/build` and `./bin/test`.
 
 ### Demo Workflow 
 
-To run a sample deployment of the Helm charts located in `/helm`, run `./bin/test-workflow`. This
+To run a sample deployment of the Helm charts located in `/helm`, run `./bin/test-workflow/start`. This
 will download and run the `conjur-oss-helm-chart` project example, then consecutively install the 
 `helm/conjur-config-cluster-prep`, `helm/conjur-config-namespace-prep`, and `helm/conjur-app-deploy` charts, in that order.
 
