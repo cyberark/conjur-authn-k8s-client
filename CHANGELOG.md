@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.23.7] - 2022-07-12
+### Changed
+- Updated dev/Dockerfile.debug and test-workflow/test-app-summon/Dockerfile.builder
+  to new base images
+  [cyberark/conjur-authn-k8s-client#480](https://github.com/cyberark/conjur-authn-k8s-client/pull/480)
+
 ## [0.23.6] - 2022-06-16
 ### Security
 - Added replace statement for gopkg.in/yaml.v3 prior to v3.0.1

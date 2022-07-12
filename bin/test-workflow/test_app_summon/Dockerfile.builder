@@ -1,4 +1,4 @@
-FROM ruby:3.0
+FROM ruby:3.1-slim-bullseye
 MAINTAINER CyberArk
 
 #---some useful tools for interactive usage---#
