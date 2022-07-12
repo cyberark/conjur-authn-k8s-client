@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.23.7] - 2022-07-12
 ### Changed
-- Updated dev/Dockerfile.debug and test-workflow/test-app-summon/Dockerfile.builder
-  to new base images
+- Updated dev/Dockerfile.debug and removed bin/test-workflow/test-app-summon/Dockerfile.builder
+  and bin/test-workflow/test-app-summon/Dockerfile.oc
   [cyberark/conjur-authn-k8s-client#480](https://github.com/cyberark/conjur-authn-k8s-client/pull/480)
 
 ## [0.23.6] - 2022-06-16
