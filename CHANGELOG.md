@@ -245,7 +245,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.5...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.7...HEAD
+[0.23.7]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.6...v0.23.7
 [0.23.6]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.5...v0.23.6
 [0.23.5]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.3...v0.23.5
 [0.23.3]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.2...v0.23.3
