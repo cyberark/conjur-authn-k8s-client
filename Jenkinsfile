@@ -34,7 +34,7 @@ pipeline {
     timestamps()
     buildDiscarder(logRotator(numToKeepStr: '30'))
   }
-  
+
   triggers {
     cron(getDailyCronString())
   }
@@ -44,11 +44,11 @@ pipeline {
     MODE = release.canonicalizeMode()
   }
 
-  parameters { 
+  parameters {
     booleanParam(
       name: 'TEST_OCP_NEXT',
       description: 'Whether or not to run the pipeline against the next OCP version',
-      defaultValue: false) 
+      defaultValue: false)
   }
 
   stages {
@@ -99,7 +99,7 @@ pipeline {
         updateVersion("CHANGELOG.md", "${BUILD_NUMBER}")
       }
     }
-    
+
     stage('Get latest upstream dependencies') {
       steps {
         updateGoDependencies('${WORKSPACE}/go.mod')
@@ -194,12 +194,19 @@ pipeline {
           }
         }
         stage('Enterprise in Jenkins') {
+          environment {
+            // githubLatestReleaseVersion returns with a newline on the end of
+            // the string, so we use `replaceAll` to remove the extra whitespace.
+            CONJUR_APPLIANCE_TAG = githubLatestReleaseVersion('conjurinc', 'appliance', 'latest').replaceAll("\\s","")
+          }
+
           stages {
             stage('Test app in GKE') {
               steps {
                 sh '''
                   HOST_IP="$(curl https://checkip.amazonaws.com)";
                   echo "HOST_IP=${HOST_IP}"
+                  echo "CONJUR_APPLIANCE_TAG=${CONJUR_APPLIANCE_TAG}"
                   cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins --ci-apps
                 '''
               }
@@ -248,7 +255,7 @@ pipeline {
         release { billOfMaterialsDirectory, assetDirectory, toolsDirectory ->
           // Publish release artifacts to all the appropriate locations
           // Copy any artifacts to assetDirectory to attach them to the Github release
-          
+
           // Create Go application SBOM using the go.mod version for the golang container image
           sh """go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --main "cmd/authenticator/" --output "${billOfMaterialsDirectory}/go-app-bom.json" """
           // Create Go module SBOM

@@ -60,6 +60,7 @@ export TEST_APP_TAG="${TEST_APP_TAG:-latest}"
 export INSTALL_APPS="${INSTALL_APPS:-summon-sidecar,secretless-broker,secrets-provider-k8s}"
 export SECRETS_PROVIDER_TAG="${SECRETS_PROVIDER_TAG:-edge}"
 export SECRETLESS_BROKER_TAG="${SECRETLESS_BROKER_TAG:-latest}"
+export CONJUR_APPLIANCE_TAG="${CONJUR_APPLIANCE_TAG:-5.0-stable}"
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   conjur_service="conjur-oss"
@@ -73,7 +74,7 @@ if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   fi
 else
   export TEST_APP_NAMESPACE_NAME="${TEST_APP_NAMESPACE_NAME:-app-test-$UNIQUE_TEST_ID}"
-  export CONJUR_APPLIANCE_IMAGE="${CONJUR_APPLIANCE_IMAGE:-registry2.itci.conjur.net/conjur-appliance:5.0-stable}"
+  export CONJUR_APPLIANCE_IMAGE="${CONJUR_APPLIANCE_IMAGE:-registry2.itci.conjur.net/conjur-appliance:$CONJUR_APPLIANCE_TAG}"
   export CONJUR_ADMIN_PASSWORD="MySecretP@ss1"
 
   if [[ "$CONJUR_PLATFORM" == "gke" ]]; then
