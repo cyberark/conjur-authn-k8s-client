@@ -9,6 +9,7 @@ source utils.sh
 trap dump_conjur_namespace_upon_error EXIT
 
 function setup_conjur_enterprise {
+
   docker pull "$CONJUR_APPLIANCE_IMAGE"
 
   announce "Deploying Conjur Enterprise"
@@ -51,9 +52,9 @@ CONJUR_MASTER_PORT=\"${CONJUR_MASTER_PORT}\"
 CONJUR_FOLLOWER_PORT=\"${CONJUR_FOLLOWER_PORT}\"
 CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn-jwt/\"${AUTHENTICATOR_ID}\",authn
         """ > .env
-        ./bin/dap --provision-master
+        ./bin/dap --provision-master --version "${CONJUR_APPLIANCE_TAG}"
         ./bin/dap --import-custom-certificates
-        ./bin/dap --provision-follower
+        ./bin/dap --provision-follower --version "${CONJUR_APPLIANCE_TAG}"
       popd > /dev/null
 
     popd > /dev/null
