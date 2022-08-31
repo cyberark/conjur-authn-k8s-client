@@ -62,6 +62,10 @@ export SECRETS_PROVIDER_TAG="${SECRETS_PROVIDER_TAG:-edge}"
 export SECRETLESS_BROKER_TAG="${SECRETLESS_BROKER_TAG:-latest}"
 export CONJUR_APPLIANCE_TAG="${CONJUR_APPLIANCE_TAG:-5.0-stable}"
 
+# Used to test namespace-label identity scope end-to-end against live K8s infra
+# See design document: https://github.com/cyberark/conjur/pull/2603
+export TEST_APP_NAMESPACE_LABEL="${TEST_APP_NAMESPACE_LABEL:-conjur.org/project=authn-k8s-e2e}"
+
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   conjur_service="conjur-oss"
   if [[ "$PLATFORM" == "openshift" ]]; then

@@ -40,7 +40,9 @@
       - !host
         id: test-app-summon-sidecar
         annotations:
-          authn-k8s/namespace: {{ TEST_APP_NAMESPACE_NAME }}
+          # Used to test namespace-label identity scope end-to-end against live K8s infra
+          # See design document: https://github.com/cyberark/conjur/pull/2603
+          authn-k8s/namespace-label-selector: {{ TEST_APP_NAMESPACE_LABEL }}
           authn-k8s/service-account: test-app-summon-sidecar
           authn-k8s/deployment: test-app-summon-sidecar
           authn-k8s/authentication-container-name: authenticator

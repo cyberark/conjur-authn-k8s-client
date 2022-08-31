@@ -15,6 +15,7 @@ if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
 fi
 
 check_env_var TEST_APP_NAMESPACE_NAME
+check_env_var TEST_APP_NAMESPACE_LABEL
 check_env_var CONJUR_VERSION
 check_env_var CONJUR_ACCOUNT
 check_env_var CONJUR_APPLIANCE_URL
@@ -94,7 +95,8 @@ pushd policy > /dev/null
     sed "s#{{ APP_VALIDATOR_NAMESPACE_NAME }}#$app_validator_namespace#g" |
     sed "s#{{ IS_OPENSHIFT }}#$is_openshift#g" |
     sed "s#{{ IS_KUBERNETES }}#$is_kubernetes#g" |
-    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".app-identities-policy.yml
+    sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g" |
+    sed "s#{{ TEST_APP_NAMESPACE_LABEL }}#$TEST_APP_NAMESPACE_LABEL#g" > ./generated/"$TEST_APP_NAMESPACE_NAME".app-identities-policy.yml
 
   sed "s#{{ AUTHENTICATOR_ID }}#$AUTHENTICATOR_ID#g" ./templates/app-identities-policy-jwt.template.yml |
     sed "s#{{ TEST_APP_NAMESPACE_NAME }}#$TEST_APP_NAMESPACE_NAME#g"  > ./generated/"$TEST_APP_NAMESPACE_NAME".app-identities-policy-jwt.yml
