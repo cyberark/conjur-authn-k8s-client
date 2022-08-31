@@ -23,6 +23,7 @@ function setup_conjur_enterprise {
 
     pushd temp > /dev/null
       git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy "kubernetes-conjur-deploy-$UNIQUE_TEST_ID"
+      git clone --single-branch --branch main https://github.com/cyberark/sidecar-injector.git "sidecar-injector-$UNIQUE_TEST_ID"
     popd > /dev/null
 
     run_command_with_platform "cd temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID && ./start"
@@ -34,6 +35,7 @@ function setup_conjur_enterprise {
     pushd temp > /dev/null
       # TODO - once these changes are merged, this branch has to be updated to main
       git clone --single-branch --branch custom-port-follower git@github.com:conjurdemos/conjur-intro.git "conjur-intro-$UNIQUE_TEST_ID"
+      git clone --single-branch --branch main https://github.com/cyberark/sidecar-injector.git "sidecar-injector-$UNIQUE_TEST_ID"
 
       pushd "conjur-intro-$UNIQUE_TEST_ID" > /dev/null
 
@@ -64,7 +66,7 @@ CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn-jwt/\"${AUTHENTICA
 function setup_conjur_open_source {
   pushd temp > /dev/null
     git clone --single-branch --branch main https://github.com/cyberark/conjur-oss-helm-chart.git "conjur-oss-helm-chart-$UNIQUE_TEST_ID"
-
+    git clone --single-branch --branch main https://github.com/cyberark/sidecar-injector.git "sidecar-injector-$UNIQUE_TEST_ID"
     pushd "conjur-oss-helm-chart-$UNIQUE_TEST_ID/examples/common" > /dev/null
       source ./utils.sh
 

@@ -40,6 +40,7 @@ Usage: ./start [options]:
                                 - secretless-broker
                                 - secrets-provider-k8s
                                 - secrets-provider-p2f
+                                - secrets-provider-p2f-injected
                                 - secrets-provider-rotation
                                 - secrets-provider-standalone
                               If the '--jwt' flag is used, supported apps include:
@@ -64,7 +65,7 @@ function cleanup {
 
 declare -a supported_authn_k8s_apps=(
   "summon-sidecar" "secretless-broker" "secrets-provider-standalone"
-  "secrets-provider-k8s" "secrets-provider-p2f" "secrets-provider-rotation"
+  "secrets-provider-k8s" "secrets-provider-p2f" "secrets-provider-rotation" "secrets-provider-p2f-injected"
 )
 declare -a supported_jwt_apps=("summon-sidecar-jwt" "secretless-broker-jwt" "secrets-provider-k8s-jwt" "secrets-provider-p2f-jwt")
 declare -a run_in_ci_apps=("summon-sidecar" "secretless-broker" "secrets-provider-standalone" "secrets-provider-k8s")

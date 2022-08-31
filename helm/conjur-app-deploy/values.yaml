@@ -36,6 +36,9 @@ app-secrets-provider-k8s-jwt:
 app-secrets-provider-p2f:
   enabled: false
 
+app-secrets-provider-p2f-injected:
+  enabled: false
+
 app-secrets-provider-p2f-jwt:
   enabled: false
 

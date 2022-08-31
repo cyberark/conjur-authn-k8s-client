@@ -220,6 +220,33 @@ function get_pod_container_names(){
     |jq -r '.spec.containers[].name'
 }
 
+function check_for_crd() {
+  local num_matching_resources=$("$cli" get crd --no-headers 2>/dev/null | grep configurations.secretless.io | wc -l)
+  if [ $num_matching_resources -gt 0 ]; then
+    "$cli" delete crd configurations.secretless.io
+    sleep 10
+  fi
+}
+
+function clean_web_hooks() {
+  announce "clean_web_hooks"
+  while true ; do
+
+    local num_matching_resources=$("$cli" get mutatingwebhookconfigurations | grep sidecar-injector.conjur | wc -l)
+
+    if [ $num_matching_resources -gt 0 ]; then
+      echo "delete the webhook"
+      kubectl delete mutatingwebhookconfigurations $("$cli" get mutatingwebhookconfigurations | grep sidecar-injector.conjur | awk '{ print $1 }' | head -1)
+      sleep 1
+    else
+    echo 'done'
+    break
+    fi
+  done
+}
+
+
+
 function dump_local_docker_logs(){
   docker ps -a --format '{{.ID}}' |while read cid; do
     container_name="$(docker inspect "${cid}" --format '{{.Name}}' | sed 's+^/++')"
