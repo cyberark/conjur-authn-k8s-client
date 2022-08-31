@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.23.8] - 2022-08-31
+### Changed
+- Update Cluster Prep Helm chart to support namespace label-based authentication.
+  [cyberark/conjur-authn-k8s-client#482](https://github.com/cyberark/conjur-authn-k8s-client/pull/482)
+
 ## [0.23.7] - 2022-07-12
 ### Changed
 - Updated dev/Dockerfile.debug and removed bin/test-workflow/test-app-summon/Dockerfile.builder
@@ -245,7 +250,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.7...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.8...HEAD
+[0.23.8]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.7...v0.23.8
 [0.23.7]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.6...v0.23.7
 [0.23.6]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.5...v0.23.6
 [0.23.5]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.3...v0.23.5
