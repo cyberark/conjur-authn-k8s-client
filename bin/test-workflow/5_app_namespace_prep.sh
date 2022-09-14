@@ -6,6 +6,7 @@ cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 source utils.sh
 
 check_env_var TEST_APP_NAMESPACE_NAME
+check_env_var TEST_APP_NAMESPACE_LABEL
 check_env_var CONJUR_NAMESPACE_NAME
 
 TIMEOUT="${TIMEOUT:-5m0s}"
@@ -31,4 +32,7 @@ pushd ../../helm/conjur-config-namespace-prep > /dev/null
         --set authnK8s.namespace="$CONJUR_NAMESPACE_NAME" \
         --set conjurConfigMap.authnMethod=$AUTHN_STRATEGY
 
+    # Used to test namespace-label identity scope end-to-end against live K8s infra
+    # See design document: https://github.com/cyberark/conjur/pull/2603
+    $cli label namespace "$TEST_APP_NAMESPACE_NAME" "$TEST_APP_NAMESPACE_LABEL"
 popd > /dev/null

@@ -271,7 +271,7 @@ function split_on_comma_delimiter {
 }
 
 function uninstall_helm_release {
-  release_name=i"$1"
+  release_name="$1"
   namespace="$2"
 
   if [ "$(helm list -q -n "$namespace" | grep "^$release_name$")" = "$release_name" ]; then
@@ -315,6 +315,7 @@ function run_command_with_platform {
     -e SAMPLE_APP_BACKEND_DB_PASSWORD \
     -e TEST_APP_DATABASE \
     -e TEST_APP_NAMESPACE_NAME \
+    -e TEST_APP_NAMESPACE_LABEL \
     -e CONJUR_APPLIANCE_IMAGE \
     -e CONJUR_FOLLOWER_URL \
     -e DEPLOY_MASTER_CLUSTER \

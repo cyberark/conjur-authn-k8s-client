@@ -28,7 +28,7 @@ pushd ../../helm/conjur-config-cluster-prep > /dev/null
   if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
     conjur_url="$CONJUR_APPLIANCE_URL"
     get_cert_options="-v -i -s -u"
-    additional_options=""
+    additional_options="--set authnK8s.serviceAccount.create=false --set authnK8s.serviceAccount.name=conjur-oss"
   else
     conjur_url="$CONJUR_FOLLOWER_URL"
     if [[ "$CONJUR_PLATFORM" == "gke" ]]; then
