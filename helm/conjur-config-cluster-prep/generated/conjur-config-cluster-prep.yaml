@@ -13,7 +13,7 @@ metadata:
     app.kubernetes.io/instance: "conjur-serviceaccount"
     app.kubernetes.io/part-of: "conjur-config"
     conjur.org/name: "conjur-serviceaccount"
-    helm.sh/chart: conjur-config-cluster-prep-0.1.3
+    helm.sh/chart: conjur-config-cluster-prep-0.2.0
 ---
 # Source: conjur-config-cluster-prep/templates/golden_configmap.yaml
 # The Golden ConfigMap keeps a reference copy of Conjur configuration information
@@ -31,7 +31,7 @@ metadata:
     app.kubernetes.io/instance: "conjur-golden-configmap"
     app.kubernetes.io/part-of: "conjur-config"
     conjur.org/name: "conjur-golden-configmap"
-    helm.sh/chart: conjur-config-cluster-prep-0.1.3
+    helm.sh/chart: conjur-config-cluster-prep-0.2.0
 data:
   # authn-k8s Configuration 
   authnK8sAuthenticatorID: <Insert-Authenticator-ID-Here>
@@ -57,7 +57,7 @@ metadata:
     app.kubernetes.io/instance: "conjur-clusterrole"
     app.kubernetes.io/part-of: "conjur-config"
     conjur.org/name: "conjur-clusterrole"
-    helm.sh/chart: conjur-config-cluster-prep-0.1.3
+    helm.sh/chart: conjur-config-cluster-prep-0.2.0
 rules:
   - apiGroups: [""] # "" indicates the core API group
     resources: ["pods", "serviceaccounts"]
