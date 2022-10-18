@@ -22,8 +22,10 @@ function finish {
   if [ $? -eq 0 ]; then
     announce "Test PASSED!!!!"
   else
-    announce "Test FAILED!!!! Displaying resources in application Namespace"
+    announce "Test FAILED!!!! Displaying Kubernetes Resources"
     dump_kubernetes_resources "$TEST_APP_NAMESPACE_NAME"
+    dump_kubernetes_resources "$CONJUR_NAMESPACE_NAME"
+    dump_local_docker_logs
     dump_authentication_policy
   fi
 

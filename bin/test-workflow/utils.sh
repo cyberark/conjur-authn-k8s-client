@@ -207,15 +207,49 @@ function urlencode() {
   )
 }
 
+function get_ns_pod_names(){
+  namespace="${1}"
+  "${cli}" -n "${namespace}" get pods -o json \
+    |jq -r '.items[].metadata.name'
+}
+
+function get_pod_container_names(){
+  namespace="${1}"
+  pod="${2}"
+  "${cli}" -n "${namespace}" get "pod/${pod}" -o json \
+    |jq -r '.spec.containers[].name'
+}
+
+function dump_local_docker_logs(){
+  docker ps -a --format '{{.ID}}' |while read cid; do
+    container_name="$(docker inspect "${cid}" --format '{{.Name}}' | sed 's+^/++')"
+    echo -e "\n\n ======= Jenkins Agent Docker Container Logs: ${container_name} / ${cid} ======="
+    docker logs "${cid}"
+    echo -e " ======= End of Jenkins Agent Docker Container Logs: ${container_name} / ${cid} ======="
+  done
+}
+
+function dump_pod_logs(){
+  namespace="${1}"
+  get_ns_pod_names "${namespace}" | while read -r podname; do
+    get_pod_container_names "${namespace}" "${podname}" | while read -r container_name; do
+      echo -e "\n\n ======= Container Logs Namespace:${namespace} Pod:${podname} Container:${container_name} ======="
+      "${cli}" -n "${namespace}" logs "${podname}" --container "${container_name}" || true
+      echo -e " ======= End of Container Logs Namespace:${namespace} Pod:${podname} Container:${container_name} ======="
+    done
+  done
+}
+
 function dump_kubernetes_resources() {
   namespace="$1"
-  announce "Kubernetes Resources"
+  announce "Kubernetes Resources (${namespace})"
   echo "Status of pods in namespace $namespace:"
   "$cli" get -n "$namespace" pods
   echo "Display pods in namespace $namespace:"
   "$cli" get -n "$namespace" pods -o yaml
   echo "Describe pods in namespace $namespace:"
   "$cli" describe -n "$namespace" pods
+  dump_pod_logs "${namespace}"
   echo "Services:in namespace $namespace:"
   "$cli" get -n "$namespace" svc
   echo "ServiceAccounts:in namespace $namespace:"
@@ -240,13 +274,16 @@ function dump_conjur_namespace_upon_error {
   if [ $? -ne 0 ]; then
     announce "Test FAILED!!!! Displaying resources in Conjur Namespace"
     dump_kubernetes_resources "$CONJUR_NAMESPACE_NAME"
+    dump_local_docker_logs
   fi
 }
 
 function dump_application_namespace_upon_error {
   if [ $? -ne 0 ]; then
-    announce "Test FAILED!!!! Displaying resources in application Namespace"
+    announce "Test FAILED!!!! Displaying Kubernetes Resources"
     dump_kubernetes_resources "$TEST_APP_NAMESPACE_NAME"
+    dump_kubernetes_resources "$CONJUR_NAMESPACE_NAME"
+    dump_local_docker_logs
   fi
 }
 
