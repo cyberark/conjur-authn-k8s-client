@@ -15,6 +15,24 @@ metadata:
     conjur.org/name: "conjur-serviceaccount"
     helm.sh/chart: conjur-config-cluster-prep-0.2.0
 ---
+# Source: conjur-config-cluster-prep/templates/serviceaccountsecret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: conjur-serviceaccount-service-account-token
+  labels:
+    release: cluster-prep
+    heritage: Helm
+    app.kubernetes.io/name: "conjur-serviceaccount-token"
+    app.kubernetes.io/component: "conjur-kubernetes-identity"
+    app.kubernetes.io/instance: "conjur-serviceaccount"
+    app.kubernetes.io/part-of: "conjur-config"
+    conjur.org/name: "conjur-serviceaccount-token"
+    helm.sh/chart: conjur-config-cluster-prep-0.2.0
+  annotations:
+    kubernetes.io/service-account.name: conjur-serviceaccount
+type: kubernetes.io/service-account-token
+---
 # Source: conjur-config-cluster-prep/templates/golden_configmap.yaml
 # The Golden ConfigMap keeps a reference copy of Conjur configuration information
 # that will be used for subsequent operations such as preparing application Namespaces
