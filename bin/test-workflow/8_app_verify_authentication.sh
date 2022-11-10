@@ -40,6 +40,7 @@ function finish {
     "SECRETS_PROVIDER_P2F_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_P2F_JWT_PORT_FORWARD_PID"
     "SECRETS_PROVIDER_ROTATION_PORT_FORWARD_PID"
+    "SECRETS_PROVIDER_P2F_INJECTED_PORT_FORWARD_PID"
   )
 
   set +u
@@ -143,6 +144,12 @@ if [[ "$PLATFORM" == "openshift" ]]; then
     SECRETS_PROVIDER_ROTATION_PORT_FORWARD_PID=$!
   fi
 
+  if [[ " ${install_apps[*]} " =~ " secrets-provider-p2f-injected " ]]; then
+    secrets_provider_p2f_injected_pod=$(get_pod_name test-app-secrets-provider-p2f-injected)
+    oc port-forward "$secrets_provider_p2f_injected_pod" 8089:8080 > /dev/null 2>&1 &
+    SECRETS_PROVIDER_P2F_INJECTED_PORT_FORWARD_PID=$!
+  fi
+
   curl_cmd=curl
   sidecar_url="localhost:8081"
   secretless_url="localhost:8083"
@@ -150,6 +157,7 @@ if [[ "$PLATFORM" == "openshift" ]]; then
   secrets_provider_k8s_url="localhost:8086"
   secrets_provider_p2f_url="localhost:8087"
   secrets_provider_rotation_url="localhost:8088"
+  secrets_provider_p2f_injected_url="localhost:8089"
 else
   # Test by curling from a pod that is inside the KinD cluster.
   curl_cmd=pod_curl
@@ -159,6 +167,7 @@ else
   secrets_provider_k8s_url="test-app-secrets-provider-k8s.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secrets_provider_p2f_url="test-app-secrets-provider-p2f.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
   secrets_provider_rotation_url="test-app-secrets-provider-rotation.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
+  secrets_provider_p2f_injected_url="test-app-secrets-provider-p2f-injected.$TEST_APP_NAMESPACE_NAME.svc.cluster.local:8080"
 fi
 
 echo "Waiting for urls to be ready"
@@ -179,6 +188,8 @@ app_urls[secrets-provider-k8s-jwt]="$secrets_provider_k8s_url"
 app_urls[secrets-provider-p2f]="$secrets_provider_p2f_url"
 app_urls[secrets-provider-p2f-jwt]="$secrets_provider_p2f_url"
 app_urls[secrets-provider-rotation]="$secrets_provider_rotation_url"
+app_urls[secrets-provider-p2f-injected]="$secrets_provider_p2f_injected_url"
+
 
 declare -A app_pets
 app_pets[summon-sidecar]="Mr. Sidecar"
@@ -191,6 +202,8 @@ app_pets[secrets-provider-k8s-jwt]="Mr. JWT Provider"
 app_pets[secrets-provider-p2f]="Mr. FileProvider"
 app_pets[secrets-provider-p2f-jwt]="Mr. JWT FileProvider"
 app_pets[secrets-provider-rotation]="Mr. Rotation"
+app_pets[secrets-provider-p2f-injected]="Mr. Injected FileProvider"
+
 
 # check connection to each installed test app
 for app in "${install_apps[@]}"; do

@@ -13,7 +13,7 @@ check_env_var SECRETS_PROVIDER_TAG
 check_env_var SECRETLESS_BROKER_TAG
 
 # Upon error, dump kubernetes resources in the application Namespace
-trap dump_application_namespace_upon_error EXIT
+# trap dump_application_namespace_upon_error EXIT
 
 set_namespace "$TEST_APP_NAMESPACE_NAME"
 
@@ -59,6 +59,10 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-secrets-provider-p2f.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
     --set app-secrets-provider-p2f.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-p2f \
     --set app-secrets-provider-p2f.app.platform=$PLATFORM"
+  secrets_provider_p2f_injected_options="--set app-secrets-provider-p2f-injected.enabled=true \
+    --set app-secrets-provider-p2f-injected.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
+    --set app-secrets-provider-p2f-injected.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-p2f-injected \
+    --set app-secrets-provider-p2f_injected.app.platform=$PLATFORM"
   secrets_provider_p2f_jwt_options="--set app-secrets-provider-p2f-jwt.enabled=true \
     --set app-secrets-provider-p2f-jwt.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
     --set app-secrets-provider-p2f-jwt.app.platform=$PLATFORM"
@@ -76,6 +80,7 @@ pushd ../../helm/conjur-app-deploy > /dev/null
   app_options[secrets-provider-k8s]="$secrets_provider_k8s_options"
   app_options[secrets-provider-k8s-jwt]="$secrets_provider_k8s_jwt_options"
   app_options[secrets-provider-p2f]="$secrets_provider_p2f_options"
+  app_options[secrets-provider-p2f-injected]="$secrets_provider_p2f_injected_options"
   app_options[secrets-provider-p2f-jwt]="$secrets_provider_p2f_jwt_options"
   app_options[secrets-provider-rotation]="$secrets_provider_rotation_options"
 
@@ -99,7 +104,7 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     options_string+="${app_options[$app]} "
   done
 
-  announce "Deploying test apps in $TEST_APP_NAMESPACE_NAME"
+  announce "Deploying test apps in $TEST_APP_NAMESPACE_NAME timeout is $TIMEOUT"
   helm install test-apps . -n "$TEST_APP_NAMESPACE_NAME" --wait --timeout "$TIMEOUT" \
     --render-subchart-notes \
     --set global.conjur.conjurConnConfigMap="conjur-connect" \

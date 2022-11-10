@@ -37,6 +37,7 @@ readonly APPS=(
   "test-secrets-provider-k8s-app"
   "test-secrets-provider-k8s-jwt-app"
   "test-secrets-provider-p2f-app"
+  "test-secrets-provider-p2f-injected-app"
   "test-secrets-provider-rotation-app"
   "test-secrets-provider-p2f-jwt-app"
   "test-secrets-provider-standalone-app"

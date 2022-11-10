@@ -35,4 +35,8 @@ pushd ../../helm/conjur-config-namespace-prep > /dev/null
     # Used to test namespace-label identity scope end-to-end against live K8s infra
     # See design document: https://github.com/cyberark/conjur/pull/2603
     $cli label namespace "$TEST_APP_NAMESPACE_NAME" "$TEST_APP_NAMESPACE_LABEL"
+
+    # Used to turn on sidecar injecting
+    $cli label namespace "$TEST_APP_NAMESPACE_NAME" cyberark-sidecar-injector=enabled
+
 popd > /dev/null
