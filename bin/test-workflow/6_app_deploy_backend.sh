@@ -69,11 +69,6 @@ ret_val=0
 helm "${args[@]}" || ret_val=$?
 if [[ "$ret_val" != 0 ]]; then
   announce "checking stateful set test-app-backend"
-  echo "!!!ServiceAccounts:in namespace :$CONJUR_NAMESPACE_NAME"
-  "$cli" get -n "$CONJUR_NAMESPACE_NAME" serviceaccounts
-  echo "!!!Secrets:in namespace $CONJUR_NAMESPACE_NAME:"
-  "$cli" get -n "$CONJUR_NAMESPACE_NAME" secrets
-  "$cli" get -n "$CONJUR_NAMESPACE_NAME" secrets cyberark-sidecar-injector-service-account-token -o yaml
   $cli version
   $cli get statefulset -n "$TEST_APP_NAMESPACE_NAME"
   $cli describe statefulset test-app-backend -n "$TEST_APP_NAMESPACE_NAME"
