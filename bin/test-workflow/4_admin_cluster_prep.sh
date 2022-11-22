@@ -62,24 +62,8 @@ clean_web_hooks
 pushd "sidecar-injector-$UNIQUE_TEST_ID/helm/cyberark-sidecar-injector" > /dev/null
 # Rename the chart to a shorted name due to an SSL overflow issue with long
 # [service].[namespace] names
-sed -i 's/cyberark-sidecar-injector/sidecar-injector/g' Chart.yaml
-pushd templates
+sed -i.bak 's/cyberark-sidecar-injector/sidecar-injector/g' Chart.yaml && rm Chart.yaml.bak
 
-cat > serviceaccountsecret.yaml << EOF
-apiVersion: v1
-kind: Secret
-type: kubernetes.io/service-account-token
-metadata:
-  name: {{ include "cyberark-sidecar-injector.name" . }}-service-account-token
-  labels:
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-  annotations:
-    kubernetes.io/service-account.name: {{ include "cyberark-sidecar-injector.name" . }}
-EOF
-
-popd > /dev/null
 set_namespace $CONJUR_NAMESPACE_NAME
 
 helm --namespace $CONJUR_NAMESPACE_NAME install cyberark-sidecar-injector \

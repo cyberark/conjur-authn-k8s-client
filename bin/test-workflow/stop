@@ -22,11 +22,13 @@ if [[ "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
       fi
 
       rm -rf 'temp/conjur-oss-helm-chart-$UNIQUE_TEST_ID'
+      rm -rf 'temp/sidecar-injector-$UNIQUE_TEST_ID'
     "
   else 
     ./cleanup_helm.sh
     ./cleanup_namespaces.sh
     rm -rf "temp/conjur-oss-helm-chart-$UNIQUE_TEST_ID"
+    rm -rf "temp/sidecar-injector-$UNIQUE_TEST_ID"
   fi
 
 elif [[ "$CONJUR_PLATFORM" == "gke" ]]; then
@@ -41,6 +43,7 @@ elif [[ "$CONJUR_PLATFORM" == "gke" ]]; then
   "
 
   rm -rf "temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID"
+  rm -rf "temp/sidecar-injector-$UNIQUE_TEST_ID"
 
 elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
   pushd "temp/conjur-intro-$UNIQUE_TEST_ID" > /dev/null
@@ -58,5 +61,6 @@ elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
   "
 
   rm -rf "temp/conjur-intro-$UNIQUE_TEST_ID"
+  rm -rf "temp/sidecar-injector-$UNIQUE_TEST_ID"
 
 fi
