@@ -1,7 +1,7 @@
 apiVersion: v2
 name: conjur-config-cluster-prep
 home: https://www.conjur.org
-version: 0.2.0
+version: 0.2.1
 description: A Helm chart for preparing a Kubernetes cluster to use
              the Conjur Kubernetes authenticator (authn-k8s)
 icon: https://www.cyberark.com/wp-content/uploads/2015/12/cybr-aim.jpg
