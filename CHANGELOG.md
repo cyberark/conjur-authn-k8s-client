@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.24.1] - 2022-12-02
+
 ## [0.24.0] - 2022-11-23
 ### Changed
 - Add service account secret to Conjur Config Cluster Prep chart
