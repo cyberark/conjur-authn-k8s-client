@@ -38,24 +38,9 @@ RUN go build -a -installsuffix cgo \
 # Outputting to /dev/null so the output doesn't include all the files
 RUN sh -c "go tool nm authenticator | grep '_Cfunc__goboringcrypto_' 1> /dev/null"
 
-# =================== BUSYBOX LAYER ===================
-# this layer is used to get binaries into the main container
-FROM busybox
-
 # =================== MAIN CONTAINER ===================
 FROM alpine:3.14 as authenticator-client
 MAINTAINER CyberArk Software Ltd.
-
-# copy a few commands from busybox
-COPY --from=busybox /bin/tar /bin/tar
-COPY --from=busybox /bin/sleep /bin/sleep
-COPY --from=busybox /bin/sh /bin/sh
-COPY --from=busybox /bin/ls /bin/ls
-COPY --from=busybox /bin/id /bin/id
-COPY --from=busybox /bin/whoami /bin/whoami
-COPY --from=busybox /bin/mkdir /bin/mkdir
-COPY --from=busybox /bin/chmod /bin/chmod
-COPY --from=busybox /bin/cat /bin/cat
 
 RUN apk add -u shadow libc6-compat && \
     # Add Limited user
