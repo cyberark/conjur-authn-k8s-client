@@ -14,6 +14,7 @@ check_env_var RUN_CLIENT_CONTAINER
 if [[ "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
   if [[ "$RUN_CLIENT_CONTAINER" == "true" ]]; then
     run_command_with_platform "
+      ./log_namespaces.sh
       ./cleanup_helm.sh
       ./cleanup_namespaces.sh
 
@@ -25,6 +26,7 @@ if [[ "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
       rm -rf 'temp/sidecar-injector-$UNIQUE_TEST_ID'
     "
   else 
+    ./log_namespaces.sh
     ./cleanup_helm.sh
     ./cleanup_namespaces.sh
     rm -rf "temp/conjur-oss-helm-chart-$UNIQUE_TEST_ID"
@@ -33,6 +35,7 @@ if [[ "${CONJUR_OSS_HELM_INSTALLED}" == "true" ]]; then
 
 elif [[ "$CONJUR_PLATFORM" == "gke" ]]; then
   run_command_with_platform "
+    ./log_namespaces.sh
     ./cleanup_helm.sh
 
     pushd 'temp/kubernetes-conjur-deploy-$UNIQUE_TEST_ID'
@@ -52,6 +55,7 @@ elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
   popd > /dev/null
 
   run_command_with_platform "
+    ./log_namespaces.sh
     ./cleanup_helm.sh
     ./cleanup_namespaces.sh
 

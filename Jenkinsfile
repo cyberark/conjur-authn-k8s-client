@@ -269,6 +269,7 @@ pipeline {
 
   post {
     always {
+      archiveArtifacts artifacts: 'bin/test-workflow/temp/*.tgz', allowEmptyArchive: true
       cleanupAndNotify(currentBuild.currentResult)
     }
   }
