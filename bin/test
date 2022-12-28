@@ -14,7 +14,6 @@ echo "Building unit test image..."
 docker build -f Dockerfile.test -t conjur-authn-k8s-client-test-runner:latest .
 
 echo "Running unit tests..."
-set +e
   docker run --rm -t --volume "$PWD"/test/:/conjur-authn-k8s-client/test/ \
              conjur-authn-k8s-client-test-runner:latest \
              -coverpkg ./... \
@@ -23,20 +22,3 @@ set +e
              ./pkg/... \
              | tee -a "$junit_output_file"
   echo "Unit test exit status: $?"
-set -e
-
-rm -f junit.xml
-
-echo "Building junit image..."
-docker build -f Dockerfile.junit -t conjur-authn-k8s-client-junit:latest .
-
-echo "Creating junit report..."
-
-docker run --rm \
-  -v "$PWD"/:/conjur-authn-k8s-client/ \
-  conjur-authn-k8s-client-junit:latest \
-  bash -exc "
-    cat ./junit.output | go-junit-report > ./junit.xml
-    cat ./c.out.tmp | grep -v authenticator_test_server.go > ./c.out
-    gocov convert ./c.out | gocov-xml > ./coverage.xml
-  "
