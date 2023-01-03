@@ -60,7 +60,7 @@ export TEST_APP_TAG="${TEST_APP_TAG:-latest}"
 export INSTALL_APPS="${INSTALL_APPS:-summon-sidecar,secretless-broker,secrets-provider-k8s}"
 export SECRETS_PROVIDER_TAG="${SECRETS_PROVIDER_TAG:-edge}"
 export SECRETLESS_BROKER_TAG="${SECRETLESS_BROKER_TAG:-latest}"
-export CONJUR_APPLIANCE_TAG="${CONJUR_APPLIANCE_TAG:-5.0-stable}"
+export CONJUR_APPLIANCE_TAG="5.0-stable"
 
 # Used to test namespace-label identity scope end-to-end against live K8s infra
 # See design document: https://github.com/cyberark/conjur/pull/2603
