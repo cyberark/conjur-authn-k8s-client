@@ -199,12 +199,6 @@ pipeline {
           }
         }
         stage('Enterprise in Jenkins') {
-          environment {
-            // githubLatestReleaseVersion returns with a newline on the end of
-            // the string, so we use `replaceAll` to remove the extra whitespace.
-            CONJUR_APPLIANCE_TAG = githubLatestReleaseVersion('conjurinc', 'appliance', 'latest').replaceAll("\\s","")
-          }
-
           stages {
             stage('Test app in GKE') {
               steps {
