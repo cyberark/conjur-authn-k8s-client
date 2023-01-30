@@ -56,6 +56,7 @@ CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn-jwt/\"${AUTHENTICA
         """ > .env
         ./bin/dap --provision-master --version "${CONJUR_APPLIANCE_TAG}"
         ./bin/dap --import-custom-certificates
+        ./bin/dap --wait-for-master
         ./bin/dap --provision-follower --version "${CONJUR_APPLIANCE_TAG}"
       popd > /dev/null
 

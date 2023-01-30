@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [0.24.1] - 2022-12-02
+## [0.24.1] - 2023-01-27
+### Changed
+- Add a wait for the master before provisioning the follower in the CI tests.
+  [cyberark/conjur-authn-k8s-client#499](https://github.com/cyberark/conjur-authn-k8s-client/pull/499)
 
 ## [0.24.0] - 2022-11-23
 ### Changed
