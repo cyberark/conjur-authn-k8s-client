@@ -144,7 +144,7 @@ RUN git clone https://github.com/ztombol/bats-support /bats/bats-support && \
     git clone https://github.com/ztombol/bats-file /bats/bats-file
 
 # Install yq
-RUN wget https://github.com/mikefarah/yq/releases/download/v4.2.0/yq_linux_amd64 -O /usr/local/bin/yq && \
+RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
 
 RUN mkdir -p /tests
