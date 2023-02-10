@@ -81,6 +81,11 @@ for app_name in "${APPS[@]}"; do
     conjur variable values add "$app_name-db/counter" "0"
   fi
 
+  # Add secret with special characters
+  if [[ "$app_name" = "test-secrets-provider-for-k8s-app" ]]; then
+    conjur variable values add "$app_name-db/binarytest" "üöä"
+  fi
+
   # Add some secrets that can be used in demos
   conjur variable values add "my-app-db/dev/password"  "dev-env-p@ssw0rd"
   conjur variable values add "my-app-db/dev/url"       "https://dev.example.com:8080/api?list=false#anchor"

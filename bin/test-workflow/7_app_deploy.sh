@@ -47,8 +47,11 @@ pushd ../../helm/conjur-app-deploy > /dev/null
     --set app-secrets-provider-standalone.app.image.tag="$TEST_APP_TAG" \
     --set app-secrets-provider-standalone.app.image.repository="$TEST_APP_REPO" \
     --set app-secrets-provider-standalone.app.platform=$PLATFORM"
+  # Point to my own Secrets Provider image, which uses client.RetrieveBatchSecretsSafe function,
+  # which retrieves base64 encoded secrets, and decodes them in-process before injection.
   secrets_provider_k8s_options="--set app-secrets-provider-k8s.enabled=true \
-    --set app-secrets-provider-k8s.secretsProvider.image.tag=$SECRETS_PROVIDER_TAG \
+    --set app-secrets-provider-k8s.secretsProvider.image.repository=docker.io/johnodonn/secrets-provider \
+    --set app-secrets-provider-k8s.secretsProvider.image.tag=dev \
     --set app-secrets-provider-k8s.conjur.authnLogin=$CONJUR_AUTHN_LOGIN_PREFIX/test-app-secrets-provider-k8s \
     --set app-secrets-provider-k8s.conjur.authnConfigMap.name=conjur-authn-configmap-secrets-provider-k8s \
     --set app-secrets-provider-k8s.app.platform=$PLATFORM"
