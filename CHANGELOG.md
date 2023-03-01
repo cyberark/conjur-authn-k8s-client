@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.24.2] - 2023-03-09
+### Changed
+- Upgrade base image in Dockerfiles to 1.19 and necessary dependencies
+  [cyberark/conjur-authn-k8s-client#502ß](https://github.com/cyberark/conjur-authn-k8s-client/pull/502)
+
 ## [0.24.1] - 2023-01-27
 ### Changed
 - Add a wait for the master before provisioning the follower in the CI tests.

@@ -1,9 +1,10 @@
-FROM goboring/golang:1.16.7b7 as authenticator-client-builder
+FROM golang:1.19 as authenticator-client-builder
 MAINTAINER CyberArk Software Ltd.
 
 ENV GOOS=linux \
     GOARCH=amd64 \
-    CGO_ENABLED=1
+    CGO_ENABLED=1 \
+    GOEXPERIMENT=boringcrypto
 
 # this value changes in ./bin/build
 ARG TAG_SUFFIX="-dev"
@@ -39,7 +40,7 @@ RUN go build -a -installsuffix cgo \
 RUN sh -c "go tool nm authenticator | grep '_Cfunc__goboringcrypto_' 1> /dev/null"
 
 # =================== MAIN CONTAINER ===================
-FROM alpine:3.14 as authenticator-client
+FROM alpine:latest as authenticator-client
 MAINTAINER CyberArk Software Ltd.
 
 RUN apk add -u shadow libc6-compat && \
@@ -124,7 +125,7 @@ LABEL description="The authentication client required to expose secrets from a C
 
 # =================== CONTAINER FOR HELM TEST ===================
 
-FROM golang:alpine3.17 as k8s-cluster-test
+FROM golang:alpine as k8s-cluster-test
 
 # Install packages for testing
 RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl openssl-dev
@@ -144,15 +145,8 @@ RUN git clone https://github.com/ztombol/bats-support /bats/bats-support && \
     git clone https://github.com/ztombol/bats-file /bats/bats-file
 
 # Install yq
-# Build from source to get the latest version due to CVE-2022-4172
-RUN git clone https://github.com/mikefarah/yq /yq && \
-    cd /yq && \
-    go build && \
-    mv yq /usr/bin/yq && \
-    rm -rf /yq && \
+RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && \
     chmod +x /usr/bin/yq
-# RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && \
-#     chmod +x /usr/bin/yq
 
 RUN mkdir -p /tests
 WORKDIR /tests
