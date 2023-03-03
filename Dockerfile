@@ -8,6 +8,7 @@ ENV GOOS=linux \
 
 # this value changes in ./bin/build
 ARG TAG_SUFFIX="-dev"
+ARG VERSION="unreleased"
 
 # On CyberArk dev laptops, golang module dependencies are downloaded with a
 # corporate proxy in the middle. For these connections to succeed we need to
@@ -32,7 +33,8 @@ RUN go mod download
 RUN go get -u github.com/jstemmer/go-junit-report
 
 RUN go build -a -installsuffix cgo \
-    -ldflags="-X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.TagSuffix=$TAG_SUFFIX'" \
+    -ldflags="-X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.TagSuffix=$TAG_SUFFIX' \
+        -X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.Version=$VERSION'" \
     -o authenticator ./cmd/authenticator
 
 # Verify the binary is using BoringCrypto.
@@ -125,7 +127,7 @@ LABEL description="The authentication client required to expose secrets from a C
 
 # =================== CONTAINER FOR HELM TEST ===================
 
-FROM golang:alpine as k8s-cluster-test
+FROM golang:1.20-alpine as k8s-cluster-test
 
 # Install packages for testing
 RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl openssl-dev
