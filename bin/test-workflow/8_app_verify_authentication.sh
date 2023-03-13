@@ -228,8 +228,8 @@ if [[ " ${install_apps[*]} " =~ " secrets-provider-rotation " ]]; then
   echo "Testing secrets provider with rotation"
   # Change secret values in conjur
   "$cli" exec "$(get_conjur_cli_pod_name)" -n "$CONJUR_NAMESPACE_NAME" -- bash -c "\
-    conjur authn login -u admin -p $(get_admin_password) && \
-    conjur variable values add 'test-secrets-provider-rotation-app-db/counter' '1'" > /dev/null
+    conjur login -i admin -p $(get_admin_password) && \
+    conjur variable set -i 'test-secrets-provider-rotation-app-db/counter' -v '1'" > /dev/null
   # Check if SP picks up the new values
   sleep 10
   pod_name=$(get_pod_name test-app-secrets-provider-rotation)

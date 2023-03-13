@@ -22,7 +22,7 @@ function setup_conjur_enterprise {
     check_env_var GCLOUD_SERVICE_KEY
 
     pushd temp > /dev/null
-      git clone --single-branch --branch master git@github.com:cyberark/kubernetes-conjur-deploy "kubernetes-conjur-deploy-$UNIQUE_TEST_ID"
+      git clone --single-branch --branch cli8 git@github.com:cyberark/kubernetes-conjur-deploy "kubernetes-conjur-deploy-$UNIQUE_TEST_ID"
       git clone --single-branch --branch main https://github.com/cyberark/sidecar-injector.git "sidecar-injector-$UNIQUE_TEST_ID"
     popd > /dev/null
 

@@ -3,13 +3,13 @@
 set -eo
 
 if [ "$CONJUR_APPLIANCE_URL" != "" ]; then
-  yes yes | conjur init -u $CONJUR_APPLIANCE_URL -a $CONJUR_ACCOUNT
+  echo y | conjur init --self-signed --force -u $CONJUR_APPLIANCE_URL -a $CONJUR_ACCOUNT
 fi
 
 # check for unset vars after checking for appliance url
 set -u
 
-conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
+conjur login -i admin -p $CONJUR_ADMIN_PASSWORD
 
 readonly POLICY_DIR="/policy"
 
@@ -24,7 +24,7 @@ readonly POLICY_FILES=(
 
 for policy_file in "${POLICY_FILES[@]}"; do
   echo "Loading policy $policy_file..."
-  conjur policy load root $policy_file
+  conjur policy load -b root -f $policy_file
 done
 
 # load secret values for each app
@@ -45,8 +45,8 @@ readonly APPS=(
 
 for app_name in "${APPS[@]}"; do
   echo "Loading secret values for $app_name"
-  conjur variable values add "$app_name-db/password" $DB_PASSWORD
-  conjur variable values add "$app_name-db/username" "test_app"
+  conjur variable set -i "$app_name-db/password" -v $DB_PASSWORD
+  conjur variable set -i "$app_name-db/username" -v "test_app"
 
   case "${TEST_APP_DATABASE}" in
   postgres)
@@ -67,37 +67,37 @@ for app_name in "${APPS[@]}"; do
 
   if [[ "$app_name" = "test-secretless-app"  ||  "$app_name" = "test-secretless-jwt-app" ]]; then
     # Secretless doesn't require the full connection URL, just the host/port
-    conjur variable values add "$app_name-db/url" "$db_address"
-    conjur variable values add "$app_name-db/port" "$PORT"
-    conjur variable values add "$app_name-db/host" "$db_host"
+    conjur variable set -i "$app_name-db/url" -v "$db_address"
+    conjur variable set -i "$app_name-db/port" -v "$PORT"
+    conjur variable set -i "$app_name-db/host" -v "$db_host"
   else
     # The authenticator sidecar injects the full pg connection string into the
     # app environment using Summon
-    conjur variable values add "$app_name-db/url" "$PROTOCOL://$db_address/test_app"
+    conjur variable set -i "$app_name-db/url" -v "$PROTOCOL://$db_address/test_app"
   fi
 
   if [[ "$app_name" = "test-secrets-provider-rotation-app" ]]; then
     # The rotation test uses an additional value which will be changed later
-    conjur variable values add "$app_name-db/counter" "0"
+    conjur variable set -i "$app_name-db/counter" -v "0"
   fi
 
   # Add some secrets that can be used in demos
-  conjur variable values add "my-app-db/dev/password"  "dev-env-p@ssw0rd"
-  conjur variable values add "my-app-db/dev/url"       "https://dev.example.com:8080/api?list=false#anchor"
-  conjur variable values add "my-app-db/dev/username"  "dev-env-username"
-  conjur variable values add "my-app-db/dev/port"      "12345"
-  conjur variable values add "my-app-db/dev/cert-base64" "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURwRENDQW95Z0F3SUJBZ0lRRmZuTzFld2c1bUNoUi8rUlRWeDJQekFOQmdrcWhraUc5dzBCQVFzRkFEQVkKTVJZd0ZBWURWUVFERXcxamIyNXFkWEl0YjNOekxXTmhNQjRYRFRJeE1USXdOekUzTlRneE9Wb1hEVEl5TVRJdwpOekUzTlRneE9Wb3dHekVaTUJjR0ExVUVBeE1RWTI5dWFuVnlMbTE1YjNKbkxtTnZiVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTHZ1SEIwMWo2YytnVVBTaW5Ub2czQ09FeWUrd1RxZ2VPYlgKK1YwSnNlQnhSTnpHTWlSeWljWXIxWG9MeWh1MXpYcHEzQ1JKbDdZaDc1TGtQWENCblo3UlBxYW1yZXFxMWYyZwp2ODJidnNxRkhKQ3Y2WlhLVlNTRTJQY2xEMDZOZjFCUzVoc1FhTjhlblJCRURnTzRqbUszUjBUajBuWGNXMjJBCmZjSlVxQ3MvZm9GVHNVOWxmYitLNDVSWlBGWjRJNnpCQ25QcHg3bzJXVjNPUnpqQ0s5M1lDb2U3OHVVWmNFaGwKK2ZIdGtnQ3N2T1pFa2EvYjRpUjJZRUJmNWlxLzdjSjU4OFpEdVZwL0FyWW9tNHB0dnc0R2srbEdxRytaSjg5eQo1UElBaEplS3NvS3N6Y0xyR0tvYndQdERMY3doYzhQaTJNS2FMZTJsUUhRU1J5cDF1djhDQXdFQUFhT0I1akNCCjR6QU9CZ05WSFE4QkFmOEVCQU1DQmFBd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUdDQ3NHQVFVRkJ3TUMKTUF3R0ExVWRFd0VCL3dRQ01BQXdId1lEVlIwakJCZ3dGb0FVN3J3RmVJV0lhbmNtQkdoMGFjUjZPY0pBTHN3dwpnWUlHQTFVZEVRUjdNSG1DRUdOdmJtcDFjaTV0ZVc5eVp5NWpiMjJDQ21OdmJtcDFjaTF2YzNPQ0ZXTnZibXAxCmNpMXZjM011WTI5dWFuVnlMVzl6YzRJWlkyOXVhblZ5TFc5emN5NWpiMjVxZFhJdGIzTnpMbk4yWTRJblkyOXUKYW5WeUxXOXpjeTVqYjI1cWRYSXRiM056TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUdTSWIzRFFFQgpDd1VBQTRJQkFRQzRjZEtWMGZ4NC96WkZwYUx1bmM0MGY0blkwUHZzRFRaZUNCM0w1M1c5M29hVGFjeTFEcWVFCnVScWxVT05yWWNsQitzOUYyTWVmRHBTK0swTHlVV21hVG9oM05JWGtKTDZHNS9TTHVuN01ZRXJwMXN0YVpDY3UKMkxQcjR1bDJMRmY3UVJjRytwRXIvTmxmay9RaENNb1NCYk1MNmZvYWtSQzNpTzA2bEUrMWk2MHBSdzdkdW90YgpoV3R0cUhqSTFMc1QxZ09neDhOVTNLeUczNERqNURGZFdQbU1FckdjWlNpMXNjdmlLL0UvMTkyUUxGbnB4UlR2CnltQ1J0eWpaUjFyaUM5ZkhqcUhuNGZ1bVV3eUJ5aEJpUmVmNXhGVHBiL2lQZzB6a0lIeENzd3ZQY3lod1djaHMKZGlYeElPUEVxWGNNN0xRbnNvalBoUEt0VXlJRytKdWwKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQoK"
-  conjur variable values add "my-app-db/prod/password" "prod-env-p@ssw0rd"
-  conjur variable values add "my-app-db/prod/url"      "https://prod.example.com:8080/api?list=false#anchor"
-  conjur variable values add "my-app-db/prod/username" "prod-env-username"
-  conjur variable values add "my-app-db/prod/port"     "12345"
-  conjur variable values add "my-app-db/prod/cert-base64" "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURwRENDQW95Z0F3SUJBZ0lRRmZuTzFld2c1bUNoUi8rUlRWeDJQekFOQmdrcWhraUc5dzBCQVFzRkFEQVkKTVJZd0ZBWURWUVFERXcxamIyNXFkWEl0YjNOekxXTmhNQjRYRFRJeE1USXdOekUzTlRneE9Wb1hEVEl5TVRJdwpOekUzTlRneE9Wb3dHekVaTUJjR0ExVUVBeE1RWTI5dWFuVnlMbTE1YjNKbkxtTnZiVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTHZ1SEIwMWo2YytnVVBTaW5Ub2czQ09FeWUrd1RxZ2VPYlgKK1YwSnNlQnhSTnpHTWlSeWljWXIxWG9MeWh1MXpYcHEzQ1JKbDdZaDc1TGtQWENCblo3UlBxYW1yZXFxMWYyZwp2ODJidnNxRkhKQ3Y2WlhLVlNTRTJQY2xEMDZOZjFCUzVoc1FhTjhlblJCRURnTzRqbUszUjBUajBuWGNXMjJBCmZjSlVxQ3MvZm9GVHNVOWxmYitLNDVSWlBGWjRJNnpCQ25QcHg3bzJXVjNPUnpqQ0s5M1lDb2U3OHVVWmNFaGwKK2ZIdGtnQ3N2T1pFa2EvYjRpUjJZRUJmNWlxLzdjSjU4OFpEdVZwL0FyWW9tNHB0dnc0R2srbEdxRytaSjg5eQo1UElBaEplS3NvS3N6Y0xyR0tvYndQdERMY3doYzhQaTJNS2FMZTJsUUhRU1J5cDF1djhDQXdFQUFhT0I1akNCCjR6QU9CZ05WSFE4QkFmOEVCQU1DQmFBd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUdDQ3NHQVFVRkJ3TUMKTUF3R0ExVWRFd0VCL3dRQ01BQXdId1lEVlIwakJCZ3dGb0FVN3J3RmVJV0lhbmNtQkdoMGFjUjZPY0pBTHN3dwpnWUlHQTFVZEVRUjdNSG1DRUdOdmJtcDFjaTV0ZVc5eVp5NWpiMjJDQ21OdmJtcDFjaTF2YzNPQ0ZXTnZibXAxCmNpMXZjM011WTI5dWFuVnlMVzl6YzRJWlkyOXVhblZ5TFc5emN5NWpiMjVxZFhJdGIzTnpMbk4yWTRJblkyOXUKYW5WeUxXOXpjeTVqYjI1cWRYSXRiM056TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUdTSWIzRFFFQgpDd1VBQTRJQkFRQzRjZEtWMGZ4NC96WkZwYUx1bmM0MGY0blkwUHZzRFRaZUNCM0w1M1c5M29hVGFjeTFEcWVFCnVScWxVT05yWWNsQitzOUYyTWVmRHBTK0swTHlVV21hVG9oM05JWGtKTDZHNS9TTHVuN01ZRXJwMXN0YVpDY3UKMkxQcjR1bDJMRmY3UVJjRytwRXIvTmxmay9RaENNb1NCYk1MNmZvYWtSQzNpTzA2bEUrMWk2MHBSdzdkdW90YgpoV3R0cUhqSTFMc1QxZ09neDhOVTNLeUczNERqNURGZFdQbU1FckdjWlNpMXNjdmlLL0UvMTkyUUxGbnB4UlR2CnltQ1J0eWpaUjFyaUM5ZkhqcUhuNGZ1bVV3eUJ5aEJpUmVmNXhGVHBiL2lQZzB6a0lIeENzd3ZQY3lod1djaHMKZGlYeElPUEVxWGNNN0xRbnNvalBoUEt0VXlJRytKdWwKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQoK"
+  conjur variable set -i "my-app-db/dev/password"  -v "dev-env-p@ssw0rd"
+  conjur variable set -i "my-app-db/dev/url"       -v "https://dev.example.com:8080/api?list=false#anchor"
+  conjur variable set -i "my-app-db/dev/username"  -v "dev-env-username"
+  conjur variable set -i "my-app-db/dev/port"      -v "12345"
+  conjur variable set -i "my-app-db/dev/cert-base64" -v"LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURwRENDQW95Z0F3SUJBZ0lRRmZuTzFld2c1bUNoUi8rUlRWeDJQekFOQmdrcWhraUc5dzBCQVFzRkFEQVkKTVJZd0ZBWURWUVFERXcxamIyNXFkWEl0YjNOekxXTmhNQjRYRFRJeE1USXdOekUzTlRneE9Wb1hEVEl5TVRJdwpOekUzTlRneE9Wb3dHekVaTUJjR0ExVUVBeE1RWTI5dWFuVnlMbTE1YjNKbkxtTnZiVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTHZ1SEIwMWo2YytnVVBTaW5Ub2czQ09FeWUrd1RxZ2VPYlgKK1YwSnNlQnhSTnpHTWlSeWljWXIxWG9MeWh1MXpYcHEzQ1JKbDdZaDc1TGtQWENCblo3UlBxYW1yZXFxMWYyZwp2ODJidnNxRkhKQ3Y2WlhLVlNTRTJQY2xEMDZOZjFCUzVoc1FhTjhlblJCRURnTzRqbUszUjBUajBuWGNXMjJBCmZjSlVxQ3MvZm9GVHNVOWxmYitLNDVSWlBGWjRJNnpCQ25QcHg3bzJXVjNPUnpqQ0s5M1lDb2U3OHVVWmNFaGwKK2ZIdGtnQ3N2T1pFa2EvYjRpUjJZRUJmNWlxLzdjSjU4OFpEdVZwL0FyWW9tNHB0dnc0R2srbEdxRytaSjg5eQo1UElBaEplS3NvS3N6Y0xyR0tvYndQdERMY3doYzhQaTJNS2FMZTJsUUhRU1J5cDF1djhDQXdFQUFhT0I1akNCCjR6QU9CZ05WSFE4QkFmOEVCQU1DQmFBd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUdDQ3NHQVFVRkJ3TUMKTUF3R0ExVWRFd0VCL3dRQ01BQXdId1lEVlIwakJCZ3dGb0FVN3J3RmVJV0lhbmNtQkdoMGFjUjZPY0pBTHN3dwpnWUlHQTFVZEVRUjdNSG1DRUdOdmJtcDFjaTV0ZVc5eVp5NWpiMjJDQ21OdmJtcDFjaTF2YzNPQ0ZXTnZibXAxCmNpMXZjM011WTI5dWFuVnlMVzl6YzRJWlkyOXVhblZ5TFc5emN5NWpiMjVxZFhJdGIzTnpMbk4yWTRJblkyOXUKYW5WeUxXOXpjeTVqYjI1cWRYSXRiM056TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUdTSWIzRFFFQgpDd1VBQTRJQkFRQzRjZEtWMGZ4NC96WkZwYUx1bmM0MGY0blkwUHZzRFRaZUNCM0w1M1c5M29hVGFjeTFEcWVFCnVScWxVT05yWWNsQitzOUYyTWVmRHBTK0swTHlVV21hVG9oM05JWGtKTDZHNS9TTHVuN01ZRXJwMXN0YVpDY3UKMkxQcjR1bDJMRmY3UVJjRytwRXIvTmxmay9RaENNb1NCYk1MNmZvYWtSQzNpTzA2bEUrMWk2MHBSdzdkdW90YgpoV3R0cUhqSTFMc1QxZ09neDhOVTNLeUczNERqNURGZFdQbU1FckdjWlNpMXNjdmlLL0UvMTkyUUxGbnB4UlR2CnltQ1J0eWpaUjFyaUM5ZkhqcUhuNGZ1bVV3eUJ5aEJpUmVmNXhGVHBiL2lQZzB6a0lIeENzd3ZQY3lod1djaHMKZGlYeElPUEVxWGNNN0xRbnNvalBoUEt0VXlJRytKdWwKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQoK"
+  conjur variable set -i "my-app-db/prod/password" -v "prod-env-p@ssw0rd"
+  conjur variable set -i "my-app-db/prod/url"      -v "https://prod.example.com:8080/api?list=false#anchor"
+  conjur variable set -i "my-app-db/prod/username" -v "prod-env-username"
+  conjur variable set -i "my-app-db/prod/port"     -v "12345"
+  conjur variable set -i "my-app-db/prod/cert-base64" -v "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURwRENDQW95Z0F3SUJBZ0lRRmZuTzFld2c1bUNoUi8rUlRWeDJQekFOQmdrcWhraUc5dzBCQVFzRkFEQVkKTVJZd0ZBWURWUVFERXcxamIyNXFkWEl0YjNOekxXTmhNQjRYRFRJeE1USXdOekUzTlRneE9Wb1hEVEl5TVRJdwpOekUzTlRneE9Wb3dHekVaTUJjR0ExVUVBeE1RWTI5dWFuVnlMbTE1YjNKbkxtTnZiVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTHZ1SEIwMWo2YytnVVBTaW5Ub2czQ09FeWUrd1RxZ2VPYlgKK1YwSnNlQnhSTnpHTWlSeWljWXIxWG9MeWh1MXpYcHEzQ1JKbDdZaDc1TGtQWENCblo3UlBxYW1yZXFxMWYyZwp2ODJidnNxRkhKQ3Y2WlhLVlNTRTJQY2xEMDZOZjFCUzVoc1FhTjhlblJCRURnTzRqbUszUjBUajBuWGNXMjJBCmZjSlVxQ3MvZm9GVHNVOWxmYitLNDVSWlBGWjRJNnpCQ25QcHg3bzJXVjNPUnpqQ0s5M1lDb2U3OHVVWmNFaGwKK2ZIdGtnQ3N2T1pFa2EvYjRpUjJZRUJmNWlxLzdjSjU4OFpEdVZwL0FyWW9tNHB0dnc0R2srbEdxRytaSjg5eQo1UElBaEplS3NvS3N6Y0xyR0tvYndQdERMY3doYzhQaTJNS2FMZTJsUUhRU1J5cDF1djhDQXdFQUFhT0I1akNCCjR6QU9CZ05WSFE4QkFmOEVCQU1DQmFBd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3RUdDQ3NHQVFVRkJ3TUMKTUF3R0ExVWRFd0VCL3dRQ01BQXdId1lEVlIwakJCZ3dGb0FVN3J3RmVJV0lhbmNtQkdoMGFjUjZPY0pBTHN3dwpnWUlHQTFVZEVRUjdNSG1DRUdOdmJtcDFjaTV0ZVc5eVp5NWpiMjJDQ21OdmJtcDFjaTF2YzNPQ0ZXTnZibXAxCmNpMXZjM011WTI5dWFuVnlMVzl6YzRJWlkyOXVhblZ5TFc5emN5NWpiMjVxZFhJdGIzTnpMbk4yWTRJblkyOXUKYW5WeUxXOXpjeTVqYjI1cWRYSXRiM056TG5OMll5NWpiSFZ6ZEdWeUxteHZZMkZzTUEwR0NTcUdTSWIzRFFFQgpDd1VBQTRJQkFRQzRjZEtWMGZ4NC96WkZwYUx1bmM0MGY0blkwUHZzRFRaZUNCM0w1M1c5M29hVGFjeTFEcWVFCnVScWxVT05yWWNsQitzOUYyTWVmRHBTK0swTHlVV21hVG9oM05JWGtKTDZHNS9TTHVuN01ZRXJwMXN0YVpDY3UKMkxQcjR1bDJMRmY3UVJjRytwRXIvTmxmay9RaENNb1NCYk1MNmZvYWtSQzNpTzA2bEUrMWk2MHBSdzdkdW90YgpoV3R0cUhqSTFMc1QxZ09neDhOVTNLeUczNERqNURGZFdQbU1FckdjWlNpMXNjdmlLL0UvMTkyUUxGbnB4UlR2CnltQ1J0eWpaUjFyaUM5ZkhqcUhuNGZ1bVV3eUJ5aEJpUmVmNXhGVHBiL2lQZzB6a0lIeENzd3ZQY3lod1djaHMKZGlYeElPUEVxWGNNN0xRbnNvalBoUEt0VXlJRytKdWwKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQoK"
 
   echo "Adding JWT variables"
-  conjur variable values add conjur/authn-jwt/$AUTHENTICATOR_ID/jwks-uri $JWKS_URI
-  conjur variable values add conjur/authn-jwt/$AUTHENTICATOR_ID/token-app-property "sub"
-  conjur variable values add conjur/authn-jwt/$AUTHENTICATOR_ID/issuer $ISSUER
-  conjur variable values add conjur/authn-jwt/$AUTHENTICATOR_ID/identity-path "conjur/authn-jwt/$AUTHENTICATOR_ID/apps"
+  conjur variable set -i conjur/authn-jwt/$AUTHENTICATOR_ID/jwks-uri -v $JWKS_URI
+  conjur variable set -i conjur/authn-jwt/$AUTHENTICATOR_ID/token-app-property -v "sub"
+  conjur variable set -i conjur/authn-jwt/$AUTHENTICATOR_ID/issuer -v $ISSUER
+  conjur variable set -i conjur/authn-jwt/$AUTHENTICATOR_ID/identity-path -v "conjur/authn-jwt/$AUTHENTICATOR_ID/apps"
 done
 
-conjur authn logout
+conjur logout
