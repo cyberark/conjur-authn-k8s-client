@@ -36,7 +36,7 @@ For general contribution and community guidelines, please see the [community rep
 
 ![DebugFlow](dev/DebugFlow.png)
 
-For development porupuses you may want to debug your code on K8S pod. There are the steps to do it:
+For development purposes you may want to debug your code on K8S pod. There are the steps to do it:
 
 1. Make sure `delve` installed
    `brew install delve`
@@ -126,7 +126,7 @@ For development porupuses you may want to debug your code on K8S pod. There are 
      debug like any other program but now on your pod. There is a debug configuration for GoLand in this repo called `Debug_Authn_K8S_Client_On_Pod.xml`
      ![goland_run_configuration](dev/goland_run_configuration.png)
 
-Clean you env with:
+Clean your env with:
 
 `kind delete cluster`
 
@@ -146,18 +146,18 @@ will download and run the `conjur-oss-helm-chart` project example, then consecut
 
 #### Demo Workflow JWT
 
-You can create demo cluster of to check JWT sidecars on K8S. Please be aware this is now only for local kind cluster and not part of the pipleline because it requires open of K8S API for unauthenticated users. These are two options to run it.
+You can create demo cluster of to check JWT sidecars on K8S. Please be aware this is now only for local kind cluster and not part of the pipeline because it requires open of K8S API for unauthenticated users. These are three options to run it.
 
-1. Test conjur-authn-k8s-client as sidecar container
+1. Test conjur-authn-k8s-client as sidecar container:
 
    `./bin/test-workflow/start  -a summon-sidecar-jwt --jwt` 
 
-2. Test secrets provider as init container :
+2. Test secrets provider as init container:
 
    `./bin/test-workflow/start  -a secrets-provider-k8s-jwt --jwt`
    
-3. Test secretless broker as sidecar container:
-./bin/test-workflow/start  -a secretess-broker --jwt
+3. Test secretless broker as sidecar container:  
+   `./bin/test-workflow/start  -a secretless-broker --jwt`
 
 Flags explanation :
 
