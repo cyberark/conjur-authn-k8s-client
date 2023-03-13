@@ -34,20 +34,6 @@ func validUsername(key, value string) error {
 	return err
 }
 
-func validConjurVersion(key, version string) error {
-	// Only versions '4' & '5' are allowed, with '5' being used as the default
-	switch version {
-	case "4":
-		break
-	case "5":
-		break
-	default:
-		return fmt.Errorf(log.CAKC060, key, version)
-	}
-
-	return nil
-}
-
 func ValidateSetting(key string, value string) error {
 	switch key {
 	case "CONJUR_AUTHN_LOGIN":
@@ -56,8 +42,6 @@ func ValidateSetting(key string, value string) error {
 		return validInt(key, value)
 	case "CONJUR_TOKEN_TIMEOUT":
 		return validTimeout(key, value)
-	case "CONJUR_VERSION":
-		return validConjurVersion(key, value)
 	case "JWT_TOKEN_PATH":
 		return validatePath(value)
 	default:

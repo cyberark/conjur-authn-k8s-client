@@ -3,10 +3,10 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/k8s"
+	"testing"
+
 	logger "github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 type errorAssertFunc func(*testing.T, []error)
@@ -32,8 +32,6 @@ func TestValidate(t *testing.T) {
 				"CONTAINER_MODE":                       "init",
 				// certificate provided
 				"CONJUR_SSL_CERTIFICATE": "samplecertificate",
-				// valid version
-				"CONJUR_VERSION": "5",
 			},
 			assert: assertEmptyErrorList(),
 		},
@@ -138,61 +136,6 @@ func TestValidate(t *testing.T) {
 
 			// ASSERT
 			tc.assert(t, errLogs)
-		})
-	}
-}
-
-func TestConjurVersion(t *testing.T) {
-	TestCases := []struct {
-		description string
-		version     string
-		expVersion  string
-		assert      errorAssertFunc
-	}{
-		{
-			description: "Succeeds if version is 4",
-			version:     "4",
-			expVersion:  "4",
-			assert:      assertErrorNotInList(fmt.Errorf(logger.CAKC060, "CONJUR_VERSION", "4")),
-		},
-		{
-			description: "Succeeds if version is 5",
-			version:     "5",
-			expVersion:  "5",
-			assert:      assertErrorNotInList(fmt.Errorf(logger.CAKC060, "CONJUR_VERSION", "5")),
-		},
-		{
-			description: "Sets the default version for an empty value",
-			version:     "",
-			expVersion:  k8s.DefaultConjurVersion,
-			assert:      assertErrorNotInList(fmt.Errorf(logger.CAKC060, "CONJUR_VERSION", k8s.DefaultConjurVersion)),
-		},
-		{
-			description: "Returns error if version is invalid",
-			version:     "3",
-			expVersion:  "",
-			assert:      assertErrorInList(fmt.Errorf(logger.CAKC060, "CONJUR_VERSION", "3")),
-		},
-	}
-
-	for _, tc := range TestCases {
-		provideVersion := func(key string) string {
-			if key == "CONJUR_VERSION" {
-				return tc.version
-			}
-			return ""
-		}
-
-		t.Run(tc.description, func(t *testing.T) {
-			// SETUP & EXERCISE
-			settings := GatherSettings(&k8s.Config{}, provideVersion)
-			errLogs := settings.validate(&k8s.Config{}, successfulMockReadFile)
-
-			// ASSERT
-			tc.assert(t, errLogs)
-			if tc.expVersion != "" {
-				assert.Equal(t, tc.expVersion, settings["CONJUR_VERSION"])
-			}
 		})
 	}
 }

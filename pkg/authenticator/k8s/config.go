@@ -15,7 +15,6 @@ type Config struct {
 	InjectCertLogPath string
 	PodName           string
 	PodNamespace      string
-	ConjurVersion     string
 }
 
 // Default settings (this comment added to satisfy linter)
@@ -23,8 +22,6 @@ const (
 	DefaultClientCertPath    = "/etc/conjur/ssl/client.pem"
 	DefaultInjectCertLogPath = "/tmp/conjur_copy_text_output.log"
 	DefaultTokenFilePath     = "/run/conjur/access-token"
-
-	DefaultConjurVersion = "5"
 
 	// DefaultTokenRefreshTimeout is the default time the system waits to reauthenticate on error
 	DefaultTokenRefreshTimeout = "6m0s"
@@ -53,7 +50,6 @@ var envVariables = []string{
 	"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT",
 	"CONJUR_SSL_CERTIFICATE",
 	"CONJUR_TOKEN_TIMEOUT",
-	"CONJUR_VERSION",
 	"CONTAINER_MODE",
 	"DEBUG",
 	"MY_POD_NAME",
@@ -63,7 +59,6 @@ var envVariables = []string{
 var defaultValues = map[string]string{
 	"CONJUR_CLIENT_CERT_PATH":              DefaultClientCertPath,
 	"CONJUR_AUTHN_TOKEN_FILE":              DefaultTokenFilePath,
-	"CONJUR_VERSION":                       DefaultConjurVersion,
 	"CONJUR_TOKEN_TIMEOUT":                 DefaultTokenRefreshTimeout,
 	"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": DefaultClientCertRetryCountLimit,
 }
@@ -86,8 +81,6 @@ func (config *Config) LoadConfig(settings map[string]string) {
 			config.PodName = value
 		case "MY_POD_NAMESPACE":
 			config.PodNamespace = value
-		case "CONJUR_VERSION":
-			config.ConjurVersion = value
 		}
 	}
 }

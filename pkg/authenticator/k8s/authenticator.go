@@ -165,7 +165,7 @@ func (auth *Authenticator) login(ctx context.Context, tracer trace.Tracer) error
 	})
 	span.End()
 
-	req, err := LoginRequest(auth.config.Common.URL, auth.config.ConjurVersion, csrBytes, auth.config.Common.Username.Prefix)
+	req, err := LoginRequest(auth.config.Common.URL, csrBytes, auth.config.Common.Username.Prefix)
 	if err != nil {
 		return err
 	}
@@ -307,7 +307,6 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 
 	req, err := AuthenticateRequest(
 		auth.config.Common.URL,
-		auth.config.ConjurVersion,
 		auth.config.Common.Account,
 		auth.config.Common.Username.FullUsername,
 	)
@@ -338,21 +337,7 @@ func (auth *Authenticator) parseAuthenticationResponse(ctx context.Context, trac
 	_, span := tracer.Start(ctx, "Parse authentication response")
 	defer span.End()
 
-	var content []byte
-	var err error
-
-	// Token is only encrypted in Conjur v4
-	if auth.config.ConjurVersion == "4" {
-		content, err = decodeFromPEM(response, auth.PublicCert, auth.privateKey)
-		if err != nil {
-			span.RecordErrorAndSetStatus(err)
-			return nil, log.RecordedError(log.CAKC020)
-		}
-	} else if auth.config.ConjurVersion == "5" {
-		content = response
-	}
-
-	return content, nil
+	return response, nil
 }
 
 // generateSANURI returns the formatted uri(SPIFFEE format for now) for the certificate.

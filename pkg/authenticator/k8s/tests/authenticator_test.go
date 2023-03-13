@@ -137,7 +137,6 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			username, _ := common.NewUsername("host/test-user")
 
 			cfg := k8s.Config{
-				ConjurVersion:     "5",
 				InjectCertLogPath: certLogPath,
 				PodName:           tc.podName,
 				PodNamespace:      tc.podNamespace,
