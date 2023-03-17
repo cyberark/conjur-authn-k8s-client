@@ -16,7 +16,6 @@ fi
 
 check_env_var TEST_APP_NAMESPACE_NAME
 check_env_var TEST_APP_NAMESPACE_LABEL
-check_env_var CONJUR_VERSION
 check_env_var CONJUR_ACCOUNT
 check_env_var CONJUR_APPLIANCE_URL
 check_env_var CONJUR_ADMIN_PASSWORD
@@ -31,10 +30,10 @@ announce "Generating Conjur policy."
 prepare_conjur_cli_image() {
   announce "Pulling and pushing Conjur CLI image."
 
-  docker pull cyberark/conjur-cli:"$CONJUR_VERSION"-latest
+  docker pull cyberark/conjur-cli:8
 
   cli_app_image="$(platform_image_for_push conjur-cli $CONJUR_NAMESPACE_NAME)"
-  docker tag cyberark/conjur-cli:"$CONJUR_VERSION"-latest "$cli_app_image"
+  docker tag cyberark/conjur-cli:8 "$cli_app_image"
 
   docker push "$cli_app_image"
 }
@@ -59,9 +58,9 @@ deploy_conjur_cli() {
 ensure_conjur_cli_initialized() {
   announce "Ensure that Conjur CLI pod has a connection with Conjur initialized."
 
-  "$cli" exec "$1" -- bash -c "yes yes | conjur init -a '$CONJUR_ACCOUNT' -u '$CONJUR_APPLIANCE_URL'"
+  "$cli" exec "$1" -- sh -c "echo y | conjur init -a '$CONJUR_ACCOUNT' -u '$CONJUR_APPLIANCE_URL' --self-signed --force"
   # Flaky with 500 Internal Server Error, mitigate with retry
-  wait_for_it 300 "$cli exec $1 -- conjur authn login -u admin -p '$CONJUR_ADMIN_PASSWORD'"
+  wait_for_it 300 "$cli exec $1 -- conjur login -i admin -p '$CONJUR_ADMIN_PASSWORD'"
 }
 
 pushd policy > /dev/null
@@ -112,7 +111,7 @@ if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
     run --rm \
     -v "${PWD}/policy":/policy \
     -w /src/cli \
-    --entrypoint /bin/bash \
+    --entrypoint /bin/sh \
     client -c "
       conjur_appliance_url='${CONJUR_APPLIANCE_URL}' \
       CONJUR_ACCOUNT='${CONJUR_ACCOUNT}' \
@@ -151,7 +150,7 @@ else
   announce "JWKS URI of this cluster is $JWKS_URI and Issuer is $ISSUER"
 
   wait_for_it 300 "$cli exec $conjur_cli_pod -- \
-    bash -c \"
+    sh -c \"
       conjur_appliance_url='${CONJUR_APPLIANCE_URL}' \
       CONJUR_ACCOUNT='${CONJUR_ACCOUNT}' \
       CONJUR_ADMIN_PASSWORD='${CONJUR_ADMIN_PASSWORD}' \

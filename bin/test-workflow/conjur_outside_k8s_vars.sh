@@ -23,18 +23,18 @@ echo -n \
   | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > kubernetes/api-ca.pem
 run_command_with_platform "$cli get secret -n \"\$CONJUR_NAMESPACE_NAME\" $(cat kubernetes/token-name) -o json | jq -r '.data[\"ca.crt\"]' | base64 --decode >> kubernetes/api-ca.pem"
 
-# conjur variable values add conjur/authn-k8s/<authenticator>/kubernetes/<var> "<value>"
+# conjur variable set -i conjur/authn-k8s/<authenticator>/kubernetes/<var> -v "<value>"
 docker-compose -f "temp/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml" \
   run --rm \
   -v "${PWD}/kubernetes":/k8s-resources \
   -w /src/cli \
-  --entrypoint /bin/bash \
+  --entrypoint /bin/sh \
   client -c "
-    yes yes | conjur init -u $CONJUR_APPLIANCE_URL -a $CONJUR_ACCOUNT
-    conjur authn login -u admin -p $CONJUR_ADMIN_PASSWORD
-    conjur variable values add conjur/authn-k8s/$AUTHENTICATOR_ID/kubernetes/ca-cert < /k8s-resources/api-ca.pem
-    conjur variable values add conjur/authn-k8s/$AUTHENTICATOR_ID/kubernetes/service-account-token < /k8s-resources/service-account-token
-    conjur variable values add conjur/authn-k8s/$AUTHENTICATOR_ID/kubernetes/api-url \"\$(cat /k8s-resources/api-url | tr -d '\n')\"
+    echo y | conjur init -u $CONJUR_APPLIANCE_URL -a $CONJUR_ACCOUNT --self-signed --force
+    conjur login -i admin -p $CONJUR_ADMIN_PASSWORD
+    conjur variable set -i conjur/authn-k8s/$AUTHENTICATOR_ID/kubernetes/ca-cert -v \"\$(cat /k8s-resources/api-ca.pem)\"
+    conjur variable set -i conjur/authn-k8s/$AUTHENTICATOR_ID/kubernetes/service-account-token -v \"\$(cat /k8s-resources/service-account-token)\"
+    conjur variable set -i conjur/authn-k8s/$AUTHENTICATOR_ID/kubernetes/api-url -v \"\$(cat /k8s-resources/api-url | tr -d '\n')\"
   "
 
 pushd kubernetes > /dev/null

@@ -33,8 +33,8 @@ function setup_conjur_enterprise {
     check_env_var HOST_IP
 
     pushd temp > /dev/null
-      # TODO - once these changes are merged, this branch has to be updated to main
-      git clone --single-branch --branch custom-port-follower git@github.com:conjurdemos/conjur-intro.git "conjur-intro-$UNIQUE_TEST_ID"
+      # TODO - once https://github.com/conjurdemos/conjur-intro/pull/113 is merged, this branch has to be updated to 'main'
+      git clone --single-branch --branch cli8 git@github.com:conjurdemos/conjur-intro.git "conjur-intro-$UNIQUE_TEST_ID"
       git clone --single-branch --branch main https://github.com/cyberark/sidecar-injector.git "sidecar-injector-$UNIQUE_TEST_ID"
 
       pushd "conjur-intro-$UNIQUE_TEST_ID" > /dev/null

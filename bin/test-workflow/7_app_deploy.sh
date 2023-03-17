@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -euox pipefail
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
 TIMEOUT="${TIMEOUT:-5m0s}"
@@ -13,7 +13,7 @@ check_env_var SECRETS_PROVIDER_TAG
 check_env_var SECRETLESS_BROKER_TAG
 
 # Upon error, dump kubernetes resources in the application Namespace
-# trap dump_application_namespace_upon_error EXIT
+trap dump_application_namespace_upon_error EXIT
 
 set_namespace "$TEST_APP_NAMESPACE_NAME"
 

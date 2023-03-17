@@ -16,7 +16,6 @@ var environmentValues = map[string]string{
 	"CONJUR_AUTHN_LOGIN":     "host",
 	"CONJUR_CERT_FILE":       "testSSLCertFile.txt",
 	"CONJUR_SSL_CERTIFICATE": "testSSLCert",
-	"CONJUR_VERSION":         "",
 	"MY_POD_NAMESPACE":       "testNameSpace",
 	"MY_POD_NAME":            "testPodName",
 }
@@ -68,7 +67,6 @@ func TestGatherSettings(t *testing.T) {
 				"CONJUR_CLIENT_CERT_PATH":              k8s.DefaultClientCertPath,
 				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": k8s.DefaultClientCertRetryCountLimit,
 				"CONJUR_TOKEN_TIMEOUT":                 k8s.DefaultTokenRefreshTimeout,
-				"CONJUR_VERSION":                       k8s.DefaultConjurVersion,
 			},
 		},
 		{
@@ -86,7 +84,6 @@ func TestGatherSettings(t *testing.T) {
 				"CONTAINER_MODE":                       "",
 				"CONJUR_CLIENT_CERT_PATH":              k8s.DefaultClientCertPath,
 				"CONJUR_AUTHN_TOKEN_FILE":              k8s.DefaultTokenFilePath,
-				"CONJUR_VERSION":                       k8s.DefaultConjurVersion,
 				"CONJUR_TOKEN_TIMEOUT":                 k8s.DefaultTokenRefreshTimeout,
 				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": k8s.DefaultClientCertRetryCountLimit,
 			},

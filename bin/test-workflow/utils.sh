@@ -100,12 +100,12 @@ get_conjur_cli_pod_name() {
 run_conjur_cmd_as_admin() {
   local command="$(cat $@)"
 
-  conjur authn logout > /dev/null
-  conjur authn login -u admin -p "$CONJUR_ADMIN_PASSWORD" > /dev/null
+  conjur logout > /dev/null
+  conjur login -i admin -p "$CONJUR_ADMIN_PASSWORD" > /dev/null
 
   local output=$(eval "$command")
 
-  conjur authn logout > /dev/null
+  conjur logout > /dev/null
   echo "$output"
 }
 
@@ -130,7 +130,7 @@ load_policy() {
   local POLICY_FILE=$1
 
   run_conjur_cmd_as_admin <<CMD
-conjur policy load --as-group security_admin "policy/$POLICY_FILE"
+conjur policy load -b root -f "policy/$POLICY_FILE"
 CMD
 }
 
@@ -375,7 +375,6 @@ function run_command_with_platform {
     -e CONJUR_AUTHN_LOGIN_PREFIX \
     -e AUTHENTICATOR_ID \
     -e CONJUR_NAMESPACE_NAME \
-    -e CONJUR_VERSION \
     -e SAMPLE_APP_BACKEND_DB_PASSWORD \
     -e TEST_APP_DATABASE \
     -e TEST_APP_NAMESPACE_NAME \

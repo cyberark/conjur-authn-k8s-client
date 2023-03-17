@@ -6,13 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [0.24.2] - 2023-03-09
+## [0.25.0] - 2023-03-15
+
+### Removed
+- Removed support for Conjur v4 and the `CONJUR_VERSION` env variable
+  [cyberark/conjur-authn-k8s-client#505](https://github.com/cyberark/conjur-authn-k8s-client/pull/505)
+
 ### Changed
 - Upgrade base image in Dockerfiles to 1.19 and necessary dependencies
   [cyberark/conjur-authn-k8s-client#502ß](https://github.com/cyberark/conjur-authn-k8s-client/pull/502)
-
-## [0.24.1] - 2023-01-27
-### Changed
 - Add a wait for the master before provisioning the follower in the CI tests.
   [cyberark/conjur-authn-k8s-client#499](https://github.com/cyberark/conjur-authn-k8s-client/pull/499)
 

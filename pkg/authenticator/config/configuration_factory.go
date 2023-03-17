@@ -3,10 +3,11 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
 
 	jwtAuthenticator "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/jwt"
 	k8sAuthenticator "github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/k8s"
