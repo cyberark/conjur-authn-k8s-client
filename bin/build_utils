@@ -27,7 +27,7 @@ function gen_versions() {
 # The TAG_NAME variable is set automatically on tag-triggered builds for fixed versions.
 function git_tag_suffix() {
   if [[ -z "${TAG_NAME:-}" ]]; then
-    echo "-$(git_commit_short)"
+    echo "$(git_commit_short)"
   else
     echo ""
   fi
