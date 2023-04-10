@@ -11,7 +11,7 @@ RUN curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 |
 # Install helm unittest plugin
 RUN mv /etc/os-release /etc/os-release.bak && \
     touch /etc/os-release && \
-    helm plugin install https://github.com/quintush/helm-unittest && \
+    helm plugin install https://github.com/helm-unittest/helm-unittest && \
     mv /etc/os-release.bak /etc/os-release
 
 # Install yq

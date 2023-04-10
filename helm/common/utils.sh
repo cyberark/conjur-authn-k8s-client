@@ -81,13 +81,17 @@ function meets_min_version() {
 
 # Install the 'helm-unittest' plugin if it hasn't been install already
 function run_helm_unittest() {
+
     if [[ ! "$(helm plugin list | awk '/^unittest\t/{print $1}')" ]]; then
         echo "Installing 'helm-unittest' Helm plugin"
-        helm plugin install https://github.com/quintush/helm-unittest
+        helm plugin install https://github.com/helm-unittest/helm-unittest
     fi
 
     # Run a Helm unit test
-    helm unittest . --helm3
+    echo "@RP running unittest"
+    pwd
+    helm unittest . -v authnK8s.authenticatorID="my-authenticator-id"
+    echo "@RP running unittest"
 }
 
 function invert_exit_status() {

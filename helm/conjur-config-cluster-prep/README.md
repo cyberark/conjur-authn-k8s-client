@@ -226,6 +226,20 @@ The steps are as follows:
    - Authenticator ServiceAccount 
    - Authenticator ClusterRole 
 
+   __NOTE: Beginning in Kubernetes 1.24 Kubernetes will not generate Secrets automatically for ServiceAccounts.
+     Conjur Config Cluster Prep Helm chart versions 0.2.1 and later will create this Service
+     account secret automatically. For Cluster Prep versions 0.1.x the secret will need to be created manually.
+     Below is an example to create a service account secret.__
+```
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: conjur-oss-service-account-token
+  annotations:
+    kubernetes.io/service-account.name: conjur-oss
+```
+
 ## Examples: Running Helm Install
 
 ### Optional: Creating a Local Copy of This Helm Chart
