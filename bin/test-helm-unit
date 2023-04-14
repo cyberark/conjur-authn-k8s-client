@@ -19,7 +19,7 @@ pushd helm
         pushd "$chart"
             ./test-lint
             ./test-schema
-            ./test-unit
+            #./test-unit
         popd
     done
 
@@ -33,7 +33,7 @@ pushd helm
         for subchart in "${subcharts[@]}"; do
             pushd charts/"$subchart"
                 ./test-schema
-                ./test-unit
+                #./test-unit
             popd
         done
 

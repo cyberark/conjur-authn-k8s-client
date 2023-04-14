@@ -1,6 +1,12 @@
 suite: test clusterrole
 templates:
   - clusterrole.yaml
+
+defaults: &defaultRequired
+  authnK8s.authenticatorID: "my-authenticator-id"
+  conjur.applianceUrl: "https://insert.conjur.appliance.url.here"
+  conjur.certificateBase64: "PEluc2VydC1Db25qdXItU1NMLUNlcnRpZmljYXRlLUhlcmU+"
+
 tests:
   #=======================================================================
   - it: should not create a ClusterRole if ClusterRole creation
@@ -8,6 +14,8 @@ tests:
   #=======================================================================
     set:
       authnK8s.clusterRole.create: false
+      # Set required values
+      <<: *defaultRequired
     asserts:
       - hasDocuments:
           count: 0
@@ -19,6 +27,8 @@ tests:
     set:
       # Enable ClusterRole creation
       authnK8s.clusterRole.create: true
+      # Set required values
+      <<: *defaultRequired
 
     asserts:
       # Confirm that a ClusterRole has been created
@@ -38,7 +48,8 @@ tests:
     set:
       # Enable ClusterRole creation
       authnK8s.clusterRole.create: true
-
+      # Set required values
+      <<: *defaultRequired
       # Set ClusterRole name explicitly
       authnK8s.clusterRole.name: "my-awesome-clusterrole"
 

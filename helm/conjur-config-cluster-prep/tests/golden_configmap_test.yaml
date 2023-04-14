@@ -8,6 +8,7 @@ defaults: &defaultRequired
   conjur.certificateFilePath: "tests/test-cert.pem"
   authnK8s.authenticatorID: "my-authenticator-id"
 
+
 tests:
   #=======================================================================
   - it: should not create a ConfigMap if ConfigMap creation is disabled

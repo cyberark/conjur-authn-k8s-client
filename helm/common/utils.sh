@@ -83,11 +83,11 @@ function meets_min_version() {
 function run_helm_unittest() {
     if [[ ! "$(helm plugin list | awk '/^unittest\t/{print $1}')" ]]; then
         echo "Installing 'helm-unittest' Helm plugin"
-        helm plugin install https://github.com/quintush/helm-unittest
+        helm plugin install https://github.com/helm-unittest/helm-unittest
     fi
 
     # Run a Helm unit test
-    helm unittest . --helm3
+    helm unittest .
 }
 
 function invert_exit_status() {
