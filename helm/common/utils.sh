@@ -82,8 +82,14 @@ function meets_min_version() {
 # Install the 'helm-unittest' plugin if it hasn't been install already
 function run_helm_unittest() {
     if [[ ! "$(helm plugin list | awk '/^unittest\t/{print $1}')" ]]; then
+        # The latest version of helm-unittest, v0.3.1, fails tests that render
+        # with the $.Files.Get template function, which is used by the Cluster
+        # Prep Helm chart.
+        # https://github.com/helm-unittest/helm-unittest/issues/135
+        #
+        # Pinning helm-unittest to v0.2.11 until this is fixed.
         echo "Installing 'helm-unittest' Helm plugin"
-        helm plugin install https://github.com/quintush/helm-unittest
+        helm plugin install https://github.com/helm-unittest/helm-unittest --version 0.2.11
     fi
 
     # Run a Helm unit test
