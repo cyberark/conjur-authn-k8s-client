@@ -13,12 +13,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   [cyberark/conjur-authn-k8s-client#505](https://github.com/cyberark/conjur-authn-k8s-client/pull/505)
 
 ### Changed
+- Upgrade ruby from 2.4 to 3.1 in bin/test-workflow/test_app_summon/Dockerfile
+  [cyberark/conjur-authn-k8s-client#508](https://github.com/cyberark/conjur-authn-k8s-client/pull/508)
 - Upgrade base image in Dockerfiles to 1.19 and necessary dependencies
   [cyberark/conjur-authn-k8s-client#502](https://github.com/cyberark/conjur-authn-k8s-client/pull/502)
 - Add a wait for the master before provisioning the follower in the CI tests.
   [cyberark/conjur-authn-k8s-client#499](https://github.com/cyberark/conjur-authn-k8s-client/pull/499)
 - The version from the automated release should be used in the start up logs
   [cyberark/conjur-authn-k8s-client#503](https://github.com/cyberark/conjur-authn-k8s-client/pull/503)
+- Update the docs for service account secret
+  [cyberark/conjur-authn-k8s-client#509](https://github.com/cyberark/conjur-authn-k8s-client/pull/509)
 
 ## [0.24.0] - 2022-11-23
 ### Changed
