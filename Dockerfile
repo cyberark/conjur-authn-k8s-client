@@ -1,4 +1,4 @@
-FROM golang:1.19 as authenticator-client-builder
+FROM golang:1.20 as authenticator-client-builder
 MAINTAINER CyberArk Software Ltd.
 
 ENV GOOS=linux \

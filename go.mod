@@ -17,7 +17,7 @@ require (
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.7.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.7.0 // indirect
 	go.opentelemetry.io/otel/trace v1.7.0 // indirect
-	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
@@ -28,6 +28,8 @@ require (
 )
 
 replace gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c => gopkg.in/yaml.v3 v3.0.1
+
+replace golang.org/x/sys v0.0.0-20210423185535-09eb48e85fd7 => golang.org/x/sys v0.8.0
 
 // DO NOT EDIT: CHANGES TO THE BELOW LINE WILL BREAK AUTOMATED RELEASES
 replace github.com/cyberark/conjur-opentelemetry-tracer => github.com/cyberark/conjur-opentelemetry-tracer latest
