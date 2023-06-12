@@ -6,12 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [0.25.1] - 2023-05-18
+## [0.25.1] - 2023-06-12
 ### Security
 - Upgrade Dockerfile base images to golang:1.20 and golang.org/x/sys dependency to 0.8.0
   [cyberark/conjur-authn-k8s-client#516](https://github.com/cyberark/conjur-authn-k8s-client/pull/516)
 - Update ruby fom 2.5 to 3.1 in bin/parse-changelog.sh
   [cyberark/conjur-authn-k8s-client#514](https://github.com/cyberark/conjur-authn-k8s-client/pull/514)
+- Upgrade container security settings
+  [cyberark/conjur-authn-k8s-client#518](https://github.com/cyberark/conjur-authn-k8s-client/pull/518)
 
 ## [0.25.0] - 2023-03-17
 
