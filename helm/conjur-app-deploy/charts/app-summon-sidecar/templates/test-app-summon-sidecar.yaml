@@ -62,6 +62,11 @@ spec:
           - mountPath: /etc/conjur
             name: secrets-config
             readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - all
       - image: {{ printf "%s:%s" .Values.authnClient.image.repository .Values.authnClient.image.tag }}
         imagePullPolicy: {{ .Values.authnClient.image.pullPolicy }}
         name: authenticator
@@ -90,6 +95,11 @@ spec:
             name: conjur-access-token
           - mountPath: /etc/conjur/ssl
             name: conjur-certs
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - all
       {{- if eq .Values.app.platform "kubernetes" }}
       imagePullSecrets:
         - name: dockerpullsecret
