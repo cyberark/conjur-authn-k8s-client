@@ -145,6 +145,10 @@ if [[ ${PROMOTE} = true ]]; then
 
     # scan image with preflight tool
     scan_redhat_image "${REDHAT_REMOTE_IMAGE}:${REMOTE_TAG}" "${REDHAT_CERT_PID}"
+
+    # Push latest tag to RH
+    docker tag "${INTERNAL_REGISTRY}/${REDHAT_LOCAL_IMAGE}:${SOURCE_TAG}" "${REDHAT_REMOTE_IMAGE}:latest"
+    docker push "${REDHAT_REMOTE_IMAGE}:latest"
   else
     echo 'Failed to log in to quay.io'
     exit 1
