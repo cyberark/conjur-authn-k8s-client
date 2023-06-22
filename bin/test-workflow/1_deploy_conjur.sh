@@ -75,6 +75,10 @@ function setup_conjur_open_source {
       if [[ "$PLATFORM" == "openshift" ]]; then
         announce "Using OpenShift"
         source ../openshift/0_export_env_vars.sh
+        # Update relevant env vars to use internal registry
+        export IMAGE_REPOSITORY=registry.tld/cyberark/conjur
+        export NGINX_REPOSITORY=registry.tld/conjur-nginx
+        export NGINX_TAG=1.20
       else
         source ../kubernetes-in-docker/0_export_env_vars.sh
         announce "Creating a Kubernetes-in-Docker cluster if necessary"
