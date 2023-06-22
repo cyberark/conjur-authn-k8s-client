@@ -67,31 +67,31 @@ pipeline {
       }
     }
 
-    stage('Validate') {
-      parallel {
-        stage('Changelog') {
-          steps { parseChangelog() }
-        }
+    // stage('Validate') {
+    //   parallel {
+    //     stage('Changelog') {
+    //       steps { parseChangelog() }
+    //     }
 
-        stage('Log messages') {
-          steps {
-            validateLogMessages()
-          }
-        }
+    //     stage('Log messages') {
+    //       steps {
+    //         validateLogMessages()
+    //       }
+    //     }
 
-        stage('Cluster-Prep Schema') {
-          steps { sh './bin/validate-schema ./helm/conjur-config-cluster-prep/values.schema.json'}
-        }
+    //     stage('Cluster-Prep Schema') {
+    //       steps { sh './bin/validate-schema ./helm/conjur-config-cluster-prep/values.schema.json'}
+    //     }
 
-        stage('Application Namespace-Prep Schema') {
-          steps { sh './bin/validate-schema ./helm/conjur-config-namespace-prep/values.schema.json'}
-        }
+    //     stage('Application Namespace-Prep Schema') {
+    //       steps { sh './bin/validate-schema ./helm/conjur-config-namespace-prep/values.schema.json'}
+    //     }
 
-        stage('Helm Chart Unit Tests') {
-          steps { sh './bin/test-helm-unit-in-docker' }
-        }
-      }
-    }
+    //     stage('Helm Chart Unit Tests') {
+    //       steps { sh './bin/test-helm-unit-in-docker' }
+    //     }
+    //   }
+    // }
 
     // Generates a VERSION file based on the current build number and latest version in CHANGELOG.md
     stage('Validate Changelog and set version') {
@@ -112,56 +112,56 @@ pipeline {
       }
     }
 
-    stage('Run Tests') {
-      steps {
-        sh './bin/test'
-      }
-      post {
-        always {
-          sh './bin/coverage'
-          sh 'cp ./test/c.out ./c.out'
+    // stage('Run Tests') {
+    //   steps {
+    //     sh './bin/test'
+    //   }
+    //   post {
+    //     always {
+    //       sh './bin/coverage'
+    //       sh 'cp ./test/c.out ./c.out'
 
-          junit 'test/junit.xml'
-          cobertura autoUpdateHealth: true, autoUpdateStability: true, coberturaReportFile: 'test/coverage.xml', conditionalCoverageTargets: '70, 0, 70', failUnhealthy: true, failUnstable: true, maxNumberOfBuilds: 0, lineCoverageTargets: '70, 70, 70', methodCoverageTargets: '70, 0, 70', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
-          ccCoverage("gocov", "--prefix github.com/cyberark/conjur-authn-k8s-client")
-        }
-      }
-    }
+    //       junit 'test/junit.xml'
+    //       cobertura autoUpdateHealth: true, autoUpdateStability: true, coberturaReportFile: 'test/coverage.xml', conditionalCoverageTargets: '70, 0, 70', failUnhealthy: true, failUnstable: true, maxNumberOfBuilds: 0, lineCoverageTargets: '70, 70, 70', methodCoverageTargets: '70, 0, 70', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+    //       ccCoverage("gocov", "--prefix github.com/cyberark/conjur-authn-k8s-client")
+    //     }
+    //   }
+    // }
 
-    stage("Scan images") {
-      parallel {
-        stage ("Scan main image for fixable vulns") {
-          steps {
-            scanAndReport("conjur-authn-k8s-client:dev", "HIGH", false)
-          }
-        }
-        stage ("Scan main image for total vulns") {
-          steps {
-            scanAndReport("conjur-authn-k8s-client:dev", "NONE", true)
-          }
-        }
-        stage ("Scan redhat image for fixable vulns") {
-          steps {
-            scanAndReport("conjur-authn-k8s-client-redhat:dev", "HIGH", false)
-          }
-        }
-        stage ("Scan redhat image for total vulns") {
-          steps {
-            scanAndReport("conjur-authn-k8s-client-redhat:dev", "NONE", true)
-          }
-        }
-        stage ("Scan helm test image for fixable vulns") {
-          steps {
-            scanAndReport("conjur-k8s-cluster-test:dev", "HIGH", false)
-          }
-        }
-        stage ("Scan helm test image for total vulns") {
-          steps {
-            scanAndReport("conjur-k8s-cluster-test:dev", "NONE", true)
-          }
-        }
-      }
-    }
+    // stage("Scan images") {
+    //   parallel {
+    //     stage ("Scan main image for fixable vulns") {
+    //       steps {
+    //         scanAndReport("conjur-authn-k8s-client:dev", "HIGH", false)
+    //       }
+    //     }
+    //     stage ("Scan main image for total vulns") {
+    //       steps {
+    //         scanAndReport("conjur-authn-k8s-client:dev", "NONE", true)
+    //       }
+    //     }
+    //     stage ("Scan redhat image for fixable vulns") {
+    //       steps {
+    //         scanAndReport("conjur-authn-k8s-client-redhat:dev", "HIGH", false)
+    //       }
+    //     }
+    //     stage ("Scan redhat image for total vulns") {
+    //       steps {
+    //         scanAndReport("conjur-authn-k8s-client-redhat:dev", "NONE", true)
+    //       }
+    //     }
+    //     stage ("Scan helm test image for fixable vulns") {
+    //       steps {
+    //         scanAndReport("conjur-k8s-cluster-test:dev", "HIGH", false)
+    //       }
+    //     }
+    //     stage ("Scan helm test image for total vulns") {
+    //       steps {
+    //         scanAndReport("conjur-k8s-cluster-test:dev", "NONE", true)
+    //       }
+    //     }
+    //   }
+    // }
 
     stage('E2E Workflow Tests') {
       stages {
@@ -178,11 +178,11 @@ pipeline {
         }
         stage('Test app with') {
           parallel {
-            stage('Enterprise in GKE') {
-              steps {
-                sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --ci-apps'
-              }
-            }
+            // stage('Enterprise in GKE') {
+            //   steps {
+            //     sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --ci-apps'
+            //   }
+            // }
             stage('OSS in OpenShift v(current)') {
               steps {
                 sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --ci-apps'

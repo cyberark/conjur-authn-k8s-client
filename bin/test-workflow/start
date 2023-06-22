@@ -218,12 +218,14 @@ mkdir -p temp
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   if [[ "$CONJUR_PLATFORM" == "openshift" && "$RUN_CLIENT_CONTAINER" == "true" ]]; then
     source "./0_prep_env.sh"
+    prepare_conjur_oss_images
     run_command_with_platform "./1_deploy_conjur.sh"
     run_command_with_platform "$conjur_prep"
     run_command_with_platform "$cluster_prep"
     run_command_with_platform "$test_app_workflow"
   else
     if [[ "$CONJUR_PLATFORM" == "openshift" ]]; then
+      prepare_conjur_oss_images
       ./platform_login.sh
     fi
     eval "$conjur_init"

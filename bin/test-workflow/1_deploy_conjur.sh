@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo pipefail
+set -exo pipefail
 cd "$(dirname "$0")" || ( echo "cannot cd into dir" && exit 1 )
 
 source utils.sh
@@ -76,8 +76,8 @@ function setup_conjur_open_source {
         announce "Using OpenShift"
         source ../openshift/0_export_env_vars.sh
         # Update relevant env vars to use internal registry
-        export IMAGE_REPOSITORY=registry.tld/cyberark/conjur
-        export NGINX_REPOSITORY=registry.tld/conjur-nginx
+        export IMAGE_REPOSITORY="$(platform_image_for_pull conjur $CONJUR_NAMESPACE_NAME)"
+        export NGINX_REPOSITORY="$(platform_image_for_pull conjur-nginx $CONJUR_NAMESPACE_NAME)"
         export NGINX_TAG=1.20
       else
         source ../kubernetes-in-docker/0_export_env_vars.sh

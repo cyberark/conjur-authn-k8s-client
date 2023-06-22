@@ -334,6 +334,23 @@ function split_on_comma_delimiter {
   echo "${array[@]}"
 }
 
+function prepare_conjur_oss_images {
+  # Push Conjur OSS image to the Openshift registry
+  local conjur_source_image="registry.tld/cyberark/conjur:latest"
+  docker pull "$conjur_source_image" || true
+  local conjur_platform_image=$(platform_image_for_push conjur "$CONJUR_NAMESPACE_NAME")
+  docker tag "$conjur_source_image" "$conjur_platform_image"
+  docker push "$conjur_platform_image"
+
+
+  # Push Conjur nginx base image to the Openshift registry
+  local conjur_nginx_source_image="registry.tld/conjur-nginx:1.20"
+  docker pull "$conjur_nginx_source_image" || true
+  local conjur_nginx_platform_image=$(platform_image_for_push conjur-nginx "$CONJUR_NAMESPACE_NAME")
+  docker tag "$conjur_nginx_source_image" "$conjur_nginx_platform_image"
+  docker push "$conjur_nginx_platform_image"
+}
+
 function uninstall_helm_release {
   release_name="$1"
   namespace="$2"
