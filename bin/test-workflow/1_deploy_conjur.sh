@@ -33,7 +33,7 @@ function setup_conjur_enterprise {
     check_env_var HOST_IP
 
     pushd temp > /dev/null
-      git clone --single-branch --branch main git@github.com:conjurdemos/conjur-intro.git "conjur-intro-$UNIQUE_TEST_ID"
+      git clone --single-branch --branch log-leader-errors git@github.com:conjurdemos/conjur-intro.git "conjur-intro-$UNIQUE_TEST_ID"
       git clone --single-branch --branch main https://github.com/cyberark/sidecar-injector.git "sidecar-injector-$UNIQUE_TEST_ID"
 
       pushd "conjur-intro-$UNIQUE_TEST_ID" > /dev/null
