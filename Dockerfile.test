@@ -24,6 +24,4 @@ RUN apk add -u curl \
 
 COPY go.mod go.sum /conjur-authn-k8s-client/
 
-RUN go mod download
-
 COPY . .

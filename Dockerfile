@@ -24,15 +24,15 @@ RUN update-ca-certificates
 WORKDIR /opt/conjur-authn-k8s-client
 COPY . /opt/conjur-authn-k8s-client
 
+RUN ls -alh vendor
+
 EXPOSE 8080
 
 RUN apt-get update && apt-get install -y jq
 
-RUN go mod download
+RUN go install github.com/jstemmer/go-junit-report@latest
 
-RUN go get -u github.com/jstemmer/go-junit-report
-
-RUN go build -a -installsuffix cgo \
+RUN go build -installsuffix cgo \
     -ldflags="-X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.TagSuffix=$TAG_SUFFIX' \
         -X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.Version=$VERSION'" \
     -o authenticator ./cmd/authenticator
