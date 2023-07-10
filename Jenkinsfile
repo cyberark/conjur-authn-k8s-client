@@ -205,7 +205,7 @@ pipeline {
                 sh '''
                   HOST_IP="$(curl https://checkip.amazonaws.com)";
                   echo "HOST_IP=${HOST_IP}"
-                  echo "CONJUR_APPLIANCE_TAG=${CONJUR_APPLIANCE_TAG}"
+                  echo "CONJUR_APPLIANCE_TAG='5.16.18-5-20230710194613-68aa10d1'"
                   cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins --ci-apps
                 '''
               }
