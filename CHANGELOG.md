@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.25.2] - 2023-06-26
+### Fixed
+- Update RH base image to `ubi9/ubi` to match the libc version of the authenticator-client-builder image.
+  [cyberark/conjur-authn-k8s-client#520](https://github.com/cyberark/conjur-authn-k8s-client/pull/520)
+
 ## [0.25.1] - 2023-06-12
 ### Security
 - Upgrade Dockerfile base images to golang:1.20 and golang.org/x/sys dependency to 0.8.0
@@ -283,6 +288,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix an issue where sidecar fails when not run as root user.
 
 [Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.25.0...HEAD
+[0.25.2]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.25.1...v0.25.2
 [0.25.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.25.0...v0.25.1
 [0.25.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.24.0...v0.25.0
 [0.24.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.23.8...v0.24.0
