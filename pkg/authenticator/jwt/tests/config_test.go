@@ -19,12 +19,12 @@ var environmentValues = map[string]string{
 }
 
 var annotationValues = map[string]string{
-	"conjur.org/debug-logging":  "true",
+	"conjur.org/log-level":      "debug",
 	"conjur.org/container-mode": "init",
 }
 
 var envToAnnot = map[string]string{
-	"DEBUG":          "conjur.org/debug-logging",
+	"LOG_LEVEL":      "conjur.org/log-level",
 	"CONTAINER_MODE": "conjur.org/container-mode",
 }
 
@@ -56,8 +56,9 @@ func TestGatherSettings(t *testing.T) {
 				"CONJUR_AUTHN_URL":        "authn-jwt",
 				"CONJUR_CERT_FILE":        "testSSLCertFile.txt",
 				"CONJUR_SSL_CERTIFICATE":  "testSSLCert",
-				"CONTAINER_MODE":          "init", // provided by annotation
-				"DEBUG":                   "true", // provided by annotation
+				"CONTAINER_MODE":          "init",  // provided by annotation
+				"LOG_LEVEL":               "debug", // provided by annotation
+				"DEBUG":                   "",
 				"CONJUR_AUTHN_TOKEN_FILE": jwt.DefaultTokenFilePath,
 				"CONJUR_TOKEN_TIMEOUT":    jwt.DefaultTokenRefreshTimeout,
 			},
@@ -72,6 +73,7 @@ func TestGatherSettings(t *testing.T) {
 				"CONJUR_ACCOUNT":          "testAccount",
 				"CONJUR_CERT_FILE":        "testSSLCertFile.txt",
 				"CONJUR_SSL_CERTIFICATE":  "testSSLCert",
+				"LOG_LEVEL":               "",
 				"DEBUG":                   "",
 				"CONTAINER_MODE":          "",
 				"CONJUR_AUTHN_TOKEN_FILE": jwt.DefaultTokenFilePath,

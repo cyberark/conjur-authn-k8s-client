@@ -44,6 +44,7 @@ var envVariables = []string{
 	"CONJUR_TOKEN_TIMEOUT",
 	"CONTAINER_MODE",
 	"DEBUG",
+	"LOG_LEVEL",
 	"JWT_TOKEN_PATH",
 	"CONJUR_AUTHN_LOGIN",
 }

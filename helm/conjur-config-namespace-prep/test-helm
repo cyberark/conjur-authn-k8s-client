@@ -70,7 +70,7 @@ function main() {
       --reuse-values \
       --set test.authentication.enable="$test_authentication" \
       --set test.authentication.authnLogin="$host_id" \
-      --set test.authentication.debug=true \
+      --set test.authentication.logLevel=debug \
       --timeout "$UPGRADE_TIMEOUT" \
       --wait
 

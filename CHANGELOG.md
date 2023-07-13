@@ -6,7 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [0.25.2] - 2023-06-26
+## [0.26.0] - 2023-07-18
+
+### Added
+- Log level is now configurable using the `LOG_LEVEL` environment variable or `conjur.org/log-level` annotation.
+  The existing `DEBUG` environment variable and `conjur.org/debug-logging` annotation is deprecated and will be removed in a future update.
+  [cyberark/conjur-authn-k8s-client#522](https://github.com/cyberark/conjur-authn-k8s-client/pull/522)
+
 ### Fixed
 - Update RH base image to `ubi9/ubi` to match the libc version of the authenticator-client-builder image.
   [cyberark/conjur-authn-k8s-client#520](https://github.com/cyberark/conjur-authn-k8s-client/pull/520)

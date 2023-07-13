@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -15,13 +14,14 @@ import (
 )
 
 const authnURLVarName string = "CONJUR_AUTHN_URL"
+const defaultLogLevel string = "info"
 
 // AuthnSettings represents a group of authenticator client configuration settings.
 type AuthnSettings map[string]string
 
 // NewConfigFromEnv returns a config ConfigFromEnv using the standard file reader for reading certs
 func NewConfigFromEnv() (Configuration, error) {
-	return ConfigFromEnv(ioutil.ReadFile)
+	return ConfigFromEnv(os.ReadFile)
 }
 
 // ConfigFromEnv returns a new authenticator configuration object
@@ -31,7 +31,8 @@ func ConfigFromEnv(readFileFunc common.ReadFileFunc) (Configuration, error) {
 
 func NewConfigFromCustomEnv(readFileFunc common.ReadFileFunc, customEnv func(key string) string) (Configuration, error) {
 	log.Debug(log.CAKC068)
-	configureDebugIfNeeded(customEnv)
+	logLevel := getConfiguredLogLevel(customEnv)
+	log.SetLogLevel(logLevel)
 	authnUrl := customEnv(authnURLVarName)
 	conf, err := getConfiguration(authnUrl)
 	if err != nil {
@@ -140,18 +141,31 @@ func getConfigVariable(getters ...func(key string) string) func(string) string {
 	}
 }
 
-func configureDebugIfNeeded(getConfigFunc func(key string) string) {
-	validVal := "true"
-	debugValue := getConfigFunc("DEBUG")
+func getConfiguredLogLevel(getConfigFunc func(key string) string) string {
+	validLogLevels := []string{"debug", "info", "warn", "error"}
+	logLevel := getConfigFunc("LOG_LEVEL")
 
-	switch debugValue {
-	case validVal:
-		log.EnableDebugMode()
-	case "":
-		// Log level not configured
-		break
-	default:
-		// Log level is configured but it's invalid
-		log.Warn(log.CAKC034, debugValue, validVal)
+	if logLevel != "" {
+		// If log level is configured, check if it's valid
+		for _, validLevel := range validLogLevels {
+			if logLevel == validLevel {
+				return logLevel
+			}
+		}
+
+		// If log level is configured but it's invalid, log a warning and return default
+		log.Warn(log.CAKC034, logLevel, validLogLevels)
+		return defaultLogLevel
 	}
+
+	// If log level is not configured, check if debug is configured.
+	// This is for backwards compatibility with the old debug env var.
+	debugValue := getConfigFunc("DEBUG")
+	if debugValue == "true" {
+		log.Warn(log.CAKC081)
+		return "debug"
+	}
+
+	// If neither log level nor debug are configured, return default
+	return defaultLogLevel
 }

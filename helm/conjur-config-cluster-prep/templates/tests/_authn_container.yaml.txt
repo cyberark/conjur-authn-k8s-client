@@ -21,9 +21,9 @@
       fieldRef:
         apiVersion: v1
         fieldPath: status.podIP
-  {{- if eq .Values.test.authentication.debug true }}
-  - name: DEBUG
-    value: "true"
+  {{- if .Values.test.authentication.logLevel }}
+  - name: LOG_LEVEL
+    value: {{ .Values.test.authentication.logLevel }}
   {{- end }}
   - name: CONJUR_AUTHN_URL
     value: {{ .Values.conjur.applianceUrl }}/authn-k8s/{{ .Values.authnK8s.authenticatorID }}

@@ -449,4 +449,4 @@ The following table lists the configurable parameters of the Conjur Open Source 
 |`test.colorize`|Determines whether Helm test output should include color escape sequences|Defaults to `true`||
 |`test.authentication.enable`|Indicates whether the Helm test should attempt to authenticate with the Conjur instance|`false`||
 |`test.authentication.validatorID`|Indicates the Conjur Host ID that should be used to authenticate with the Conjur instance|`validator`||
-|`test.authentication.debug`|Enables Helm test authenticator init/sidecar container debug logging when set to `true`|`true`||
+|`test.authentication.logLevel`|Sets log level in authenticator init/sidecar container|`debug`||

@@ -30,7 +30,7 @@ func TestAuthenticator(t *testing.T) {
 			validateLog(t, Info, "INFO", "log message with param: <%s>", "param value")
 		})
 
-		t.Run("Calling Debug does nothing before Calling EnableDebugMode", func(t *testing.T) {
+		t.Run("Calling Debug does nothing before setting log level to debug", func(t *testing.T) {
 			var logBuffer bytes.Buffer
 			InfoLogger = log.New(&logBuffer, "", 0)
 
@@ -39,8 +39,8 @@ func TestAuthenticator(t *testing.T) {
 			assert.Equal(t, logBuffer.Len(), 0)
 		})
 
-		t.Run("Calling Debug logs the message after Calling EnableDebugMode", func(t *testing.T) {
-			EnableDebugMode()
+		t.Run("Calling Debug logs the message after setting log level to debug", func(t *testing.T) {
+			SetLogLevel("debug")
 			validateLog(t, Debug, "DEBUG", "log message with param: <%s>", "param value")
 		})
 	})

@@ -9,4 +9,5 @@ docker build \
 docker run --rm \
            -it \
            -v $(cd ..; pwd):/opt/conjur-authn-k8s-client \
-           conjur-authn-k8s-client-go:builder bash
+           --entrypoint bash \
+           conjur-authn-k8s-client-go:builder
