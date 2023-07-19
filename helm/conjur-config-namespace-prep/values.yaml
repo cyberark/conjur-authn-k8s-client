@@ -40,5 +40,5 @@ MIIC/ThisIsAMockThisIsOnlyAMock==\n
     # is required) in Conjur security policy. Example:
     #    authnLogin: host/conjur/authn-k8s/my-authenticator-id/apps/validator
     authnLogin:
-    # 'debug' enables authenticator sidecar debug logs during testing
-    debug: true
+    # 'log-level: debug' enables authenticator sidecar debug logs during testing
+    log-level: debug

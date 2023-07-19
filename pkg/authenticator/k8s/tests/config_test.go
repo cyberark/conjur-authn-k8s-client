@@ -22,13 +22,13 @@ var environmentValues = map[string]string{
 
 var annotationValues = map[string]string{
 	"conjur.org/authn-identity": "host/anotherHost",
-	"conjur.org/debug-logging":  "true",
+	"conjur.org/log-level":      "debug",
 	"conjur.org/container-mode": "init",
 }
 
 var envToAnnot = map[string]string{
 	"CONJUR_AUTHN_LOGIN": "conjur.org/authn-identity",
-	"DEBUG":              "conjur.org/debug-logging",
+	"LOG_LEVEL":          "conjur.org/log-level",
 	"CONTAINER_MODE":     "conjur.org/container-mode",
 }
 
@@ -59,8 +59,9 @@ func TestGatherSettings(t *testing.T) {
 				"CONJUR_AUTHN_URL":                     "filepath",
 				"CONJUR_CERT_FILE":                     "testSSLCertFile.txt",
 				"CONJUR_SSL_CERTIFICATE":               "testSSLCert",
-				"CONTAINER_MODE":                       "init", // provided by annotation
-				"DEBUG":                                "true", // provided by annotation
+				"CONTAINER_MODE":                       "init",  // provided by annotation
+				"LOG_LEVEL":                            "debug", // provided by annotation
+				"DEBUG":                                "",
 				"MY_POD_NAME":                          "testPodName",
 				"MY_POD_NAMESPACE":                     "testNameSpace",
 				"CONJUR_AUTHN_TOKEN_FILE":              k8s.DefaultTokenFilePath,
@@ -80,6 +81,7 @@ func TestGatherSettings(t *testing.T) {
 				"CONJUR_SSL_CERTIFICATE":               "testSSLCert",
 				"MY_POD_NAMESPACE":                     "testNameSpace",
 				"MY_POD_NAME":                          "testPodName",
+				"LOG_LEVEL":                            "",
 				"DEBUG":                                "",
 				"CONTAINER_MODE":                       "",
 				"CONJUR_CLIENT_CERT_PATH":              k8s.DefaultClientCertPath,

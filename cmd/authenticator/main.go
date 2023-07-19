@@ -16,6 +16,7 @@ import (
 )
 
 func main() {
+	// Note: This will log even if the log level is set to "warn" or "error" since that's loaded after this
 	log.Info(log.CAKC048, authenticator.FullVersionName)
 
 	var err error

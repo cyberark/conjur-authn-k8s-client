@@ -21,9 +21,9 @@
       fieldRef:
         apiVersion: v1
         fieldPath: status.podIP
-  {{- if eq .Values.test.authentication.debug true }}
+  {{- if .Values.test.authentication.logLevel }}
   - name: DEBUG
-    value: "true"
+    value: {{ .Values.test.authentication.logLevel }}
   {{- end }}
   - name: CONJUR_AUTHN_LOGIN
     value: {{ required "A valid .Values.test.authentication.authnLogin required!" .Values.test.authentication.authnLogin }}

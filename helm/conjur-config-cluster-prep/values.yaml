@@ -61,5 +61,6 @@ test:
     # The authn-k8s sidecar will use a CONJUR_AUTHN_LOGIN value of:
     #    host/conjur/authn-k8s/{{authenticatorID}}/{{validatorID}}
     validatorID: "apps/validator"
-    # 'debug' enables authenticator sidecar debug logs during testing
-    debug: true
+    # 'logLevel' sets authenticator sidecar log level. Valid values are:
+    #    "debug", "info", "warn", "error". Defaults to "debug".
+    logLevel: "debug"

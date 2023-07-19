@@ -9,7 +9,7 @@ import (
 
 var InfoLogger = log.New(os.Stdout, "INFO:  ", log.LUTC|log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
 var ErrorLogger = log.New(os.Stderr, "ERROR: ", log.LUTC|log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile)
-var isDebug = false
+var logLevel = "info"
 
 /*
 	Prints an error message to the error log and returns a new error with the given message.
@@ -42,22 +42,29 @@ func Error(message string, args ...interface{}) {
 }
 
 func Warn(message string, args ...interface{}) {
-	writeLog(InfoLogger, "WARN", message, args...)
+	if logLevel == "debug" || logLevel == "info" || logLevel == "warn" {
+		writeLog(InfoLogger, "WARN", message, args...)
+	}
 }
 
 func Info(message string, args ...interface{}) {
-	writeLog(InfoLogger, "INFO", message, args...)
+	if logLevel == "debug" || logLevel == "info" {
+		writeLog(InfoLogger, "INFO", message, args...)
+	}
 }
 
 func Debug(infoMessage string, args ...interface{}) {
-	if isDebug {
+	if logLevel == "debug" {
 		writeLog(InfoLogger, "DEBUG", infoMessage, args...)
 	}
 }
 
-func EnableDebugMode() {
-	isDebug = true
-	Debug(CAKC052)
+func SetLogLevel(level string) {
+	logLevel = level
+
+	if level == "debug" {
+		Debug(CAKC052)
+	}
 }
 
 func writeLog(logger *log.Logger, logLevel string, message string, args ...interface{}) {

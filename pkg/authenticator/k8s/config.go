@@ -52,6 +52,7 @@ var envVariables = []string{
 	"CONJUR_TOKEN_TIMEOUT",
 	"CONTAINER_MODE",
 	"DEBUG",
+	"LOG_LEVEL",
 	"MY_POD_NAME",
 	"MY_POD_NAMESPACE",
 }
