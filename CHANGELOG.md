@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.26.0] - 2023-07-18
 
+### Security
+- Update YAML files to include extra security layers to reduce Snyk vulnerabilities
+  [cyberark/conjur-authn-k8s-client#523](https://github.com/cyberark/conjur-authn-k8s-client/pull/523)
+
 ### Added
 - Log level is now configurable using the `LOG_LEVEL` environment variable or `conjur.org/log-level` annotation.
   The existing `DEBUG` environment variable and `conjur.org/debug-logging` annotation is deprecated and will be removed in a future update.

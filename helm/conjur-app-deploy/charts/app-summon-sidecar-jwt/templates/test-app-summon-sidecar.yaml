@@ -40,6 +40,18 @@ spec:
         imagePullPolicy: {{ .Values.app.image.pullPolicy }}
         command: ["summon", "--provider", "summon-conjur", "-f", "/etc/conjur/secrets.yml", "java", "-jar", "/app.jar"]
         name: test-app
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - all
+            add: ["NET_ADMIN"]
+          runAsUser: "10000"
+          readOnlyRootFilesystem: false
+        resources:
+          limits:
+            cpu: "1"
+            memory: "2048Mi"
         ports:
         - name: http
           containerPort: 8080
@@ -65,6 +77,18 @@ spec:
       - image: {{ printf "%s:%s" .Values.authnClient.image.repository .Values.authnClient.image.tag }}
         imagePullPolicy: {{ .Values.authnClient.image.pullPolicy }}
         name: authenticator
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - all
+            add: ["NET_ADMIN"]
+          runAsUser: "10000"
+          readOnlyRootFilesystem: false
+        resources:
+          limits:
+            cpu: "1"
+            memory: "2048Mi"
         env:
           - name: CONTAINER_MODE
             value: sidecar
