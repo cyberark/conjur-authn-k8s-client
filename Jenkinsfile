@@ -198,41 +198,41 @@ pipeline {
             }
           }
         }
-        // stage('Enterprise in Jenkins') {
-        //   stages {
-        //     // stage('Test app in GKE') {
-        //     //   steps {
-        //     //     sh '''
-        //     //       HOST_IP="$(curl https://checkip.amazonaws.com)";
-        //     //       echo "HOST_IP=${HOST_IP}"
-        //     //       echo "CONJUR_APPLIANCE_TAG=${CONJUR_APPLIANCE_TAG}"
-        //     //       cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins --ci-apps
-        //     //     '''
-        //     //   }
-        //     // }
-        //     stage('Test app in OpenShift v(current)') {
-        //       steps {
-        //         sh '''
-        //           HOST_IP="$(curl https://checkip.amazonaws.com)";
-        //           echo "HOST_IP=${HOST_IP}"
-        //           cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins --ci-apps
-        //         '''
-        //       }
-        //     }
-        //     // stage('Test app in OpenShift v(next)') {
-        //     //   when {
-        //     //     expression { params.TEST_OCP_NEXT }
-        //     //   }
-        //     //   steps {
-        //     //     sh '''
-        //     //       HOST_IP="$(curl https://checkip.amazonaws.com)";
-        //     //       echo "HOST_IP=${HOST_IP}"
-        //     //       cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --ci-apps
-        //     //     '''
-        //     //   }
-        //     // }
-        //   }
-        // }
+        stage('Enterprise in Jenkins') {
+          stages {
+            stage('Test app in GKE') {
+              steps {
+                sh '''
+                  HOST_IP="$(curl https://checkip.amazonaws.com)";
+                  echo "HOST_IP=${HOST_IP}"
+                  echo "CONJUR_APPLIANCE_TAG=${CONJUR_APPLIANCE_TAG}"
+                  cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins --ci-apps
+                '''
+              }
+            }
+            stage('Test app in OpenShift v(current)') {
+              steps {
+                sh '''
+                  HOST_IP="$(curl https://checkip.amazonaws.com)";
+                  echo "HOST_IP=${HOST_IP}"
+                  cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins --ci-apps
+                '''
+              }
+            }
+            stage('Test app in OpenShift v(next)') {
+              when {
+                expression { params.TEST_OCP_NEXT }
+              }
+              steps {
+                sh '''
+                  HOST_IP="$(curl https://checkip.amazonaws.com)";
+                  echo "HOST_IP=${HOST_IP}"
+                  cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --ci-apps
+                '''
+              }
+            }
+          }
+        }
       }
     }
 
