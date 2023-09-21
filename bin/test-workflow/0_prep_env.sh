@@ -77,7 +77,7 @@ if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
   fi
 else
   export TEST_APP_NAMESPACE_NAME="${TEST_APP_NAMESPACE_NAME:-app-test-$UNIQUE_TEST_ID}"
-  export CONJUR_APPLIANCE_IMAGE="${CONJUR_APPLIANCE_IMAGE:-registry2.itci.conjur.net/conjur-appliance:$CONJUR_APPLIANCE_TAG}"
+  export CONJUR_APPLIANCE_IMAGE="${CONJUR_APPLIANCE_IMAGE:-registry.tld/conjur-appliance:$CONJUR_APPLIANCE_TAG}"
   export CONJUR_ADMIN_PASSWORD="MySecretP@ss1"
 
   if [[ "$CONJUR_PLATFORM" == "gke" ]]; then
