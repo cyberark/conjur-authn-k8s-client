@@ -105,6 +105,17 @@ _**NOTE:** This technique is not supported on OpenShift platforms. For
               medium: Memory
   ```
 
+## Enabling Tracing
+
+Tracing of CyberArk Secrets Provider for Kubernetes is available using the
+[OpenTelemetry](https://opentelemetry.io/) standard. Tracing is disabled by
+default. You can enable tracing using environment variables.
+
+To enable traces appended to the init container's logs, set the `LOG_TRACES`
+environment variable to `true`. To instead export the traces to a Jaeger server,
+use the `JAEGER_COLLECTOR_URL` environment variable. Traces will include errors
+to assist in troubleshooting.
+
 ## Contributing
 
 We welcome contributions of all kinds to this repository. For instructions on how to get started and descriptions of our development workflows, please see our [contributing

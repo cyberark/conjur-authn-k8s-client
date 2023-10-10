@@ -16,6 +16,7 @@ import (
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/k8s"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
+	"github.com/cyberark/conjur-opentelemetry-tracer/pkg/trace"
 )
 
 type assertFunc func(t *testing.T,
@@ -24,6 +25,8 @@ type assertFunc func(t *testing.T,
 	loginCsr *x509.CertificateRequest,
 	loginCsrErr error,
 	logTxt string,
+	ctx context.Context,
+	tr trace.Tracer,
 )
 
 func TestAuthenticator_Authenticate(t *testing.T) {
@@ -38,7 +41,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			name:         "happy path",
 			podName:      "testPodName",
 			podNamespace: "testPodNamespace",
-			assert: func(t *testing.T, authn *k8s.Authenticator, err error, loginCsr *x509.CertificateRequest, loginCsrErr error, _ string) {
+			assert: func(t *testing.T, authn *k8s.Authenticator, err error, loginCsr *x509.CertificateRequest, loginCsrErr error, _ string, _ context.Context, _ trace.Tracer) {
 				assert.NoError(t, err)
 
 				// Check the CSR
@@ -69,7 +72,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			name:         "empty podname",
 			podName:      "",
 			podNamespace: "",
-			assert: func(t *testing.T, authn *k8s.Authenticator, err error, loginCsr *x509.CertificateRequest, _ error, _ string) {
+			assert: func(t *testing.T, authn *k8s.Authenticator, err error, loginCsr *x509.CertificateRequest, _ error, _ string, _ context.Context, _ trace.Tracer) {
 				assert.NoError(t, err)
 
 				// Assert empty spiffe
@@ -84,12 +87,12 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			name:         "expired cert",
 			podName:      "testPodName",
 			podNamespace: "testPodNamespace",
-			assert: func(t *testing.T, authn *k8s.Authenticator, err error, _ *x509.CertificateRequest, _ error, _ string) {
+			assert: func(t *testing.T, authn *k8s.Authenticator, err error, _ *x509.CertificateRequest, _ error, _ string, ctx context.Context, tr trace.Tracer) {
 				assert.NoError(t, err)
 				// Set the expiration date to now, and try to authenticate again
 				// This will cause the authenticator to try to refresh the cert
 				authn.PublicCert.NotAfter = time.Now()
-				err = authn.AuthenticateWithContext(context.Background())
+				err = authn.AuthenticateWithContext(ctx, tr)
 				assert.NoError(t, err)
 
 				// Check that the cert was renewed
@@ -101,7 +104,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			podName:            "testPodName",
 			podNamespace:       "testPodNamespace",
 			skipWritingCSRFile: true,
-			assert: func(t *testing.T, _ *k8s.Authenticator, err error, _ *x509.CertificateRequest, _ error, logTxt string) {
+			assert: func(t *testing.T, _ *k8s.Authenticator, err error, _ *x509.CertificateRequest, _ error, logTxt string, _ context.Context, _ trace.Tracer) {
 				assert.Error(t, err)
 				// Check logs for the expected error
 				assert.Contains(t, logTxt, "error writing csr file")
@@ -163,11 +166,18 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			var logTxt bytes.Buffer
 			log.ErrorLogger.SetOutput(&logTxt)
 
+			// Run tests with No-op tracer and its context
+			ctx, noopTracer, cleanup, _ := trace.Create(
+				trace.NoopProviderType,
+				trace.TracerProviderConfig{},
+			)
+
 			// Call the main method of the authenticator. This is where most of the internal implementation happens
-			err = authn.AuthenticateWithContext(context.Background())
+			err = authn.AuthenticateWithContext(ctx, noopTracer)
+			cleanup(ctx)
 
 			// ASSERT
-			tc.assert(t, authn, err, loginCsr, loginCsrErr, logTxt.String())
+			tc.assert(t, authn, err, loginCsr, loginCsrErr, logTxt.String(), ctx, noopTracer)
 		})
 	}
 }

@@ -2,17 +2,18 @@ package tests
 
 import (
 	"bytes"
-	"context"
 	"encoding/pem"
-	"github.com/stretchr/testify/assert"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/memory"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/jwt"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
+	"github.com/cyberark/conjur-opentelemetry-tracer/pkg/trace"
 )
 
 const tmpJwtTokenPath = "good_jwt.token"
@@ -119,8 +120,15 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			var logTxt bytes.Buffer
 			log.ErrorLogger.SetOutput(&logTxt)
 
+			// Run tests with No-op tracer and its context
+			ctx, noopTracer, cleanup, _ := trace.Create(
+				trace.NoopProviderType,
+				trace.TracerProviderConfig{},
+			)
+
 			// Call the main method of the authenticator. This is where most of the internal implementation happens
-			err = authn.AuthenticateWithContext(context.Background())
+			err = authn.AuthenticateWithContext(ctx, noopTracer)
+			cleanup(ctx)
 
 			// ASSERT
 			tc.assert(t, authn, err)
