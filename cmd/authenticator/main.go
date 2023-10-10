@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"time"
@@ -15,6 +14,13 @@ import (
 	"github.com/cyberark/conjur-opentelemetry-tracer/pkg/trace"
 )
 
+const (
+	tracerName        = "conjur-authn-k8s-client"
+	tracerService     = "conjur-authn-k8s-client"
+	tracerEnvironment = "production"
+	tracerID          = 1
+)
+
 func main() {
 	// Note: This will log even if the log level is set to "warn" or "error" since that's loaded after this
 	log.Info(log.CAKC048, authenticator.FullVersionName)
@@ -26,8 +32,23 @@ func main() {
 		printErrorAndExit(log.CAKC018)
 	}
 
-	tracer, _ := trace.NewTracerProvider(trace.NoopProviderType, false, trace.TracerProviderConfig{})
-	defer tracer.Shutdown(context.Background())
+	// Create a Tracer and parent Span
+	tracerType, collectorUrl := trace.TypeFromEnv()
+	ctx, tracer, cleanup, err := trace.Create(
+		tracerType,
+		trace.TracerProviderConfig{
+			TracerName:        tracerName,
+			TracerService:     tracerService,
+			TracerEnvironment: tracerEnvironment,
+			TracerID:          tracerID,
+			CollectorURL:      collectorUrl,
+			ConsoleWriter:     os.Stdout,
+		},
+	)
+	if err != nil {
+		printErrorAndExit(err.Error())
+	}
+	defer cleanup(ctx)
 
 	// Create new Authenticator
 	authn, err := authenticator.NewAuthenticator(config)
@@ -45,7 +66,7 @@ func main() {
 
 	err = backoff.Retry(func() error {
 		for {
-			err := authn.AuthenticateWithContext(context.Background())
+			err := authn.AuthenticateWithContext(ctx, tracer)
 			if err != nil {
 				return log.RecordedError(log.CAKC016)
 			}

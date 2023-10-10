@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"os"
 
-	"go.opentelemetry.io/otel"
-
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
@@ -56,27 +54,33 @@ func (auth *Authenticator) GetAccessToken() access_token.AccessToken {
 // certificates.
 // @deprecated Use AuthenticateWithContext instead
 func (auth *Authenticator) Authenticate() error {
-	return auth.AuthenticateWithContext(context.TODO())
+	ctx, tracer, cleanup, err := trace.Create(
+		trace.NoopProviderType,
+		trace.TracerProviderConfig{},
+	)
+	if err != nil {
+		return err
+	}
+	defer cleanup(ctx)
+
+	return auth.AuthenticateWithContext(ctx, tracer)
 }
 
-func (auth *Authenticator) AuthenticateWithContext(ctx context.Context) error {
+func (auth *Authenticator) AuthenticateWithContext(ctx context.Context, tr trace.Tracer) error {
 	log.Info(log.CAKC066)
 
-	tr := trace.NewOtelTracer(otel.Tracer("conjur-authn-k8s-client"))
-	spanCtx, span := tr.Start(ctx, "Authenticate")
+	ctx, span := tr.Start(ctx, "Authenticate")
 	defer span.End()
 
-	authenticationResponse, err := auth.sendAuthenticationRequest(spanCtx, tr)
+	authenticationResponse, err := auth.sendAuthenticationRequest(ctx, tr)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
-		span.End()
 		return err
 	}
 
 	err = auth.accessToken.Write(authenticationResponse)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
-		span.End()
 		return err
 	}
 
