@@ -1,11 +1,13 @@
 #!/usr/bin/env groovy
 
+@Library("product-pipelines-shared-library") _
+
 // Automated release, promotion and dependencies
 properties([
   // Include the automated release parameters for the build
   release.addParams(),
   // Dependencies of the project that should trigger builds
-  dependencies(['cyberark/conjur-opentelemetry-tracer'])
+  dependencies(['conjur-enterprise/conjur-opentelemetry-tracer'])
 ])
 
 // Performs release promotion.  No other stages will be run
@@ -17,18 +19,23 @@ if (params.MODE == "PROMOTE") {
     // Anything added to assetDirectory will be attached to the Github Release
 
     // Pull existing images from internal registry in order to promote
-    sh "docker pull registry.tld/conjur-authn-k8s-client:${sourceVersion}"
-    sh "docker pull registry.tld/conjur-authn-k8s-client-redhat:${sourceVersion}"
-    sh "docker pull cyberark/conjur-k8s-cluster-test:${sourceVersion}"
-    sh "docker tag cyberark/conjur-k8s-cluster-test:${sourceVersion} conjur-k8s-cluster-test:${sourceVersion}"
-    // Promote source version to target version.
-    sh "summon ./bin/publish --promote --source ${sourceVersion} --target ${targetVersion}"
+    infrapool.agentSh """
+      docker pull registry.tld/conjur-authn-k8s-client:${sourceVersion}
+      docker pull registry.tld/conjur-authn-k8s-client-redhat:${sourceVersion}
+      docker pull cyberark/conjur-k8s-cluster-test:${sourceVersion}
+      docker tag cyberark/conjur-k8s-cluster-test:${sourceVersion} conjur-k8s-cluster-test:${sourceVersion}
+      // Promote source version to target version.
+      summon ./bin/publish --promote --source ${sourceVersion} --target ${targetVersion}
+    """
   }
+
+  // Copy Github Enterprise release to Github
+  release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
   return
 }
 
 pipeline {
-  agent { label 'azure-linux' }
+  agent { label 'conjur-enterprise-common-agent' }
 
   options {
     timestamps()
@@ -67,10 +74,36 @@ pipeline {
       }
     }
 
+    stage('Get InfraPool AzureExecutorV2 Agent') {
+      steps {
+        script {
+          // Request ExecutorV2 agents for 2 hour(s)
+          INFRAPOOL_AZURE_AGENT_0 = getInfraPoolAgent.connected(type: "AzureExecutorV2", quantity: 1, duration: 2)[0]
+        }
+      }
+    }
+
+    stage('Get latest upstream dependencies') {
+      steps {
+        script {
+          withCredentials([usernamePassword(credentialsId: 'jenkins_ci_token', usernameVariable: 'GITHUB_USER', passwordVariable: 'TOKEN')]) {
+            sh './bin/updateGoDependencies.sh -g "${WORKSPACE}/go.mod"'
+          }
+          // Copy the vendor directory onto infrapool
+          INFRAPOOL_AZURE_AGENT_0.agentPut from: "vendor", to: "${WORKSPACE}"
+          INFRAPOOL_AZURE_AGENT_0.agentPut from: "go.*", to: "${WORKSPACE}"
+        }
+      }
+    }
+
     stage('Validate') {
       parallel {
         stage('Changelog') {
-          steps { parseChangelog() }
+          steps {
+            script {
+              parseChangelog(INFRAPOOL_AZURE_AGENT_0)
+            }
+          }
         }
 
         stage('Log messages') {
@@ -80,15 +113,15 @@ pipeline {
         }
 
         stage('Cluster-Prep Schema') {
-          steps { sh './bin/validate-schema ./helm/conjur-config-cluster-prep/values.schema.json'}
+          steps { script { INFRAPOOL_AZURE_AGENT_0.agentSh './bin/validate-schema ./helm/conjur-config-cluster-prep/values.schema.json'} }
         }
 
         stage('Application Namespace-Prep Schema') {
-          steps { sh './bin/validate-schema ./helm/conjur-config-namespace-prep/values.schema.json'}
+          steps { script { INFRAPOOL_AZURE_AGENT_0.agentSh './bin/validate-schema ./helm/conjur-config-namespace-prep/values.schema.json'} }
         }
 
         stage('Helm Chart Unit Tests') {
-          steps { sh './bin/test-helm-unit-in-docker' }
+          steps { script { INFRAPOOL_AZURE_AGENT_0.agentSh './bin/test-helm-unit-in-docker' } }
         }
       }
     }
@@ -96,34 +129,35 @@ pipeline {
     // Generates a VERSION file based on the current build number and latest version in CHANGELOG.md
     stage('Validate Changelog and set version') {
       steps {
-        updateVersion("CHANGELOG.md", "${BUILD_NUMBER}")
-      }
-    }
-
-    stage('Get latest upstream dependencies') {
-      steps {
-        updateGoDependencies('${WORKSPACE}/go.mod')
+        updateVersion( INFRAPOOL_AZURE_AGENT_0, "CHANGELOG.md", "${BUILD_NUMBER}")
       }
     }
 
     stage('Build client Docker image') {
       steps {
-        sh './bin/build'
+        script {
+          INFRAPOOL_AZURE_AGENT_0.agentSh './bin/build'
+        }
       }
     }
 
     stage('Run Tests') {
       steps {
-        sh './bin/test'
+        script {
+          INFRAPOOL_AZURE_AGENT_0.agentSh './bin/test'
+        }
       }
       post {
         always {
-          sh './bin/coverage'
-          sh 'cp ./test/c.out ./c.out'
-
-          junit 'test/junit.xml'
-          cobertura autoUpdateHealth: true, autoUpdateStability: true, coberturaReportFile: 'test/coverage.xml', conditionalCoverageTargets: '70, 0, 70', failUnhealthy: true, failUnstable: true, maxNumberOfBuilds: 0, lineCoverageTargets: '70, 70, 70', methodCoverageTargets: '70, 0, 70', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
-          ccCoverage("gocov", "--prefix github.com/cyberark/conjur-authn-k8s-client")
+          script {
+            INFRAPOOL_AZURE_AGENT_0.agentSh './bin/coverage'
+            INFRAPOOL_AZURE_AGENT_0.agentSh 'cp ./test/c.out ./c.out'
+            INFRAPOOL_AZURE_AGENT_0.agentStash name: 'coverage-report', includes: 'test/*'
+            unstash 'coverage-report'
+            junit 'test/junit.xml'
+            cobertura autoUpdateHealth: true, autoUpdateStability: true, coberturaReportFile: 'test/coverage.xml', conditionalCoverageTargets: '70, 0, 70', failUnhealthy: true, failUnstable: true, maxNumberOfBuilds: 0, lineCoverageTargets: '70, 70, 70', methodCoverageTargets: '70, 0, 70', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+            codacy action: 'reportCoverage', filePath: "test/coverage.xml"
+          }
         }
       }
     }
@@ -132,32 +166,32 @@ pipeline {
       parallel {
         stage ("Scan main image for fixable vulns") {
           steps {
-            scanAndReport("conjur-authn-k8s-client:dev", "HIGH", false)
+            scanAndReport(INFRAPOOL_AZURE_AGENT_0, "conjur-authn-k8s-client:dev", "HIGH", false)
           }
         }
         stage ("Scan main image for total vulns") {
           steps {
-            scanAndReport("conjur-authn-k8s-client:dev", "NONE", true)
+            scanAndReport(INFRAPOOL_AZURE_AGENT_0, "conjur-authn-k8s-client:dev", "NONE", true)
           }
         }
         stage ("Scan redhat image for fixable vulns") {
           steps {
-            scanAndReport("conjur-authn-k8s-client-redhat:dev", "HIGH", false)
+            scanAndReport(INFRAPOOL_AZURE_AGENT_0, "conjur-authn-k8s-client-redhat:dev", "HIGH", false)
           }
         }
         stage ("Scan redhat image for total vulns") {
           steps {
-            scanAndReport("conjur-authn-k8s-client-redhat:dev", "NONE", true)
+            scanAndReport(INFRAPOOL_AZURE_AGENT_0, "conjur-authn-k8s-client-redhat:dev", "NONE", true)
           }
         }
         stage ("Scan helm test image for fixable vulns") {
           steps {
-            scanAndReport("conjur-k8s-cluster-test:dev", "HIGH", false)
+            scanAndReport(INFRAPOOL_AZURE_AGENT_0, "conjur-k8s-cluster-test:dev", "HIGH", false)
           }
         }
         stage ("Scan helm test image for total vulns") {
           steps {
-            scanAndReport("conjur-k8s-cluster-test:dev", "NONE", true)
+            scanAndReport(INFRAPOOL_AZURE_AGENT_0, "conjur-k8s-cluster-test:dev", "NONE", true)
           }
         }
       }
@@ -173,19 +207,25 @@ pipeline {
            * already exists).
           */
           steps {
-            sh './bin/helm-dependency-update-in-docker'
+            script {
+              INFRAPOOL_AZURE_AGENT_0.agentSh './bin/helm-dependency-update-in-docker'
+            }
           }
         }
         stage('Test app with') {
           parallel {
             stage('Enterprise in GKE') {
               steps {
-                sh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --ci-apps'
+                script {
+                  INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --ci-apps'
+                }
               }
             }
             stage('OSS in OpenShift v(current)') {
               steps {
-                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --ci-apps'
+                script {
+                  INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --ci-apps'
+                }
               }
             }
             stage('OSS in OpenShift v(next)') {
@@ -193,7 +233,9 @@ pipeline {
                 expression { params.TEST_OCP_NEXT }
               }
               steps {
-                sh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift --ci-apps'
+                script {
+                  INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift --ci-apps'
+                }
               }
             }
           }
@@ -202,21 +244,25 @@ pipeline {
           stages {
             stage('Test app in GKE') {
               steps {
-                sh '''
-                  HOST_IP="$(curl https://checkip.amazonaws.com)";
-                  echo "HOST_IP=${HOST_IP}"
-                  echo "CONJUR_APPLIANCE_TAG=${CONJUR_APPLIANCE_TAG}"
-                  cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins --ci-apps
-                '''
+                script {
+                  INFRAPOOL_AZURE_AGENT_0.agentSh '''
+                    HOST_IP="$(curl https://checkip.amazonaws.com)";
+                    echo "HOST_IP=${HOST_IP}"
+                    echo "CONJUR_APPLIANCE_TAG=${CONJUR_APPLIANCE_TAG}"
+                    cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins --ci-apps
+                  '''
+                }
               }
             }
             stage('Test app in OpenShift v(current)') {
               steps {
-                sh '''
-                  HOST_IP="$(curl https://checkip.amazonaws.com)";
-                  echo "HOST_IP=${HOST_IP}"
-                  cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins --ci-apps
-                '''
+                script {
+                  INFRAPOOL_AZURE_AGENT_0.agentSh '''
+                    HOST_IP="$(curl https://checkip.amazonaws.com)";
+                    echo "HOST_IP=${HOST_IP}"
+                    cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins --ci-apps
+                  '''
+                }
               }
             }
             stage('Test app in OpenShift v(next)') {
@@ -224,11 +270,13 @@ pipeline {
                 expression { params.TEST_OCP_NEXT }
               }
               steps {
-                sh '''
-                  HOST_IP="$(curl https://checkip.amazonaws.com)";
-                  echo "HOST_IP=${HOST_IP}"
-                  cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --ci-apps
-                '''
+                script {
+                  INFRAPOOL_AZURE_AGENT_0.agentSh '''
+                    HOST_IP="$(curl https://checkip.amazonaws.com)";
+                    echo "HOST_IP=${HOST_IP}"
+                    cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --ci-apps
+                  '''
+                }
               }
             }
           }
@@ -239,7 +287,9 @@ pipeline {
     // Internal images will be used for promoting releases.
     stage('Push images to internal registry') {
       steps {
-        sh './bin/publish --internal'
+        script {
+          INFRAPOOL_AZURE_AGENT_0.agentSh './bin/publish --internal'
+        }
       }
     }
 
@@ -251,16 +301,18 @@ pipeline {
       }
 
       steps {
-        release { billOfMaterialsDirectory, assetDirectory, toolsDirectory ->
-          // Publish release artifacts to all the appropriate locations
-          // Copy any artifacts to assetDirectory to attach them to the Github release
+        script {
+          release(INFRAPOOL_AZURE_AGENT_0) { billOfMaterialsDirectory, assetDirectory, toolsDirectory ->
+            // Publish release artifacts to all the appropriate locations
+            // Copy any artifacts to assetDirectory to attach them to the Github release
 
-          // Create Go application SBOM using the go.mod version for the golang container image
-          sh """go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --main "cmd/authenticator/" --output "${billOfMaterialsDirectory}/go-app-bom.json" """
-          // Create Go module SBOM
-          sh """go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --output "${billOfMaterialsDirectory}/go-mod-bom.json" """
-          // Publish edge release
-          sh 'summon ./bin/publish --edge'
+            // Create Go application SBOM using the go.mod version for the golang container image
+            INFRAPOOL_AZURE_AGENT_0.agentSh """export PATH="${toolsDirectory}/bin:${PATH}" && go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --main "cmd/authenticator/" --output "${billOfMaterialsDirectory}/go-app-bom.json" """
+            // Create Go module SBOM
+            INFRAPOOL_AZURE_AGENT_0.agentSh """export PATH="${toolsDirectory}/bin:${PATH}" && go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --output "${billOfMaterialsDirectory}/go-mod-bom.json" """
+            // Publish edge release
+            INFRAPOOL_AZURE_AGENT_0.agentSh 'export PATH="${toolsDirectory}/bin:${PATH}" && summon ./bin/publish --edge'
+          }
         }
       }
     }
@@ -268,7 +320,7 @@ pipeline {
 
   post {
     always {
-      cleanupAndNotify(currentBuild.currentResult)
+      releaseInfraPoolAgent(".infrapool/release_agents")
     }
   }
 }
