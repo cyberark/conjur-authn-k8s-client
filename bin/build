@@ -2,6 +2,9 @@
 
 set -euo pipefail
 
+# go to repo root folder for execution
+cd $(dirname $0)/..
+
 . bin/build_utils
 
 function main() {
