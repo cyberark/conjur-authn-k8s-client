@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.26.1] - 2023-09-07
 
+### Security
+- Increase length of signing key used for mTLS authentication to 4096 bits.
+  (CONJSE-1819)
+
 ## [0.26.0] - 2023-07-18
 
 ### Security

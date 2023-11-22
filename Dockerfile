@@ -24,6 +24,7 @@ RUN update-ca-certificates
 WORKDIR /opt/conjur-authn-k8s-client
 COPY . /opt/conjur-authn-k8s-client
 
+RUN mkdir -p vendor
 RUN ls -alh vendor
 
 EXPOSE 8080
@@ -149,12 +150,6 @@ RUN git clone https://github.com/ztombol/bats-support /bats/bats-support && \
 # Install yq
 RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && \
     chmod +x /usr/bin/yq
-
-# Temporarily update go.mod due to CVE-2022-41723
-# This script will fail when the version of golang.org/x/net changes and this section
-# will need to be updated or removed.
-RUN grep v0.4.1-0.20230214201333-88ed8ca3307d /usr/local/go/src/go.mod
-RUN sed -i "s|v0.4.1-0.20230214201333-88ed8ca3307d|v0.7.0|g" /usr/local/go/src/go.mod
 
 RUN mkdir -p /tests
 WORKDIR /tests
