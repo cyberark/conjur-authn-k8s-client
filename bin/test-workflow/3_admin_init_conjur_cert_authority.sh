@@ -34,7 +34,7 @@ if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
 elif [[ "$CONJUR_PLATFORM" == "gke" ]]; then
   $cli exec "$conjur_master" -- chpst -u conjur conjur-plugin-service possum rake authn_k8s:ca_init["conjur/authn-k8s/$AUTHENTICATOR_ID"]
 elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
-  docker-compose -f temp/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml \
+  docker compose -f temp/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml \
     exec -T conjur-master-1.mycompany.local chpst -u conjur conjur-plugin-service possum rake authn_k8s:ca_init["conjur/authn-k8s/$AUTHENTICATOR_ID"]
 fi
 
