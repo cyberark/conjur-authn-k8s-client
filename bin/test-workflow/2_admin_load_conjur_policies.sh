@@ -107,7 +107,7 @@ popd > /dev/null
 if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
   JWKS_URI="NONE"
   ISSUER="NONE"
-  docker-compose -f "temp/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml" \
+  docker compose -f "temp/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml" \
     run --rm \
     -v "${PWD}/policy":/policy \
     -w /src/cli \
