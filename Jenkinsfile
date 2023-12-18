@@ -94,6 +94,8 @@ pipeline {
           INFRAPOOL_AZURE_AGENT_0.agentPut from: "go.*", to: "${WORKSPACE}"
           // Add GOMODCACHE directory to infrapool allowing automated release to generate SBOMs
           INFRAPOOL_AZURE_AGENT_0.agentPut from: "/root/go", to: "/var/lib/jenkins/"
+          // Add GOMODCACHE directory for Azure ubuntu 20.04 (can be removed after os upgrade in favor of the above line)
+          INFRAPOOL_AZURE_AGENT_0.agentPut from: "/root/go", to: "/home/jenkins/"
         }
       }
     }
