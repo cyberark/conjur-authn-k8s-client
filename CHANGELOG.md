@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
-## [0.26.1] - 2023-09-07
+## [0.26.1] - 2023-12-22
 
 ### Security
 - Increase length of signing key used for mTLS authentication to 4096 bits.
@@ -306,7 +306,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.0...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.1...HEAD
 [0.26.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.0...v0.26.1
 [0.26.0]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.25.1...v0.26.0
 [0.25.1]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.25.0...v0.25.1
