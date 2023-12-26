@@ -138,7 +138,7 @@ rotate_host_api_key() {
   local host=$1
 
   run_conjur_cmd_as_admin <<CMD
-conjur host rotate_api_key -h "$host"
+conjur host rotate-api-key --id "$host"
 CMD
 }
 
