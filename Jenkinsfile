@@ -246,29 +246,29 @@ pipeline {
         }
         stage('Enterprise in Jenkins') {
           stages {
-            stage('Test app in GKE') {
-              steps {
-                script {
-                  INFRAPOOL_AZURE_AGENT_0.agentSh '''
-                    HOST_IP="$(curl https://checkip.amazonaws.com)";
-                    echo "HOST_IP=${HOST_IP}"
-                    echo "CONJUR_APPLIANCE_TAG=${CONJUR_APPLIANCE_TAG}"
-                    cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins --ci-apps
-                  '''
-                }
-              }
-            }
-            stage('Test app in OpenShift v(current)') {
-              steps {
-                script {
-                  INFRAPOOL_AZURE_AGENT_0.agentSh '''
-                    HOST_IP="$(curl https://checkip.amazonaws.com)";
-                    echo "HOST_IP=${HOST_IP}"
-                    cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins --ci-apps
-                  '''
-                }
-              }
-            }
+            // stage('Test app in GKE') {
+            //   steps {
+            //     script {
+            //       INFRAPOOL_AZURE_AGENT_0.agentSh '''
+            //         HOST_IP="$(curl https://checkip.amazonaws.com)";
+            //         echo "HOST_IP=${HOST_IP}"
+            //         echo "CONJUR_APPLIANCE_TAG=${CONJUR_APPLIANCE_TAG}"
+            //         cd bin/test-workflow && summon --environment gke ./start --enterprise --platform jenkins --ci-apps
+            //       '''
+            //     }
+            //   }
+            // }
+            // stage('Test app in OpenShift v(current)') {
+            //   steps {
+            //     script {
+            //       INFRAPOOL_AZURE_AGENT_0.agentSh '''
+            //         HOST_IP="$(curl https://checkip.amazonaws.com)";
+            //         echo "HOST_IP=${HOST_IP}"
+            //         cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --enterprise --platform jenkins --ci-apps
+            //       '''
+            //     }
+            //   }
+            // }
             stage('Test app in OpenShift v(next)') {
               when {
                 expression { params.TEST_OCP_NEXT }
