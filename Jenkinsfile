@@ -20,6 +20,7 @@ if (params.MODE == "PROMOTE") {
 
     // Pull existing images from internal registry in order to promote
     infrapool.agentSh """
+      export PATH="release-tools/bin:${PATH}"
       docker pull registry.tld/conjur-authn-k8s-client:${sourceVersion}
       docker pull registry.tld/conjur-authn-k8s-client-redhat:${sourceVersion}
       docker pull cyberark/conjur-k8s-cluster-test:${sourceVersion}
