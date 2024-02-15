@@ -1,9 +1,9 @@
 FROM golang:1.20 as authenticator-client-builder
 MAINTAINER CyberArk Software Ltd.
 
-ENV GOOS=linux \
-    GOARCH=amd64 \
-    CGO_ENABLED=1 \
+# We don't set GOOS/GOARCH here because we want to build for the current
+# platform. This is needed for multi-arch builds.
+ENV CGO_ENABLED=1 \
     GOEXPERIMENT=boringcrypto
 
 # this value changes in ./bin/build
@@ -130,6 +130,7 @@ LABEL description="The authentication client required to expose secrets from a C
 
 FROM golang:1.20-alpine as k8s-cluster-test
 
+ARG TARGETARCH
 # Install packages for testing
 RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl openssl-dev
 
@@ -148,7 +149,7 @@ RUN git clone https://github.com/ztombol/bats-support /bats/bats-support && \
     git clone https://github.com/ztombol/bats-file /bats/bats-file
 
 # Install yq
-RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && \
+RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${TARGETARCH} -O /usr/bin/yq && \
     chmod +x /usr/bin/yq
 
 RUN mkdir -p /tests

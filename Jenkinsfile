@@ -75,11 +75,13 @@ pipeline {
       }
     }
 
-    stage('Get InfraPool AzureExecutorV2 Agent') {
+    stage('Get InfraPool AzureExecutorV2 and ExecutorV2ARM Agents') {
       steps {
         script {
           // Request ExecutorV2 agents for 2 hour(s)
           INFRAPOOL_AZURE_AGENT_0 = getInfraPoolAgent.connected(type: "AzureExecutorV2", quantity: 1, duration: 2)[0]
+          // Request ExecutorV2ARM agents for 2 hour(s)
+          INFRAPOOL_EXECUTORV2ARM_AGENT_0 = getInfraPoolAgent.connected(type: "ExecutorV2ARM", quantity: 1, duration: 2)[0]
         }
       }
     }
@@ -90,13 +92,21 @@ pipeline {
           withCredentials([usernamePassword(credentialsId: 'jenkins_ci_token', usernameVariable: 'GITHUB_USER', passwordVariable: 'TOKEN')]) {
             sh './bin/updateGoDependencies.sh -g "${WORKSPACE}/go.mod"'
           }
-          // Copy the vendor directory onto infrapool
+          // Copy the vendor directory onto AMD64 infrapool
           INFRAPOOL_AZURE_AGENT_0.agentPut from: "vendor", to: "${WORKSPACE}"
           INFRAPOOL_AZURE_AGENT_0.agentPut from: "go.*", to: "${WORKSPACE}"
           // Add GOMODCACHE directory to infrapool allowing automated release to generate SBOMs
           INFRAPOOL_AZURE_AGENT_0.agentPut from: "/root/go", to: "/var/lib/jenkins/"
           // Add GOMODCACHE directory for Azure ubuntu 20.04 (can be removed after os upgrade in favor of the above line)
           INFRAPOOL_AZURE_AGENT_0.agentPut from: "/root/go", to: "/home/jenkins/"
+
+          // Copy the vendor directory onto ARM64 infrapool
+          INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentPut from: "vendor", to: "${WORKSPACE}"
+          INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentPut from: "go.*", to: "${WORKSPACE}"
+          // Add GOMODCACHE directory to infrapool allowing automated release to generate SBOMs
+          INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentPut from: "/root/go", to: "/var/lib/jenkins/"
+          // Add GOMODCACHE directory for Azure ubuntu 20.04 (can be removed after os upgrade in favor of the above line)
+          INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentPut from: "/root/go", to: "/home/jenkins/"
         }
       }
     }
@@ -134,14 +144,26 @@ pipeline {
     // Generates a VERSION file based on the current build number and latest version in CHANGELOG.md
     stage('Validate Changelog and set version') {
       steps {
-        updateVersion( INFRAPOOL_AZURE_AGENT_0, "CHANGELOG.md", "${BUILD_NUMBER}")
+        updateVersion(INFRAPOOL_AZURE_AGENT_0, "CHANGELOG.md", "${BUILD_NUMBER}")
+        updateVersion(INFRAPOOL_EXECUTORV2ARM_AGENT_0, "CHANGELOG.md", "${BUILD_NUMBER}")
       }
     }
 
     stage('Build client Docker image') {
-      steps {
-        script {
-          INFRAPOOL_AZURE_AGENT_0.agentSh './bin/build'
+      parallel {
+        stage('Build AMD64 image') {
+          steps {
+            script {
+              INFRAPOOL_AZURE_AGENT_0.agentSh './bin/build'
+            }
+          }
+        }
+        stage('Build ARM64 image') {
+          steps {
+            script {
+              INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentSh './bin/build'
+            }
+          }
         }
       }
     }
@@ -291,9 +313,34 @@ pipeline {
 
     // Internal images will be used for promoting releases.
     stage('Push images to internal registry') {
+      parallel {
+        stage('Push images AMD64 image') {
+          steps {
+            script {
+              // Push images to the internal registry so that they can be used
+              // by tests, even if the tests run on a different executor.
+              INFRAPOOL_AZURE_AGENT_0.agentSh './bin/publish --internal'
+            }
+          }
+        }
+
+        stage('Push images ARM64 image') {
+          steps {
+            script {
+              // Push images to the internal registry so that they can be used
+              // by tests, even if the tests run on a different executor.
+              INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentSh './bin/publish --internal --arch arm64'
+            }
+          }
+        }
+      }
+    }
+
+    stage('Push multi-arch manifest to internal registry') {
       steps {
         script {
-          INFRAPOOL_AZURE_AGENT_0.agentSh './bin/publish --internal'
+          // Push multi-architecture manifest to the internal registry.
+          INFRAPOOL_AZURE_AGENT_0.agentSh './bin/publish --manifest'
         }
       }
     }
@@ -317,6 +364,9 @@ pipeline {
             INFRAPOOL_AZURE_AGENT_0.agentSh """export PATH="${toolsDirectory}/bin:${PATH}" && go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --output "${billOfMaterialsDirectory}/go-mod-bom.json" """
             // Publish edge release
             INFRAPOOL_AZURE_AGENT_0.agentSh 'export PATH="${toolsDirectory}/bin:${PATH}" && summon ./bin/publish --edge'
+
+            // Publish internal edge release
+            INFRAPOOL_AZURE_AGENT_0.agentSh 'export PATH="${toolsDirectory}/bin:${PATH}" && summon ./bin/publish --internal-edge'
           }
         }
       }

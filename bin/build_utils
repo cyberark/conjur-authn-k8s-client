@@ -83,3 +83,21 @@ function retrieve_cyberark_ca_cert() {
 repo_root() {
   git rev-parse --show-toplevel
 }
+
+# prepare_manifest image tag
+function prepare_manifest() {
+  local image="$1"
+  local source_tag="$2"
+  local target_tag="$3"
+
+  docker pull "${image}:${source_tag}-amd64"
+  docker pull "${image}:${source_tag}-arm64"
+
+  docker manifest create \
+    --insecure \
+    "${image}:${target_tag}" \
+    --amend "${image}:${source_tag}-amd64" \
+    --amend "${image}:${source_tag}-arm64"
+
+  docker manifest push --insecure "${image}:${target_tag}"
+}
