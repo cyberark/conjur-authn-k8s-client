@@ -121,15 +121,11 @@ function main {
 
     echo "installing go version..."
     # Install the go version specified in go.mod
-    if ! go get golang.org/dl/go"${GO_MOD_VERSION}"; then
-        echo "Error: Failed to get go version ${GO_MOD_VERSION}"
-        exit 1
-    fi
-
     if ! go install golang.org/dl/go"${GO_MOD_VERSION}@latest"; then
         echo "Error: Failed to install go version ${GO_MOD_VERSION}"
         exit 1
-    fi 
+    fi
+
 
     if ! "${GO_PATH}go${GO_MOD_VERSION}" download; then
         echo "Error: Failed to download go version ${GO_MOD_VERSION}"
@@ -137,6 +133,7 @@ function main {
     fi
 
     echo "go version ${GO_MOD_VERSION} installed"
+    "${GO_PATH}go${GO_MOD_VERSION}" version
 
     echo "running go mod tidy..."
     # Run go mod tidy
