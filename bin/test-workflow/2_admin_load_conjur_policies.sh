@@ -141,8 +141,25 @@ else
 
   announce "Loading Conjur policy."
 
+  # Avoid using kubectl cp because it requires the `tar` command to be
+  # installed on the source and destination pods. Instead, use `kubectl exec`
+  # to write the policy file to the destination pod.
+
   "$cli" exec "$conjur_cli_pod" -- rm -rf /policy
-  "$cli" cp ./policy "$conjur_cli_pod:/policy"
+  "$cli" exec "$conjur_cli_pod" -- mkdir -p /policy/generated
+
+  set -- "generated/$TEST_APP_NAMESPACE_NAME.authenticator-policy.yml" \
+    "generated/$TEST_APP_NAMESPACE_NAME.app-identities-policy.yml" \
+    "generated/$TEST_APP_NAMESPACE_NAME.app-identities-policy-jwt.yml" \
+    "app-policy.yml" \
+    "generated/$TEST_APP_NAMESPACE_NAME.app-grants.yml" \
+    "load_policies.sh"
+
+  for policy_file in "$@"; do
+    "$cli" exec -i "$conjur_cli_pod" -- sh -c "cat - > /policy/$policy_file" < "${PWD}/policy/$policy_file"
+  done
+
+  "$cli" exec "$conjur_cli_pod" -- chmod +x /policy/load_policies.sh
 
   announce "Extracting openid configuration"
   JWKS_URI=$($cli get --raw /.well-known/openid-configuration | jq '.jwks_uri')
