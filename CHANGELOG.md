@@ -9,7 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
-## [0.26.2] - 2023-12-28
+## [0.26.2] - 2024-03-25
+
+### Changed
+- Upgrade Go to 1.22 (CONJSE-1842)
 
 ## [0.26.1] - 2023-12-28
 

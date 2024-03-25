@@ -1,4 +1,4 @@
-FROM golang:1.20-bullseye
+FROM golang:1.22-bullseye
 
 # dlv for debugging
 RUN go get github.com/go-delve/delve/cmd/dlv
