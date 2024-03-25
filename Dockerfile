@@ -1,4 +1,4 @@
-FROM golang:1.20 as authenticator-client-builder
+FROM golang:1.22 as authenticator-client-builder
 MAINTAINER CyberArk Software Ltd.
 
 # We don't set GOOS/GOARCH here because we want to build for the current
@@ -128,7 +128,7 @@ LABEL description="The authentication client required to expose secrets from a C
 
 # =================== CONTAINER FOR HELM TEST ===================
 
-FROM golang:1.20-alpine as k8s-cluster-test
+FROM golang:1.22-alpine as k8s-cluster-test
 
 ARG TARGETARCH
 # Install packages for testing
