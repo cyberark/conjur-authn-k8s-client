@@ -75,6 +75,14 @@ pipeline {
       }
     }
 
+    stage('Scan for internal URLs') {
+      steps {
+        script {
+          detectInternalUrls()
+        }
+      }
+    }
+
     stage('Get InfraPool AzureExecutorV2 and ExecutorV2ARM Agents') {
       steps {
         script {
