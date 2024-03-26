@@ -30,12 +30,12 @@
 <tbody>
 <tr class="odd">
 <td>Aha Card</td>
-<td><p><a href="https://cyberark.aha.io/epics/SCR-E-76">link</a> (private)</p>
+<td><p>SCR-E-76 (private)</p>
 <p><em>Note: This design document covers work that is planned to lay the groundwork for “Milestone 1: Push to File” as defined in this Aha Card.</em></p></td>
 </tr>
 <tr class="even">
 <td>Feature Doc</td>
-<td><a href="https://cyberark365.sharepoint.com/:w:/s/Conjur/EQnlgrc_aYZAhaZdR3oPSr0BsBoAtMnvyJuNDHGkOzokgw?e=sgrgBx">link</a> (private)</td>
+<td>Sharepoint (private)</td>
 </tr>
 <tr class="odd">
 <td>Examples of Using Kubernetes with Conjur Enterprise</td>
@@ -56,7 +56,7 @@
 </tr>
 <tr class="even">
 <td>Feature Brief</td>
-<td><a href="https://cyberark365.sharepoint.com/:w:/r/sites/Conjur/Shared%20Documents/SDLC/Projects/Integrations/Project%20Briefs/Feature%20Brief%20-%20Easy%20Kubernetes%20Secrets%20Delivery.docx?d=wb782e509693f408685a65d477a0f4abd&amp;csf=1&amp;web=1&amp;e=48shEd">link</a> (private)</td>
+<td>Sharepoint (private)</td>
 </tr>
 <tr class="odd">
 <td>Dap Wiki Client Configuration Info</td>
