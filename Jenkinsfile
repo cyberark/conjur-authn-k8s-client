@@ -188,7 +188,7 @@ pipeline {
             INFRAPOOL_AZURE_AGENT_0.agentStash name: 'coverage-report', includes: 'test/*'
             unstash 'coverage-report'
             junit 'test/junit.xml'
-            cobertura autoUpdateHealth: true, autoUpdateStability: true, coberturaReportFile: 'test/coverage.xml', conditionalCoverageTargets: '70, 0, 70', failUnhealthy: true, failUnstable: true, maxNumberOfBuilds: 0, lineCoverageTargets: '70, 70, 70', methodCoverageTargets: '70, 0, 70', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+            cobertura autoUpdateHealth: true, autoUpdateStability: true, coberturaReportFile: 'test/coverage.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: true, failUnstable: true, maxNumberOfBuilds: 0, lineCoverageTargets: '70, 70, 0', methodCoverageTargets: '70, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
             codacy action: 'reportCoverage', filePath: "test/coverage.xml"
           }
         }
