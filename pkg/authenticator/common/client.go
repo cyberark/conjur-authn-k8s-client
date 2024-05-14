@@ -34,7 +34,7 @@ func NewHTTPSClient(CACert []byte, certPEMBlock, keyPEMBlock []byte) (*http.Clie
 	}
 	// Doubt this is necessary because there's only one
 	//tlsConfig.BuildNameToCertificate()
-	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	transport := &http.Transport{TLSClientConfig: tlsConfig, Proxy: http.ProxyFromEnvironment}
 
 	return &http.Client{Transport: transport, Timeout: time.Second * 10}, nil
 }
