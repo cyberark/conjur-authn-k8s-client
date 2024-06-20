@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/fullsailor/pkcs7"
-	"go.opentelemetry.io/otel"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
@@ -77,34 +76,39 @@ func (auth *Authenticator) GetAccessToken() access_token.AccessToken {
 // certificates.
 // @deprecated Use AuthenticateWithContext instead
 func (auth *Authenticator) Authenticate() error {
-	return auth.AuthenticateWithContext(context.TODO())
+	ctx, tracer, cleanup, err := trace.Create(
+		trace.NoopProviderType,
+		trace.TracerProviderConfig{},
+	)
+	if err != nil {
+		return err
+	}
+	defer cleanup(ctx)
+
+	return auth.AuthenticateWithContext(ctx, tracer)
 }
 
-func (auth *Authenticator) AuthenticateWithContext(ctx context.Context) error {
+func (auth *Authenticator) AuthenticateWithContext(ctx context.Context, tracer trace.Tracer) error {
 	log.Info(log.CAKC040, auth.config.Common.Username)
 
-	tr := trace.NewOtelTracer(otel.Tracer("conjur-authn-k8s-client"))
-	spanCtx, span := tr.Start(ctx, "Authenticate")
+	ctx, span := tracer.Start(ctx, "Authenticate")
 	defer span.End()
 
-	err := auth.loginIfNeeded(spanCtx, tr)
+	err := auth.loginIfNeeded(ctx, tracer)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
-		span.End()
 		return err
 	}
 
-	authenticationResponse, err := auth.sendAuthenticationRequest(spanCtx, tr)
+	authenticationResponse, err := auth.sendAuthenticationRequest(ctx, tracer)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
-		span.End()
 		return err
 	}
 
-	parsedResponse, err := auth.parseAuthenticationResponse(spanCtx, tr, authenticationResponse)
+	parsedResponse, err := auth.parseAuthenticationResponse(ctx, tracer, authenticationResponse)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
-		span.End()
 		return err
 	}
 
