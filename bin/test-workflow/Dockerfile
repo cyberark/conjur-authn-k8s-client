@@ -20,7 +20,7 @@ RUN curl -LO https://dl.k8s.io/release/v"${KUBECTL_VERSION:-1.21.3}"/bin/linux/a
 
 # Install OpenShift oc CLI
 ARG OPENSHIFT_CLI_URL
-RUN wget -O oc.tar.gz "${OPENSHIFT_CLI_URL:-https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz}" && \
+RUN wget -O oc.tar.gz "${OPENSHIFT_CLI_URL:-https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.15.0/openshift-client-linux.tar.gz}" && \
     tar xvf oc.tar.gz  && \
     mv oc /usr/local/bin/oc && \
     rm -rf oc.tar.gz
