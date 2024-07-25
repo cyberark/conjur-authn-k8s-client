@@ -1,7 +1,7 @@
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
-github.com/cyberark/conjur-opentelemetry-tracer v0.0.1-859 h1:Mm/kEw/EeJvGAxnWVmSfRHSWxCe7MAkOV0nUG//4NJo=
-github.com/cyberark/conjur-opentelemetry-tracer v0.0.1-859/go.mod h1:knGjmz7WYYptFxOwbMTHD56oslEQrNTq2mDW9qix0fc=
+github.com/cyberark/conjur-opentelemetry-tracer v0.0.2 h1:HMC5fDg6tyIlNJq4jMdMs0nGt0Ml23U+KUIyld4f+tY=
+github.com/cyberark/conjur-opentelemetry-tracer v0.0.2/go.mod h1:hn2e6WYNnB6lPKbnLg1jHZkBNT4mgH3/u7kH1hK60A0=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
