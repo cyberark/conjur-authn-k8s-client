@@ -9,9 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
-## [0.26.3] - 2024-05-22
+## [0.26.3] - 2024-07-26
 
 ### Changed
+- Upgrade Go version (CNJR-4651)
 - Update version number
 
 ## [0.26.2] - 2024-04-10
