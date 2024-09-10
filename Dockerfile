@@ -149,7 +149,16 @@ RUN git clone https://github.com/ztombol/bats-support /bats/bats-support && \
     git clone https://github.com/ztombol/bats-file /bats/bats-file
 
 # Install yq
-RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${TARGETARCH} -O /usr/bin/yq && \
+# Build from source to get the latest version due to CVE-2022-4172, CVE-2024-34156
+ARG YQ_COMMIT_HASH=f57de74cfeb8e8a794f69f14fe4b7c1855981978
+
+RUN git clone https://github.com/mikefarah/yq /yq && \
+    cd /yq && \
+    git checkout ${YQ_COMMIT_HASH} && \
+    go mod tidy && \
+    go build && \
+    mv yq /usr/bin/yq && \
+    rm -rf /yq && \
     chmod +x /usr/bin/yq
 
 RUN mkdir -p /tests
