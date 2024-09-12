@@ -20,15 +20,17 @@ RUN mv /etc/os-release /etc/os-release.bak && \
     mv /etc/os-release.bak /etc/os-release
 
 # Install yq
-# Build from source to get the latest version due to CVE-2022-4172
+# Build from source to get the latest version due to CVE-2022-4172, CVE-2024-34156
+ARG YQ_COMMIT_HASH=f57de74cfeb8e8a794f69f14fe4b7c1855981978
+
 RUN git clone https://github.com/mikefarah/yq /yq && \
     cd /yq && \
+    git checkout ${YQ_COMMIT_HASH} && \
+    go mod tidy && \
     go build && \
     mv yq /usr/bin/yq && \
     rm -rf /yq && \
     chmod +x /usr/bin/yq
-# RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && \
-#     chmod +x /usr/bin/yq
 
 RUN mkdir -p /conjur-authn-k8s-client
 WORKDIR /conjur-authn-k8s-client
