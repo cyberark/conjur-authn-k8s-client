@@ -1,5 +1,5 @@
-FROM golang:1.22 as authenticator-client-builder
-MAINTAINER CyberArk Software Ltd.
+FROM golang:1.22 AS authenticator-client-builder
+LABEL maintainer="CyberArk Software Ltd."
 
 # We don't set GOOS/GOARCH here because we want to build for the current
 # platform. This is needed for multi-arch builds.
@@ -18,7 +18,7 @@ ARG VERSION="unreleased"
 # certificate is not available, we copy the (potentially empty) directory
 # and update container certificates based on that, rather than rely on the
 # CA file itself.
-ADD build_ca_certificate /usr/local/share/ca-certificates/
+COPY build_ca_certificate /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 
 WORKDIR /opt/conjur-authn-k8s-client
@@ -29,7 +29,7 @@ RUN ls -alh vendor
 
 EXPOSE 8080
 
-RUN apt-get update && apt-get install -y jq
+RUN apt-get update && apt-get install --no-install-recommends -y jq && apt-get clean
 
 RUN go install github.com/jstemmer/go-junit-report@latest
 
@@ -43,10 +43,10 @@ RUN go build -installsuffix cgo \
 RUN sh -c "go tool nm authenticator | grep '_Cfunc__goboringcrypto_' 1> /dev/null"
 
 # =================== MAIN CONTAINER ===================
-FROM alpine:latest as authenticator-client
-MAINTAINER CyberArk Software Ltd.
+FROM alpine:latest AS authenticator-client
+LABEL maintainer="CyberArk Software Ltd."
 
-RUN apk add -u shadow libc6-compat && \
+RUN apk add --no-cache -u shadow libc6-compat && \
     # Add Limited user
     groupadd -r authenticator \
              -g 777 && \
@@ -80,8 +80,8 @@ COPY --from=authenticator-client-builder /opt/conjur-authn-k8s-client/authentica
 ENTRYPOINT [ "/usr/local/bin/authenticator" ]
 
 # =================== MAIN CONTAINER (REDHAT) ===================
-FROM registry.access.redhat.com/ubi9/ubi as authenticator-client-redhat
-MAINTAINER CyberArk Software Ltd.
+FROM registry.access.redhat.com/ubi9/ubi:latest AS authenticator-client-redhat
+LABEL maintainer="CyberArk Software Ltd."
 
 RUN yum -y distro-sync
 
@@ -111,7 +111,7 @@ VOLUME /run/conjur
 
 COPY --from=authenticator-client-builder /opt/conjur-authn-k8s-client/authenticator /usr/local/bin/
 
-ADD LICENSE /licenses
+COPY LICENSE /licenses
 
 USER authenticator
 
@@ -128,7 +128,7 @@ LABEL description="The authentication client required to expose secrets from a C
 
 # =================== CONTAINER FOR HELM TEST ===================
 
-FROM golang:1.22-alpine as k8s-cluster-test
+FROM golang:1.22-alpine AS k8s-cluster-test
 
 ARG TARGETARCH
 # Install packages for testing
@@ -163,6 +163,10 @@ RUN git clone https://github.com/mikefarah/yq /yq && \
 
 RUN mkdir -p /tests
 WORKDIR /tests
+
+RUN addgroup -S tester && adduser -S tester -G tester && chown tester:0 /tests
+
+USER tester
 
 LABEL name="conjur-k8s-cluster-test"
 LABEL vendor="CyberArk"

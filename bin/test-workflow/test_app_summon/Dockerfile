@@ -1,5 +1,5 @@
-FROM ruby:3.1 as test-app-builder
-MAINTAINER CyberArk
+FROM ruby:3.1 AS test-app-builder
+LABEL maintainer="CyberArk Software Ltd."
 LABEL builder="test-app-builder"
 
 #---some useful tools for interactive usage---#
@@ -19,7 +19,7 @@ ENV PATH="/usr/local/lib/summon:${PATH}"
 
 FROM cyberark/demo-app:1.1.0
 ARG namespace
-MAINTAINER CyberArk
+LABEL maintainer="CyberArk Software Ltd."
 
 #---copy summon into image---#
 COPY --from=test-app-builder /usr/local/lib/summon /usr/local/lib/summon

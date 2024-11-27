@@ -1,6 +1,6 @@
 # =================== CONTAINER FOR HELM UNIT TEST ===================
 
-FROM golang:1.22-alpine as conjur-k8s-helm-unit-test
+FROM golang:1.22-alpine AS conjur-k8s-helm-unit-test
 
 # Install packages for installing Helm and Helm unittest plugin
 RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl
