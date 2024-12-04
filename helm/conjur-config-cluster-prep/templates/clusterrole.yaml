@@ -29,6 +29,7 @@ rules:
   resources: [ "deployments", "statefulsets", "replicasets"]
   verbs: ["get", "list"]
 - apiGroups: [""]
+  # kics-scan ignore-line (This permission is necessary for conjur-authn-k8s-client to inject a cert into the pod)
   resources: ["pods/exec"]
   verbs: ["create", "get"]
 {{- end }}

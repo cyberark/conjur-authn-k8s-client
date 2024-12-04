@@ -19,6 +19,7 @@ metadata:
 apiVersion: v1
 kind: Secret
 metadata:
+  # kics-scan ignore-block (This K8s secret object is necessary for cluster preparation)
   name: conjur-serviceaccount-service-account-token
   labels:
     release: cluster-prep
@@ -90,5 +91,6 @@ rules:
     resources: ["deployments", "statefulsets", "replicasets"]
     verbs: ["get", "list"]
   - apiGroups: [""]
+    # kics-scan ignore-line (This permission is necessary for conjur-authn-k8s-client to inject a cert into the pod)
     resources: ["pods/exec"]
     verbs: ["create", "get"]
