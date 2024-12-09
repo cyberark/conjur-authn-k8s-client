@@ -2,6 +2,9 @@
 
 @Library("product-pipelines-shared-library") _
 
+def productName = 'Conjur Authentication Kubernetes Client'
+def productTypeName = 'Conjur Enterprise'
+
 // Automated release, promotion and dependencies
 properties([
   // Include the automated release parameters for the build
@@ -17,6 +20,58 @@ if (params.MODE == "PROMOTE") {
     // Any version number updates from sourceVersion to targetVersion occur here
     // Any publishing of targetVersion artifacts occur here
     // Anything added to assetDirectory will be attached to the Github Release
+
+    env.INFRAPOOL_PRODUCT_NAME = "${productName}"
+    env.INFRAPOOL_DD_PRODUCT_TYPE_NAME = "${productTypeName}"
+
+    // Scan the images before promoting
+    def scans = [:]
+
+    scans["Scan main Docker image (AMD64 based)"] = {
+      runSecurityScans(infrapool,
+        image: "registry.tld/conjur-authn-k8s-client:${sourceVersion}-amd64",
+        buildMode: params.MODE,
+        branch: env.BRANCH_NAME,
+        arch: 'linux/amd64')
+    }
+    scans["Scan redhat Docker image (AMD64 based)"] = {
+      runSecurityScans(infrapool,
+        image: "registry.tld/conjur-authn-k8s-client-redhat:${sourceVersion}-amd64",
+        buildMode: params.MODE,
+        branch: env.BRANCH_NAME,
+        arch: 'linux/amd64')
+    }
+    scans["Scan helm test Docker image (AMD64 based)"] = {
+      runSecurityScans(infrapool,
+        image: "registry.tld/conjur-k8s-cluster-test:${sourceVersion}-amd64",
+        buildMode: params.MODE,
+        branch: env.BRANCH_NAME,
+        arch: 'linux/amd64')
+    }
+
+    scans["Scan main Docker image (ARM64 based)"] = {
+      runSecurityScans(infrapool,
+        image: "registry.tld/conjur-authn-k8s-client:${sourceVersion}-arm64",
+        buildMode: params.MODE,
+        branch: env.BRANCH_NAME,
+        arch: 'linux/arm64')
+    }
+    scans["Scan redhat Docker image (ARM64 based)"] = {
+      runSecurityScans(infrapool,
+        image: "registry.tld/conjur-authn-k8s-client-redhat:${sourceVersion}-arm64",
+        buildMode: params.MODE,
+        branch: env.BRANCH_NAME,
+        arch: 'linux/arm64')
+    }
+    scans["Scan helm test Docker image (ARM64 based)"] = {
+      runSecurityScans(infrapool,
+        image: "registry.tld/conjur-k8s-cluster-test:${sourceVersion}-arm64",
+        buildMode: params.MODE,
+        branch: env.BRANCH_NAME,
+        arch: 'linux/arm64')
+    }
+
+    parallel(scans)
 
     // Pull existing images from internal registry in order to promote
     infrapool.agentSh """
@@ -50,6 +105,10 @@ pipeline {
   environment {
     // Sets the MODE to the specified or autocalculated value as appropriate
     MODE = release.canonicalizeMode()
+
+    // Values to direct scan results to the right place in DefectDojo
+    INFRAPOOL_PRODUCT_NAME = "${productName}"
+    INFRAPOOL_DD_PRODUCT_TYPE_NAME = "${productTypeName}"
   }
 
   parameters {
@@ -195,36 +254,112 @@ pipeline {
       }
     }
 
+    // Internal images will be used for scanning process and for promoting releases.
+    stage('Push images to internal registry') {
+      parallel {
+        stage('Push images AMD64 image') {
+          steps {
+            script {
+              // Push images to the internal registry so that they can be used
+              // by tests, even if the tests run on a different executor.
+              INFRAPOOL_AZURE_AGENT_0.agentSh './bin/publish --internal'
+            }
+          }
+        }
+
+        stage('Push images ARM64 image') {
+          steps {
+            script {
+              // Push images to the internal registry so that they can be used
+              // by tests, even if the tests run on a different executor.
+              INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentSh './bin/publish --internal --arch arm64'
+            }
+          }
+        }
+      }
+    }
+
+    stage('Push multi-arch manifest to internal registry') {
+      steps {
+        script {
+          // Push multi-architecture manifest to the internal registry.
+          INFRAPOOL_AZURE_AGENT_0.agentSh './bin/publish --manifest'
+        }
+      }
+    }
+
     stage("Scan images") {
       parallel {
-        stage ("Scan main image for fixable vulns") {
+        stage ("Scan main Docker image (AMD64 based)") {
           steps {
-            scanAndReport(INFRAPOOL_AZURE_AGENT_0, "conjur-authn-k8s-client:dev", "HIGH", false)
+            script {
+              VERSION = INFRAPOOL_AZURE_AGENT_0.agentSh(returnStdout: true, script: 'cat VERSION')
+            }
+            runSecurityScans(INFRAPOOL_AZURE_AGENT_0,
+              image: "registry.tld/conjur-authn-k8s-client:${VERSION}-amd64",
+              buildMode: "HIGH",
+              branch: env.BRANCH_NAME,
+              arch: 'linux/amd64')
           }
         }
-        stage ("Scan main image for total vulns") {
+        stage ("Scan main Docker image (ARM64 based)") {
           steps {
-            scanAndReport(INFRAPOOL_AZURE_AGENT_0, "conjur-authn-k8s-client:dev", "NONE", true)
+            script {
+              VERSION = INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentSh(returnStdout: true, script: 'cat VERSION')
+            }
+            runSecurityScans(INFRAPOOL_EXECUTORV2ARM_AGENT_0,
+              image: "registry.tld/conjur-authn-k8s-client:${VERSION}-arm64",
+              buildMode: "HIGH",
+              branch: env.BRANCH_NAME,
+              arch: 'linux/arm64')
           }
         }
-        stage ("Scan redhat image for fixable vulns") {
+        stage ("Scan redhat Docker image (AMD64 based)") {
           steps {
-            scanAndReport(INFRAPOOL_AZURE_AGENT_0, "conjur-authn-k8s-client-redhat:dev", "HIGH", false)
+            script {
+              VERSION = INFRAPOOL_AZURE_AGENT_0.agentSh(returnStdout: true, script: 'cat VERSION')
+            }
+            runSecurityScans(INFRAPOOL_AZURE_AGENT_0,
+              image: "registry.tld/conjur-authn-k8s-client-redhat:${VERSION}-amd64",
+              buildMode: "HIGH",
+              branch: env.BRANCH_NAME,
+              arch: 'linux/amd64')
           }
         }
-        stage ("Scan redhat image for total vulns") {
+        stage ("Scan redhat Docker image (ARM64 based)") {
           steps {
-            scanAndReport(INFRAPOOL_AZURE_AGENT_0, "conjur-authn-k8s-client-redhat:dev", "NONE", true)
+            script {
+              VERSION = INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentSh(returnStdout: true, script: 'cat VERSION')
+            }
+            runSecurityScans(INFRAPOOL_EXECUTORV2ARM_AGENT_0,
+              image: "registry.tld/conjur-authn-k8s-client-redhat:${VERSION}-arm64",
+              buildMode: "HIGH",
+              branch: env.BRANCH_NAME,
+              arch: 'linux/arm64')
           }
         }
-        stage ("Scan helm test image for fixable vulns") {
+        stage ("Scan helm test Docker image (AMD64 based)") {
           steps {
-            scanAndReport(INFRAPOOL_AZURE_AGENT_0, "conjur-k8s-cluster-test:dev", "HIGH", false)
+            script {
+              VERSION = INFRAPOOL_AZURE_AGENT_0.agentSh(returnStdout: true, script: 'cat VERSION')
+            }
+            runSecurityScans(INFRAPOOL_AZURE_AGENT_0,
+              image: "registry.tld/conjur-k8s-cluster-test:${VERSION}-amd64",
+              buildMode: "HIGH",
+              branch: env.BRANCH_NAME,
+              arch: 'linux/amd64')
           }
         }
-        stage ("Scan helm test image for total vulns") {
+        stage ("Scan helm test Docker image (ARM64 based)") {
           steps {
-            scanAndReport(INFRAPOOL_AZURE_AGENT_0, "conjur-k8s-cluster-test:dev", "NONE", true)
+            script {
+              VERSION = INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentSh(returnStdout: true, script: 'cat VERSION')
+            }
+            runSecurityScans(INFRAPOOL_EXECUTORV2ARM_AGENT_0,
+              image: "registry.tld/conjur-k8s-cluster-test:${VERSION}-arm64",
+              buildMode: "HIGH",
+              branch: env.BRANCH_NAME,
+              arch: 'linux/arm64')
           }
         }
       }
@@ -313,40 +448,6 @@ pipeline {
               }
             }
           }
-        }
-      }
-    }
-
-    // Internal images will be used for promoting releases.
-    stage('Push images to internal registry') {
-      parallel {
-        stage('Push images AMD64 image') {
-          steps {
-            script {
-              // Push images to the internal registry so that they can be used
-              // by tests, even if the tests run on a different executor.
-              INFRAPOOL_AZURE_AGENT_0.agentSh './bin/publish --internal'
-            }
-          }
-        }
-
-        stage('Push images ARM64 image') {
-          steps {
-            script {
-              // Push images to the internal registry so that they can be used
-              // by tests, even if the tests run on a different executor.
-              INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentSh './bin/publish --internal --arch arm64'
-            }
-          }
-        }
-      }
-    }
-
-    stage('Push multi-arch manifest to internal registry') {
-      steps {
-        script {
-          // Push multi-architecture manifest to the internal registry.
-          INFRAPOOL_AZURE_AGENT_0.agentSh './bin/publish --manifest'
         }
       }
     }
