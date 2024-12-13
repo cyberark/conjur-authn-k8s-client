@@ -26,6 +26,7 @@ function publish_manifest() {
   local images=(
     "${INTERNAL_REGISTRY}/${LOCAL_IMAGE}"
     "${INTERNAL_REGISTRY}/${REDHAT_LOCAL_IMAGE}"
+    "${INTERNAL_REGISTRY}/${TEST_IMAGE}"
   )
 
   # Always create manifests for SHA versioned images internally
@@ -92,6 +93,7 @@ done
 readonly REGISTRY="cyberark"
 readonly LOCAL_IMAGE="conjur-authn-k8s-client"
 readonly REDHAT_LOCAL_IMAGE="conjur-authn-k8s-client-redhat"
+readonly TEST_IMAGE="conjur-k8s-cluster-test"
 readonly INTERNAL_REGISTRY="registry.tld"
 readonly REDHAT_REGISTRY="quay.io"
 readonly REDHAT_CERT_PID="5e621f6502235d3f505f6093"
@@ -117,6 +119,7 @@ if [[ ${PUBLISH_INTERNAL} = true ]]; then
 
   tag_and_push "${LOCAL_IMAGE}:${SOURCE_TAG}" "${INTERNAL_REGISTRY}/${LOCAL_IMAGE}:${REMOTE_TAG}"
   tag_and_push ${REDHAT_LOCAL_IMAGE}:${SOURCE_TAG} "${INTERNAL_REGISTRY}/${REDHAT_LOCAL_IMAGE}:${REMOTE_TAG}"
+  tag_and_push "${TEST_IMAGE}:${SOURCE_TAG}" "${INTERNAL_REGISTRY}/${TEST_IMAGE}:${REMOTE_TAG}"
 fi
 
 if [[ ${PUBLISH_MANIFEST} = true ]]; then
