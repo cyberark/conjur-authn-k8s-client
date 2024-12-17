@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
-## [0.26.4] - 2024-09-13
+## [0.26.4] - 2024-12-17
 
 ### Security
 - Pin yq to an unreleased version that resolves CVE-2024-34156. (CONJSE-1905)
