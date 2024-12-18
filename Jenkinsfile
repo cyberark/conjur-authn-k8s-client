@@ -472,7 +472,7 @@ pipeline {
             // Create Go module SBOM
             INFRAPOOL_AZURE_AGENT_0.agentSh """export PATH="${toolsDirectory}/bin:${PATH}" && go-bom --tools "${toolsDirectory}" --go-mod ./go.mod --image "golang" --output "${billOfMaterialsDirectory}/go-mod-bom.json" """
             // Publish edge release
-            INFRAPOOL_AZURE_AGENT_0.agentSh 'export PATH="${toolsDirectory}/bin:${PATH}" && summon ./bin/publish --edge'
+            // INFRAPOOL_AZURE_AGENT_0.agentSh 'export PATH="${toolsDirectory}/bin:${PATH}" && summon ./bin/publish --edge'
 
             // Publish internal edge release
             INFRAPOOL_AZURE_AGENT_0.agentSh 'export PATH="${toolsDirectory}/bin:${PATH}" && summon ./bin/publish --internal-edge'
