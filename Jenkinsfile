@@ -75,7 +75,6 @@ if (params.MODE == "PROMOTE") {
 
     // Pull existing images from internal registry in order to promote
     infrapool.agentSh """
-      git config --global --add safe.directory "\$(pwd)"
       export PATH="release-tools/bin:${PATH}"
       docker pull registry.tld/conjur-authn-k8s-client:${sourceVersion}
       docker pull registry.tld/conjur-authn-k8s-client-redhat:${sourceVersion}
@@ -84,6 +83,8 @@ if (params.MODE == "PROMOTE") {
       // Promote source version to target version.
       summon ./bin/publish --promote --source ${sourceVersion} --target ${targetVersion}
     """
+
+    sh 'git config --global --add safe.directory "$(pwd)"'
   }
 
   // Copy Github Enterprise release to Github
