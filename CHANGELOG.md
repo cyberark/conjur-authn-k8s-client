@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
+## [0.26.5] - 2024-12-20
+
+### Security
+- Bump golang.org/x/net to v0.33.0 to address CVE-2024-45338
+
 ## [0.26.4] - 2024-12-17
 
 ### Security
@@ -228,7 +233,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Logs now correctly print only the Conjur identity without the policy branch prefix.
   [cyberark/conjur-authn-k8s-client#126](https://github.com/cyberark/conjur-authn-k8s-client/issues/126)
-- When authentication fails, the exponential backoff retry is correctly reset so 
+- When authentication fails, the exponential backoff retry is correctly reset so
   that it will continue to attempt to authenticate until backoff is exhausted.
   [cyberark/conjur-authn-k8s-client#158](https://github.com/cyberark/conjur-authn-k8s-client/issues/158)
 
@@ -247,7 +252,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   [cyberark/conjur-authn-k8s-client#113](https://github.com/cyberark/conjur-authn-k8s-client/issues/113)
 - The authenticator-client now runs as a limited user in the Docker image
   instead of as root, which is best practice and better follows the principle of
-  least privilege 
+  least privilege
   [cyberark/conjur-authn-k8s-client#111](https://github.com/cyberark/conjur-authn-k8s-client/pull/111)
 
 ## [0.17.0] - 2020-04-07
@@ -285,7 +290,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Moved all AccessToken related work to a separate package
 - Moved all log related work to the `log` package
-- NewFromEnv **signature has changed** - method does not take input parameters 
+- NewFromEnv **signature has changed** - method does not take input parameters
   anymore and is using default values for `tokenFilePath` & `clientCertPath`.
   These parameters can also be set as environment variables:
     - `tokenFilePath` can be set with `CONJUR_AUTHN_TOKEN_FILE`
