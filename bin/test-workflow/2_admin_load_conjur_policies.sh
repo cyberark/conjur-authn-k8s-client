@@ -109,7 +109,7 @@ if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
   ISSUER="NONE"
   docker compose -f "temp/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml" \
     run --rm \
-    -v "${PWD}/policy":/policy \
+    -v "${PWD}/policy":/tmp/policy \
     -w /src/cli \
     --entrypoint /bin/sh \
     client -c "
@@ -122,7 +122,7 @@ if [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
       AUTHENTICATOR_ID='${AUTHENTICATOR_ID}' \
       JWKS_URI='${JWKS_URI}'\
       ISSUER='${ISSUER}'\
-      /policy/load_policies.sh
+      /tmp/policy/load_policies.sh
     "
 else
   set_namespace "$CONJUR_NAMESPACE_NAME"
@@ -145,8 +145,8 @@ else
   # installed on the source and destination pods. Instead, use `kubectl exec`
   # to write the policy file to the destination pod.
 
-  "$cli" exec "$conjur_cli_pod" -- rm -rf /policy
-  "$cli" exec "$conjur_cli_pod" -- mkdir -p /policy/generated
+  "$cli" exec "$conjur_cli_pod" -- rm -rf /tmp/policy
+  "$cli" exec "$conjur_cli_pod" -- mkdir -p /tmp/policy/generated
 
   set -- "generated/$TEST_APP_NAMESPACE_NAME.authenticator-policy.yml" \
     "generated/$TEST_APP_NAMESPACE_NAME.app-identities-policy.yml" \
@@ -156,10 +156,10 @@ else
     "load_policies.sh"
 
   for policy_file in "$@"; do
-    "$cli" exec -i "$conjur_cli_pod" -- sh -c "cat - > /policy/$policy_file" < "${PWD}/policy/$policy_file"
+    "$cli" exec -i "$conjur_cli_pod" -- sh -c "cat - > /tmp/policy/$policy_file" < "${PWD}/policy/$policy_file"
   done
 
-  "$cli" exec "$conjur_cli_pod" -- chmod +x /policy/load_policies.sh
+  "$cli" exec "$conjur_cli_pod" -- chmod +x /tmp/policy/load_policies.sh
 
   announce "Extracting openid configuration"
   JWKS_URI=$($cli get --raw /.well-known/openid-configuration | jq '.jwks_uri')
@@ -177,11 +177,11 @@ else
       AUTHENTICATOR_ID='${AUTHENTICATOR_ID}' \
       JWKS_URI='${JWKS_URI}'\
       ISSUER='${ISSUER}'\
-      /policy/load_policies.sh
+      /tmp/policy/load_policies.sh
     \"
   "
 
-  "$cli" exec "$conjur_cli_pod" -- rm -rf ./policy
+  "$cli" exec "$conjur_cli_pod" -- rm -rf ./tmp/policy
 fi
 
 echo "Conjur policy loaded."
