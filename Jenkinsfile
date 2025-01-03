@@ -78,8 +78,8 @@ if (params.MODE == "PROMOTE") {
       export PATH="release-tools/bin:${PATH}"
       docker pull registry.tld/conjur-authn-k8s-client:${sourceVersion}
       docker pull registry.tld/conjur-authn-k8s-client-redhat:${sourceVersion}
-      docker pull cyberark/conjur-k8s-cluster-test:${sourceVersion}
-      docker tag cyberark/conjur-k8s-cluster-test:${sourceVersion} conjur-k8s-cluster-test:${sourceVersion}
+      docker pull registry.tld/conjur-k8s-cluster-test:${sourceVersion}
+      docker tag registry.tld/conjur-k8s-cluster-test:${sourceVersion} conjur-k8s-cluster-test:${sourceVersion}
       // Promote source version to target version.
       summon ./bin/publish --promote --source ${sourceVersion} --target ${targetVersion}
     """
