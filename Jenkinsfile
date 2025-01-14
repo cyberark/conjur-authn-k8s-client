@@ -299,7 +299,7 @@ pipeline {
             }
             runSecurityScans(INFRAPOOL_AZURE_AGENT_0,
               image: "registry.tld/conjur-authn-k8s-client:${VERSION}-amd64",
-              buildMode: "HIGH",
+              buildMode: params.MODE,
               branch: env.BRANCH_NAME,
               arch: 'linux/amd64')
           }
@@ -311,7 +311,7 @@ pipeline {
             }
             runSecurityScans(INFRAPOOL_EXECUTORV2ARM_AGENT_0,
               image: "registry.tld/conjur-authn-k8s-client:${VERSION}-arm64",
-              buildMode: "HIGH",
+              buildMode: params.MODE,
               branch: env.BRANCH_NAME,
               arch: 'linux/arm64')
           }
@@ -323,7 +323,7 @@ pipeline {
             }
             runSecurityScans(INFRAPOOL_AZURE_AGENT_0,
               image: "registry.tld/conjur-authn-k8s-client-redhat:${VERSION}-amd64",
-              buildMode: "HIGH",
+              buildMode: params.MODE,
               branch: env.BRANCH_NAME,
               arch: 'linux/amd64')
           }
@@ -335,7 +335,7 @@ pipeline {
             }
             runSecurityScans(INFRAPOOL_EXECUTORV2ARM_AGENT_0,
               image: "registry.tld/conjur-authn-k8s-client-redhat:${VERSION}-arm64",
-              buildMode: "HIGH",
+              buildMode: params.MODE,
               branch: env.BRANCH_NAME,
               arch: 'linux/arm64')
           }
@@ -347,7 +347,7 @@ pipeline {
             }
             runSecurityScans(INFRAPOOL_AZURE_AGENT_0,
               image: "registry.tld/conjur-k8s-cluster-test:${VERSION}-amd64",
-              buildMode: "HIGH",
+              buildMode: params.MODE,
               branch: env.BRANCH_NAME,
               arch: 'linux/amd64')
           }
@@ -359,7 +359,7 @@ pipeline {
             }
             runSecurityScans(INFRAPOOL_EXECUTORV2ARM_AGENT_0,
               image: "registry.tld/conjur-k8s-cluster-test:${VERSION}-arm64",
-              buildMode: "HIGH",
+              buildMode: params.MODE,
               branch: env.BRANCH_NAME,
               arch: 'linux/arm64')
           }
