@@ -1,4 +1,4 @@
-FROM golang:1.22 AS authenticator-client-builder
+FROM golang:1.24 AS authenticator-client-builder
 LABEL maintainer="CyberArk Software Ltd."
 
 # We don't set GOOS/GOARCH here because we want to build for the current
@@ -128,7 +128,7 @@ LABEL description="The authentication client required to expose secrets from a C
 
 # =================== CONTAINER FOR HELM TEST ===================
 
-FROM golang:1.22-alpine AS k8s-cluster-test
+FROM golang:1.24-alpine AS k8s-cluster-test
 
 ARG TARGETARCH
 # Install packages for testing
@@ -152,7 +152,6 @@ RUN git clone https://github.com/ztombol/bats-support /bats/bats-support && \
 # Build from source to get the latest version due to CVE-2022-4172, CVE-2024-34156
 ARG YQ_VERSION=v4
 
-# hadolint ignore=DL3003
 RUN git clone --branch $YQ_VERSION https://github.com/mikefarah/yq /yq && \
     cd /yq && \
     # Update golang.org/x/net to v0.37.0 to resolve CVE-2025-22870

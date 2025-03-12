@@ -9,11 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
+## [0.26.6] - 2025-03-12
+
+### Security
+- Upgrade Go to 1.24 and unpin yq and build from master to resolve CVE-2025-22870. (CONJSE-1957)
+
 ## [0.26.5] - 2024-12-20
 
 ### Security
 - Bump golang.org/x/net to v0.33.0 to address CVE-2024-45338
-- Unpin yq and build from master to resolve CVE-2025-22870. (CONJSE-1957)
 
 ## [0.26.4] - 2024-12-17
 
