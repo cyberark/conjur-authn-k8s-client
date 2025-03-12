@@ -152,10 +152,11 @@ RUN git clone https://github.com/ztombol/bats-support /bats/bats-support && \
 # Build from source to get the latest version due to CVE-2022-4172, CVE-2024-34156
 ARG YQ_VERSION=v4
 
+# hadolint ignore=DL3003
 RUN git clone --branch $YQ_VERSION https://github.com/mikefarah/yq /yq && \
     cd /yq && \
-    # Update golang.org/x/net to v0.33.0 to resolve CVE-2024-45338
-    go get golang.org/x/net@v0.33.0 && \
+    # Update golang.org/x/net to v0.37.0 to resolve CVE-2025-22870
+    go get golang.org/x/net@v0.37.0 && \
     go mod tidy && \
     go build && \
     mv yq /usr/bin/yq && \
