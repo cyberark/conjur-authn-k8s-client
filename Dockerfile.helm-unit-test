@@ -1,6 +1,6 @@
 # =================== CONTAINER FOR HELM UNIT TEST ===================
 
-FROM golang:1.22-alpine AS conjur-k8s-helm-unit-test
+FROM golang:1.24-alpine AS conjur-k8s-helm-unit-test
 
 # Install packages for installing Helm and Helm unittest plugin
 RUN apk add --no-cache bash bind-tools coreutils curl git ncurses openssl
@@ -25,8 +25,8 @@ ARG YQ_VERSION=v4
 
 RUN git clone --branch $YQ_VERSION https://github.com/mikefarah/yq /yq && \
     cd /yq && \
-    # Update golang.org/x/net to v0.33.0 to resolve CVE-2024-45338
-    go get golang.org/x/net@v0.33.0 && \
+    # Update golang.org/x/net to v0.37.0 to resolve CVE-2025-22870
+    go get golang.org/x/net@v0.37.0 && \
     go mod tidy && \
     go build && \
     mv yq /usr/bin/yq && \
