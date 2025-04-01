@@ -101,12 +101,7 @@ readonly REDHAT_CERT_PID="5e621f6502235d3f505f6093"
 REDHAT_REMOTE_IMAGE="${REDHAT_REGISTRY}/redhat-isv-containers/${REDHAT_CERT_PID}"
 REDHAT_USER="redhat-isv-containers+${REDHAT_CERT_PID}-robot"
 
-# we changed the name to `conjur-authn-k8s-client`. Leaving `conjur-kubernetes-authenticator`
-# for backwards-compatibility.
-readonly DOCKER_IMAGES=(
-  "conjur-kubernetes-authenticator"
-  "conjur-authn-k8s-client"
-)
+readonly DOCKER_IMAGE="conjur-authn-k8s-client"
 
   # Version derived from CHANGLEOG and automated release library
   VERSION=$(<VERSION)
@@ -142,12 +137,10 @@ if [[ ${PUBLISH_EDGE} = true ]]; then
 
   push_conjur-k8s-cluster-test
 
-  for image in "${DOCKER_IMAGES[@]}"; do
-    echo "Tagging and pushing ${image} to docker hub."
-    for REMOTE_TAG in "${TAGS[@]}"; do
-      tag_and_push "${LOCAL_IMAGE}:${SOURCE_TAG}" "${REGISTRY}/${image}:${REMOTE_TAG}"
-      push_conjur-k8s-cluster-test
-    done
+  echo "Tagging and pushing ${DOCKER_IMAGE} to docker hub."
+  for REMOTE_TAG in "${TAGS[@]}"; do
+    tag_and_push "${LOCAL_IMAGE}:${SOURCE_TAG}" "${REGISTRY}/${DOCKER_IMAGE}:${REMOTE_TAG}"
+    push_conjur-k8s-cluster-test
   done
 fi
 
@@ -169,11 +162,9 @@ if [[ ${PROMOTE} = true ]]; then
     "latest"
   )
 
-  for image in "${DOCKER_IMAGES[@]}"; do
-    echo "Tagging and pushing ${image} to docker hub."
-    for tag in "${TAGS[@]}" $(gen_versions "${REMOTE_TAG}"); do
-      tag_and_push "${INTERNAL_REGISTRY}/${LOCAL_IMAGE}:${SOURCE_TAG}" "${REGISTRY}/${image}:${tag}"
-    done
+  echo "Tagging and pushing ${DOCKER_IMAGE} to docker hub."
+  for tag in "${TAGS[@]}" $(gen_versions "${REMOTE_TAG}"); do
+    tag_and_push "${INTERNAL_REGISTRY}/${LOCAL_IMAGE}:${SOURCE_TAG}" "${REGISTRY}/${DOCKER_IMAGE}:${tag}"
   done
 
   echo "Pushing to RedHat container registry ${REDHAT_REGISTRY} as user ${REDHAT_USER}"

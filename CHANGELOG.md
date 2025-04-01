@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Security
 - Upgrade Go to 1.24 and unpin yq and build from master to resolve CVE-2025-22870. (CONJSE-1957)
+- Deprecate the `cyberark/conjur-kubernetes-authenticator` Docker image. Use the `cyberark/conjur-authn-k8s-client` image instead.
+  (CNJR-9101, [cyberark/conjur-authn-k8s-client#148](https://github.com/cyberark/conjur-authn-k8s-client/issues/148))
 
 ## [0.26.5] - 2024-12-20
 
