@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
+## [0.26.7] - 2025-04-02
+
+### Added
+- Add support for Go HTTP proxy - see
+  [Go docs](https://pkg.go.dev/golang.org/x/net/http/httpproxy#FromEnvironment) for usage
+  (CNJR-3068, [cyberark/conjur-authn-k8s-client#528](https://github.com/cyberark/conjur-authn-k8s-client/pull/528))
+
 ## [0.26.6] - 2025-03-12
 
 ### Security
@@ -334,7 +341,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.5...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.7...HEAD
+[0.26.7]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.6...v0.26.7
+[0.26.6]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.5...v0.26.6
 [0.26.5]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.4...v0.26.5
 [0.26.4]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.3...v0.26.4
 [0.26.3]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.2...v0.26.3
