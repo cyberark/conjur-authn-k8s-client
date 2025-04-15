@@ -65,12 +65,15 @@ CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn-jwt/\"${AUTHENTICA
 
 function setup_conjur_open_source {
   # Pin Conjur OSS to specific version to avoid issues with latest
-  export IMAGE_TAG=1.19.3
+  # export IMAGE_TAG=1.19.3
 
   pushd temp > /dev/null
     git clone --single-branch --branch main https://github.com/cyberark/conjur-oss-helm-chart.git "conjur-oss-helm-chart-$UNIQUE_TEST_ID"
     git clone --single-branch --branch main https://github.com/cyberark/sidecar-injector.git "sidecar-injector-$UNIQUE_TEST_ID"
     pushd "conjur-oss-helm-chart-$UNIQUE_TEST_ID/examples/common" > /dev/null
+      # Set the postgres password encryption to scram-sha-256 to avoid FIPS issues 
+      echo "password_encryption = scram-sha-256" >> ../../conjur-oss/files/postgres-ssl.conf
+
       source ./utils.sh
 
       announce "Setting demo environment variable defaults"
