@@ -94,3 +94,4 @@ const CAKC078 string = "CAKC078 Extracting application identity (host) from conf
 const CAKC079 string = "CAKC079 Extracted application identity (host) %s from configuration"
 const CAKC080 string = "CAKC080 No application identity (host) detected in Authenticator configuration. Application identity will be taken from JWT provided in request."
 const CAKC081 string = "CAKC081 'DEBUG'/'conjur.org/debug-logging' is deprecated. Use 'LOG_LEVEL'/'conjur.org/log-level'='debug' instead."
+const CAKC082 string = "CAKC082 Compliance with FIPS 140-3 is not enabled"
