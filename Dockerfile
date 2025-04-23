@@ -1,4 +1,4 @@
-FROM golang:1.24.2 AS authenticator-client-builder
+FROM golang:1.24 AS authenticator-client-builder
 LABEL maintainer="CyberArk Software Ltd."
 
 # We don't set GOOS/GOARCH here because we want to build for the current
@@ -124,7 +124,7 @@ LABEL description="The authentication client required to expose secrets from a C
 
 # =================== CONTAINER FOR HELM TEST ===================
 
-FROM golang:1.24.2-alpine AS k8s-cluster-test
+FROM golang:1.24-alpine AS k8s-cluster-test
 
 COPY build_ca_certificate /usr/local/share/ca-certificates/
 RUN update-ca-certificates
