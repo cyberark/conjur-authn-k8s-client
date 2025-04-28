@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/fips140"
 	"fmt"
 	"os"
 	"time"
@@ -18,6 +19,10 @@ import (
 func main() {
 	// Note: This will log even if the log level is set to "warn" or "error" since that's loaded after this
 	log.Info(log.CAKC048, authenticator.FullVersionName)
+
+	if !fips140.Enabled() {
+		log.Warn(log.CAKC082)
+	}
 
 	var err error
 

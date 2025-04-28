@@ -3,8 +3,7 @@ LABEL maintainer="CyberArk Software Ltd."
 
 # We don't set GOOS/GOARCH here because we want to build for the current
 # platform. This is needed for multi-arch builds.
-ENV CGO_ENABLED=1 \
-    GOEXPERIMENT=boringcrypto
+ENV GOFIPS140=latest
 
 # this value changes in ./bin/build
 ARG TAG_SUFFIX="-dev"
@@ -38,9 +37,6 @@ RUN go build -installsuffix cgo \
         -X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.Version=$VERSION'" \
     -o authenticator ./cmd/authenticator
 
-# Verify the binary is using BoringCrypto.
-# Outputting to /dev/null so the output doesn't include all the files
-RUN sh -c "go tool nm authenticator | grep '_Cfunc__goboringcrypto_' 1> /dev/null"
 
 # =================== MAIN CONTAINER ===================
 FROM alpine:latest AS authenticator-client
@@ -129,6 +125,9 @@ LABEL description="The authentication client required to expose secrets from a C
 # =================== CONTAINER FOR HELM TEST ===================
 
 FROM golang:1.24-alpine AS k8s-cluster-test
+
+COPY build_ca_certificate /usr/local/share/ca-certificates/
+RUN update-ca-certificates
 
 ARG TARGETARCH
 # Install packages for testing

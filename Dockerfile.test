@@ -1,6 +1,7 @@
 FROM golang:1.24-alpine
 LABEL maintainer="CyberArk Software Ltd."
 LABEL id="conjur-authn-k8s-client-test-runner"
+ENV GOFIPS140=latest
 
 # On CyberArk dev laptops, golang module dependencies are downloaded with a
 # corporate proxy in the middle. For these connections to succeed we need to
