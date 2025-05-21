@@ -54,7 +54,11 @@ func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*A
 		return nil, log.RecordedError(log.CAKC030, err)
 	}
 
-	client, err := common.NewHTTPSClient(config.Common.SSLCertificate, nil, nil)
+	client, err := common.NewHTTPSClient(
+		config.Common.SSLCertificate,
+		nil,
+		nil,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -299,7 +303,11 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 
 	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: auth.PublicCert.Raw})
 
-	client, err := common.NewHTTPSClient(auth.config.Common.SSLCertificate, certPEMBlock, keyPEMBlock)
+	client, err := common.NewHTTPSClient(
+		auth.config.Common.SSLCertificate,
+		certPEMBlock,
+		keyPEMBlock,
+	)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
 		return nil, err
