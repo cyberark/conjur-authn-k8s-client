@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
+## [0.26.8] - 2025-06-10
+
+### Changed
+- Refactored JWT authentication logic to use the official `conjur-api-go` SDK method (`JWTAuthenticate`) instead of custom HTTP requests. (CNJR-10028)
+
 ## [0.26.7] - 2025-04-02
 
 ### Added

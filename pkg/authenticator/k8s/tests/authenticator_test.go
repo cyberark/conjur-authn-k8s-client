@@ -141,7 +141,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 				PodName:           tc.podName,
 				PodNamespace:      tc.podNamespace,
 				Common: common.Config{
-					SSLCertificate:            sslcert,
+					SSLCertificate:        	   sslcert,
 					TokenFilePath:             tokenPath,
 					TokenRefreshTimeout:       0,
 					URL:                       ts.Server.URL,

@@ -2,47 +2,42 @@ package jwt
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/rsa"
 	"fmt"
-	"net/http"
 	"os"
 
 	"go.opentelemetry.io/otel"
 
+	"github.com/cyberark/conjur-api-go/conjurapi"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/utils"
 	"github.com/cyberark/conjur-opentelemetry-tracer/pkg/trace"
 )
 
 // Authenticator contains the configuration and client
 // for the authentication connection to Conjur
 type Authenticator struct {
-	client      *http.Client
-	privateKey  *rsa.PrivateKey
-	accessToken access_token.AccessToken
-	Config      *Config
+	accessToken  access_token.AccessToken
+	Config       *Config
+	conjurClient *conjurapi.Client
 }
 
 // NewWithAccessToken creates a new authenticator instance from a given access token
 func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*Authenticator, error) {
-	signingKey, err := rsa.GenerateKey(rand.Reader, 4096)
-	if err != nil {
-		return nil, log.RecordedError(log.CAKC030, err)
-	}
+	sslCertString := string(config.Common.SSLCertificate)
 
-	client, err := common.NewHTTPSClient(config.Common.SSLCertificate, nil, nil)
+	conjurClient, err := conjurapi.NewClient(conjurapi.Config{
+		Account:      config.Common.Account,
+		ApplianceURL: config.Common.URL,
+		SSLCert:      sslCertString,
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &Authenticator{
-		client:      client,
-		privateKey:  signingKey,
-		accessToken: accessToken,
-		Config:      &config,
+		conjurClient: conjurClient,
+		accessToken:  accessToken,
+		Config:       &config,
 	}, nil
 }
 
@@ -89,12 +84,10 @@ func (auth *Authenticator) AuthenticateWithContext(ctx context.Context) error {
 // code before returning its body
 func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer trace.Tracer) ([]byte, error) {
 	var authenticatingIdentity string
-
 	_, span := tracer.Start(ctx, "Send authentication request")
 	defer span.End()
 
 	jwtToken, err := loadJWTToken(auth.Config.JWTTokenFilePath)
-
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
 		return nil, err
@@ -108,34 +101,15 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 		log.Debug(log.CAKC080)
 		authenticatingIdentity = ""
 	}
-
-	req, err := AuthenticateRequest(
-		auth.Config.Common.URL,
-		auth.Config.Common.Account,
-		authenticatingIdentity,
-		jwtToken,
-	)
-
-	if err != nil {
-		span.RecordErrorAndSetStatus(err)
-		return nil, err
-	}
-
 	log.Debug(log.CAKC069, AuthnType)
-	resp, err := auth.client.Do(req)
-
+	token, err := auth.conjurClient.JWTAuthenticate(jwtToken, authenticatingIdentity)
 	if err != nil {
-		span.RecordErrorAndSetStatus(err)
-		return nil, log.RecordedError(log.CAKC027, err)
+		wrappedErr := log.RecordedError(log.CAKC027, err)
+		span.RecordErrorAndSetStatus(wrappedErr)
+		return nil, wrappedErr
 	}
 
-	err = utils.ValidateResponse(resp)
-	if err != nil {
-		span.RecordErrorAndSetStatus(err)
-		return nil, err
-	}
-
-	return utils.ReadResponseBody(resp)
+	return token, nil
 }
 
 func loadJWTToken(path string) (string, error) {
