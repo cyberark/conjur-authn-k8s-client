@@ -23,9 +23,6 @@ RUN update-ca-certificates
 WORKDIR /opt/conjur-authn-k8s-client
 COPY . /opt/conjur-authn-k8s-client
 
-RUN mkdir -p vendor
-RUN ls -alh vendor
-
 EXPOSE 8080
 
 RUN apt-get update && apt-get install --no-install-recommends -y jq && apt-get clean
