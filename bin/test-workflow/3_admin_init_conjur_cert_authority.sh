@@ -23,7 +23,7 @@ if [[ "$CONJUR_PLATFORM" != "jenkins" ]]; then
 fi
 
 if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
-  $cli exec "$conjur_master" -c conjur-oss -- bash -c "CONJUR_ACCOUNT=$CONJUR_ACCOUNT rake authn_k8s:ca_init['conjur/authn-k8s/$AUTHENTICATOR_ID']"
+  $cli exec "$conjur_master" -c conjur-oss -- bash -c "CONJUR_ACCOUNT=$CONJUR_ACCOUNT bundle exec rake authn_k8s:ca_init['conjur/authn-k8s/$AUTHENTICATOR_ID']"
 
   if [[ "$TEST_JWT_FLOW" == "true" ]]; then
     announce "Install k8s api cert"
