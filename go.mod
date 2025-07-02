@@ -7,7 +7,6 @@ require (
 	github.com/cyberark/conjur-api-go v0.13.1
 	// Version number used here is ignored
 	github.com/cyberark/conjur-opentelemetry-tracer v1.55.55
-	github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa
 	github.com/stretchr/testify v1.10.0
 	go.opentelemetry.io/otel v1.35.0
 )

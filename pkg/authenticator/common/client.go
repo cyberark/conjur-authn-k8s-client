@@ -10,7 +10,7 @@ import (
 )
 
 // NewHTTPSClient Returns https client to communicate with Conjur
-func NewHTTPSClient(CACert []byte, certPEMBlock, keyPEMBlock []byte) (*http.Client, error) {
+func NewHTTPSClient(CACert []byte, cert tls.Certificate) (*http.Client, error) {
 	caCertPool := x509.NewCertPool()
 	ok := caCertPool.AppendCertsFromPEM(CACert)
 	if !ok {
@@ -22,12 +22,7 @@ func NewHTTPSClient(CACert []byte, certPEMBlock, keyPEMBlock []byte) (*http.Clie
 		RootCAs: caCertPool,
 	}
 
-	if certPEMBlock != nil && keyPEMBlock != nil {
-		cert, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
-		if err != nil {
-			return nil, log.RecordedError(log.CAKC017, err)
-		}
-
+	if len(cert.Certificate) != 0 {
 		tlsConfig.GetClientCertificate = func(info *tls.CertificateRequestInfo) (*tls.Certificate, error) {
 			return &cert, nil
 		}

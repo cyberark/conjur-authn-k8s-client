@@ -2,9 +2,9 @@ package k8s
 
 import (
 	"context"
-	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/asn1"
@@ -17,7 +17,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/fullsailor/pkcs7"
 	"go.opentelemetry.io/otel"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token"
@@ -56,8 +55,7 @@ func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*A
 
 	client, err := common.NewHTTPSClient(
 		config.Common.SSLCertificate,
-		nil,
-		nil,
+		tls.Certificate{},
 	)
 	if err != nil {
 		return nil, err
@@ -215,7 +213,7 @@ func (auth *Authenticator) login(ctx context.Context, tracer trace.Tracer) error
 
 	_, span = tracer.Start(ctx, "Load cert file")
 	// load client cert
-	certPEMBlock, err := ioutil.ReadFile(auth.config.Common.ClientCertPath)
+	certPEMBlock, err := os.ReadFile(auth.config.Common.ClientCertPath)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
 		span.End()
@@ -302,11 +300,23 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 	keyPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privDer})
 
 	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: auth.PublicCert.Raw})
+	var cert tls.Certificate
+	var err error
+
+	if certPEMBlock != nil && keyPEMBlock != nil {
+		cert, err = tls.X509KeyPair(certPEMBlock, keyPEMBlock)
+		if err != nil {
+			// Clear the cert from memory and the filesystem to prevent an issue where stale
+			// certs may be re-used
+			auth.PublicCert = nil
+			os.Remove(auth.config.Common.ClientCertPath)
+			return nil, log.RecordedError(log.CAKC017, err)
+		}
+	}
 
 	client, err := common.NewHTTPSClient(
 		auth.config.Common.SSLCertificate,
-		certPEMBlock,
-		keyPEMBlock,
+		cert,
 	)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)
@@ -376,23 +386,6 @@ func marshalSANs(dnsNames, emailAddresses []string, ipAddresses []net.IP, uris [
 		rawValues = append(rawValues, asn1.RawValue{Tag: nameTypeURI, Class: asn1.ClassContextSpecific, Bytes: []byte(uri.String())})
 	}
 	return asn1.Marshal(rawValues)
-}
-
-func decodeFromPEM(PEMBlock []byte, PublicCert *x509.Certificate, privateKey crypto.PrivateKey) ([]byte, error) {
-	var decodedPEM []byte
-
-	tokenDerBlock, _ := pem.Decode(PEMBlock)
-	p7, err := pkcs7.Parse(tokenDerBlock.Bytes)
-	if err != nil {
-		return nil, log.RecordedError(log.CAKC026, err)
-	}
-
-	decodedPEM, err = p7.Decrypt(PublicCert, privateKey)
-	if err != nil {
-		return nil, log.RecordedError(log.CAKC025, err)
-	}
-
-	return decodedPEM, nil
 }
 
 func consumeInjectClientCertError(path string) string {
