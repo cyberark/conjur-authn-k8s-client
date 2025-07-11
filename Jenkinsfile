@@ -388,6 +388,7 @@ pipeline {
             stage('Enterprise in GKE') {
               steps {
                 script {
+                  INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --jwt'
                   INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --ci-apps'
                 }
               }
@@ -395,6 +396,7 @@ pipeline {
             stage('OSS in OpenShift v(current)') {
               steps {
                 script {
+                  INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --jwt'
                   INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --ci-apps'
                 }
               }
@@ -405,6 +407,7 @@ pipeline {
               }
               steps {
                 script {
+                  INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift --jwt'
                   INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift --ci-apps'
                 }
               }
@@ -445,6 +448,7 @@ pipeline {
                   INFRAPOOL_AZURE_AGENT_0.agentSh '''
                     HOST_IP="$(curl https://checkip.amazonaws.com)";
                     echo "HOST_IP=${HOST_IP}"
+                    cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --jwt
                     cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --ci-apps
                   '''
                 }

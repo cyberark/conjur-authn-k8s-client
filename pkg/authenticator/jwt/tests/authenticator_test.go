@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/pem"
-	"github.com/stretchr/testify/assert"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/access_token/memory"
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
@@ -46,7 +47,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			jwtTokenPath: tmpJwtTokenPath,
 			assert: func(t *testing.T, authn *jwt.Authenticator, err error) {
 				assert.NotNil(t, err)
-				assert.True(t, strings.Contains(err.Error(), "Failed to send https authenticate request or receive response"))
+				assert.True(t, strings.Contains(err.Error(), "Invalid URL format"))
 			},
 			wrongUrl: true,
 		},
@@ -62,7 +63,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			name: "Token path is empty",
 			assert: func(t *testing.T, authn *jwt.Authenticator, err error) {
 				assert.NotNil(t, err)
-				assert.True(t, strings.Contains(err.Error(), "Failed to read JWT from"))
+				assert.True(t, strings.Contains(err.Error(), "Must specify a JWT token"))
 			},
 			jwtTokenPath: "",
 		},
@@ -107,11 +108,16 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 
 			if tc.wrongUrl {
 				cfg.Common.URL = "http://wrong-url"
+			} else {
+				// Append the expected path for authn-jwt
+				cfg.Common.URL = cfg.Common.URL + "/authn-jwt/some-service-id"
 			}
 
 			// EXERCISE
 			authn, err := jwt.NewWithAccessToken(cfg, at)
-			if !assert.NoError(t, err) {
+			if err != nil {
+				// Assert that the expected error occured
+				tc.assert(t, authn, err)
 				return
 			}
 
