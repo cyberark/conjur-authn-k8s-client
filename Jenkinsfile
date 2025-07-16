@@ -119,6 +119,10 @@ pipeline {
       name: 'TEST_OCP_NEXT',
       description: 'Whether or not to run the pipeline against the next OCP version',
       defaultValue: false)
+    booleanParam(
+      name: 'TEST_JWT_FLOW',
+      description: 'Whether or not to run the E2E tests with JWT authentication',
+      defaultValue: false)
   }
 
   stages {
@@ -149,7 +153,9 @@ pipeline {
       steps {
         script {
           // Request ExecutorV2 agents for 2 hour(s)
-          INFRAPOOL_AZURE_AGENT_0 = getInfraPoolAgent.connected(type: "AzureExecutorV2", quantity: 1, duration: 2)[0]
+          INFRAPOOL_AZURE_AGENTS = getInfraPoolAgent.connected(type: "AzureExecutorV2", quantity: 2, duration: 2)
+          INFRAPOOL_AZURE_AGENT_0 = INFRAPOOL_AZURE_AGENTS[0]
+          INFRAPOOL_AZURE_AGENT_1 = INFRAPOOL_AZURE_AGENTS[1]
           // Request ExecutorV2ARM agents for 2 hour(s)
           INFRAPOOL_EXECUTORV2ARM_AGENT_0 = getInfraPoolAgent.connected(type: "ExecutorV2ARM", quantity: 1, duration: 2)[0]
         }
@@ -213,6 +219,7 @@ pipeline {
     stage('Validate Changelog and set version') {
       steps {
         updateVersion(INFRAPOOL_AZURE_AGENT_0, "CHANGELOG.md", "${BUILD_NUMBER}")
+        updateVersion(INFRAPOOL_AZURE_AGENT_1, "CHANGELOG.md", "${BUILD_NUMBER}")
         updateVersion(INFRAPOOL_EXECUTORV2ARM_AGENT_0, "CHANGELOG.md", "${BUILD_NUMBER}")
       }
     }
@@ -380,6 +387,7 @@ pipeline {
           steps {
             script {
               INFRAPOOL_AZURE_AGENT_0.agentSh './bin/helm-dependency-update-in-docker'
+              INFRAPOOL_AZURE_AGENT_1.agentSh './bin/helm-dependency-update-in-docker'
             }
           }
         }
@@ -388,7 +396,6 @@ pipeline {
             stage('Enterprise in GKE') {
               steps {
                 script {
-                  INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --jwt'
                   INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --ci-apps'
                 }
               }
@@ -396,7 +403,6 @@ pipeline {
             stage('OSS in OpenShift v(current)') {
               steps {
                 script {
-                  INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --jwt'
                   INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --ci-apps'
                 }
               }
@@ -407,10 +413,21 @@ pipeline {
               }
               steps {
                 script {
-                  INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift --jwt'
                   INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift --ci-apps'
                 }
               }
+            }
+          }
+        }
+        // Since there is branching logic depending on authn-jwt vs authn-k8s workflows we have to run them separately
+        // Ideally we should refactor the test-workflow scripts to be able to run all the test apps in one go
+        stage('Enterprise in GKE (JWT)') {
+          when {
+            expression { params.TEST_JWT_FLOW }
+          }
+          steps {
+            script {
+              INFRAPOOL_AZURE_AGENT_1.agentSh 'cd bin/test-workflow && summon --environment gke ./start --enterprise --platform gke --jwt'
             }
           }
         }
@@ -448,7 +465,6 @@ pipeline {
                   INFRAPOOL_AZURE_AGENT_0.agentSh '''
                     HOST_IP="$(curl https://checkip.amazonaws.com)";
                     echo "HOST_IP=${HOST_IP}"
-                    cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --jwt
                     cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --ci-apps
                   '''
                 }

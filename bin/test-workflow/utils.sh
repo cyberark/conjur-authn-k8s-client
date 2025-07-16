@@ -379,7 +379,9 @@ function run_command_with_platform {
     -e TEST_APP_DATABASE \
     -e TEST_APP_NAMESPACE_NAME \
     -e TEST_APP_NAMESPACE_LABEL \
+    -e TEST_JWT_FLOW \
     -e CONJUR_APPLIANCE_IMAGE \
+    -e CONJUR_AUTHENTICATORS \
     -e CONJUR_FOLLOWER_URL \
     -e DEPLOY_MASTER_CLUSTER \
     -e HELM_RELEASE \

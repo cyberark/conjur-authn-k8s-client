@@ -51,7 +51,7 @@ spec:
         resources:
           limits:
             cpu: "1"
-            memory: "2048Mi"
+            memory: "512Mi"
         ports:
         - name: http
           containerPort: 8080
@@ -88,7 +88,7 @@ spec:
         resources:
           limits:
             cpu: "1"
-            memory: "2048Mi"
+            memory: "512Mi"
         env:
           - name: CONTAINER_MODE
             value: sidecar

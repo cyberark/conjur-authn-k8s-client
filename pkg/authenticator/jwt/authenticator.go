@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 
 	"go.opentelemetry.io/otel"
@@ -30,13 +31,15 @@ func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*A
 		return nil, fmt.Errorf(log.CAKC083, err)
 	}
 
-	pathParts := strings.Split(strings.Trim(parsedURL.Path, "/"), "/")
-	if len(pathParts) != 2 || pathParts[0] != "authn-jwt" {
-		return nil, fmt.Errorf(log.CAKC083, "expected path to be /authn-jwt/<service_id>")
+	path := strings.TrimSuffix(path.Clean(parsedURL.Path), "/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) < 2 || parts[len(parts)-2] != "authn-jwt" {
+		return nil, fmt.Errorf(log.CAKC083, "expected path to end with /authn-jwt/<service_id>")
 	}
 
 	baseURL := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
-	serviceID := pathParts[1]
+	serviceID := parts[len(parts)-1]
 
 	conjurClient, err := conjurapi.NewClient(conjurapi.Config{
 		Account:      config.Common.Account,
