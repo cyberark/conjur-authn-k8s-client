@@ -3,7 +3,6 @@ package common
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 
@@ -70,7 +69,7 @@ func validatePath(path string) error {
 
 	// Attempt to create the file and delete it right after
 	var emptyData []byte
-	if err := ioutil.WriteFile(path, emptyData, 0644); err == nil {
+	if err := os.WriteFile(path, emptyData, 0644); err == nil {
 		os.Remove(path) // And delete it
 		return nil
 	}

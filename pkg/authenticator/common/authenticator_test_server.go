@@ -6,7 +6,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
-	"io/ioutil"
+	"io"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
@@ -55,7 +55,7 @@ func NewTestAuthServer(clientCertPath, certLogPath, expectedTokenValue string, s
 		if strings.HasPrefix(r.URL.Path, "/inject_client_cert") {
 			// Login request
 
-			body, _ := ioutil.ReadAll(r.Body)
+			body, _ := io.ReadAll(r.Body)
 			defer r.Body.Close()
 
 			csrBlock, _ := pem.Decode(body)
@@ -67,7 +67,7 @@ func NewTestAuthServer(clientCertPath, certLogPath, expectedTokenValue string, s
 			w.WriteHeader(202)
 
 			if ts.SkipWritingCSRFile {
-				err := ioutil.WriteFile(ts.CertLogPath, []byte("error writing csr file\n"), os.ModePerm)
+				err := os.WriteFile(ts.CertLogPath, []byte("error writing csr file\n"), os.ModePerm)
 				if err != nil {
 					panic(err)
 				}
@@ -100,7 +100,7 @@ func NewTestAuthServer(clientCertPath, certLogPath, expectedTokenValue string, s
 				authnCAPrivKey,
 			)
 			// Save the certificate
-			err = ioutil.WriteFile(
+			err = os.WriteFile(
 				ts.ClientCertPath,
 				pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: clientCRTRaw}),
 				os.ModePerm,

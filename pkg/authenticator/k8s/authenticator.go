@@ -10,7 +10,6 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -300,6 +299,7 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 	keyPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privDer})
 
 	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: auth.PublicCert.Raw})
+
 	var cert tls.Certificate
 	var err error
 
@@ -307,7 +307,7 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 		cert, err = tls.X509KeyPair(certPEMBlock, keyPEMBlock)
 		if err != nil {
 			// Clear the cert from memory and the filesystem to prevent an issue where stale
-			// certs may be re-used
+			// certs may be re-used on a loop if the container is not restarted
 			auth.PublicCert = nil
 			os.Remove(auth.config.Common.ClientCertPath)
 			return nil, log.RecordedError(log.CAKC017, err)
@@ -396,7 +396,7 @@ func consumeInjectClientCertError(path string) string {
 		return ""
 	}
 
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		log.Error(log.CAKC053, path)
 		return ""

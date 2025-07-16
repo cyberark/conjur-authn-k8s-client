@@ -1,7 +1,6 @@
 package file
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -45,7 +44,7 @@ func (token *AccessToken) Write(Data []byte) (err error) {
 		}
 	}
 
-	err = ioutil.WriteFile(token.FilePath, token.Data, 0644)
+	err = os.WriteFile(token.FilePath, token.Data, 0644)
 	if err != nil {
 		// Do not specify the file path in the error message for security reasons
 		return log.RecordedError(log.CAKC003)
