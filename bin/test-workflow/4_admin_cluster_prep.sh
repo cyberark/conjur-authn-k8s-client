@@ -87,3 +87,7 @@ announce "Approve"
 sleep 3
 "$cli" -n "$CONJUR_NAMESPACE_NAME" logs deployment/sidecar-injector -c init-webhook
 announce "Done"
+
+# Allow unauthenticated users to access the JWKS URI
+"$cli" delete clusterrolebinding oidc-reviewer --ignore-not-found
+"$cli" create clusterrolebinding oidc-reviewer --clusterrole=system:service-account-issuer-discovery --group=system:unauthenticated || true

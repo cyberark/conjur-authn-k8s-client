@@ -164,6 +164,7 @@ else
   announce "Extracting openid configuration"
   JWKS_URI=$($cli get --raw /.well-known/openid-configuration | jq '.jwks_uri')
   ISSUER=$($cli get --raw /.well-known/openid-configuration | jq '.issuer')
+  CA_CERT_B64=$($cli get configmap -n kube-system extension-apiserver-authentication -o jsonpath='{.data.client-ca-file}' | base64 -w0)
   announce "JWKS URI of this cluster is $JWKS_URI and Issuer is $ISSUER"
 
   wait_for_it 300 "$cli exec $conjur_cli_pod -- \
@@ -177,6 +178,7 @@ else
       AUTHENTICATOR_ID='${AUTHENTICATOR_ID}' \
       JWKS_URI='${JWKS_URI}'\
       ISSUER='${ISSUER}'\
+      CA_CERT_B64='${CA_CERT_B64}' \
       /tmp/policy/load_policies.sh
     \"
   "

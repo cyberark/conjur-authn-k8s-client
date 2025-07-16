@@ -3,7 +3,10 @@ package jwt
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
+	"path"
+	"strings"
 
 	"go.opentelemetry.io/otel"
 
@@ -23,12 +26,28 @@ type Authenticator struct {
 
 // NewWithAccessToken creates a new authenticator instance from a given access token
 func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*Authenticator, error) {
-	sslCertString := string(config.Common.SSLCertificate)
+	parsedURL, err := url.Parse(config.Common.URL)
+	if err != nil {
+		return nil, fmt.Errorf(log.CAKC083, err)
+	}
+
+	path := strings.TrimSuffix(path.Clean(parsedURL.Path), "/")
+	parts := strings.Split(path, "/")
+
+	if len(parts) < 2 || parts[len(parts)-2] != "authn-jwt" {
+		return nil, fmt.Errorf(log.CAKC083, "expected path to end with /authn-jwt/<service_id>")
+	}
+
+	baseURL := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
+	serviceID := parts[len(parts)-1]
 
 	conjurClient, err := conjurapi.NewClient(conjurapi.Config{
 		Account:      config.Common.Account,
-		ApplianceURL: config.Common.URL,
-		SSLCert:      sslCertString,
+		ApplianceURL: baseURL,
+		SSLCert:      string(config.Common.SSLCertificate),
+		ServiceID:    serviceID,
+		AuthnType:    "jwt",
+		JWTFilePath:  config.JWTTokenFilePath,
 	})
 	if err != nil {
 		return nil, err

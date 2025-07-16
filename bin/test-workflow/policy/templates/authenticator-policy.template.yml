@@ -35,6 +35,7 @@
     - !variable issuer
     - !variable token-app-property
     - !variable identity-path
+    - !variable ca-cert
 
     # define group of whitelisted authn ids permitted to call authn service
     - !group jwt-consumers

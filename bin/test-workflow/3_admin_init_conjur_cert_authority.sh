@@ -22,15 +22,8 @@ if [[ "$CONJUR_PLATFORM" != "jenkins" ]]; then
   conjur_master="$(get_master_pod_name)"
 fi
 
-if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]]; then
+if [[ "$CONJUR_OSS_HELM_INSTALLED" == "true" ]] && [[ "$TEST_JWT_FLOW" == "false" ]]; then
   $cli exec "$conjur_master" -c conjur-oss -- bash -c "CONJUR_ACCOUNT=$CONJUR_ACCOUNT bundle exec rake authn_k8s:ca_init['conjur/authn-k8s/$AUTHENTICATOR_ID']"
-
-  if [[ "$TEST_JWT_FLOW" == "true" ]]; then
-    announce "Install k8s api cert"
-    hash=$($cli exec "$conjur_master" -c conjur-oss -- bash -c "openssl x509 -hash -in /var/run/secrets/kubernetes.io/serviceaccount/..data/ca.crt -out /dev/null")
-    $cli exec "$conjur_master" -c conjur-oss -- bash -c "ln -s /var/run/secrets/kubernetes.io/serviceaccount/..data/ca.crt /etc/ssl/certs/$hash.0"
-  fi
-
 elif [[ "$CONJUR_PLATFORM" == "gke" ]]; then
   $cli exec "$conjur_master" -- chpst -u api:conjur conjur-plugin-service possum rake authn_k8s:ca_init["conjur/authn-k8s/$AUTHENTICATOR_ID"]
 elif [[ "$CONJUR_PLATFORM" == "jenkins" ]]; then
