@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [0.26.8] - 2025-06-10
 
 ### Changed
+- Clean up client cert file contents when a CAKC017 validation error occurs (CNJR-10032)
 - Refactored JWT authentication logic to use the official `conjur-api-go` SDK method (`JWTAuthenticate`) instead of custom HTTP requests. (CNJR-10028)
 
 ## [0.26.7] - 2025-04-02

@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
@@ -11,7 +11,7 @@ import (
 func ReadResponseBody(resp *http.Response) ([]byte, error) {
 	defer resp.Body.Close()
 
-	responseBytes, err := ioutil.ReadAll(resp.Body)
+	responseBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, log.RecordedError(log.CAKC022, err)
 	}

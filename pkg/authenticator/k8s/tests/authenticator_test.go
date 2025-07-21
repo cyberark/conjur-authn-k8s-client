@@ -20,6 +20,7 @@ import (
 
 type assertFunc func(t *testing.T,
 	authn *k8s.Authenticator,
+	cfg *k8s.Config,
 	err error,
 	loginCsr *x509.CertificateRequest,
 	loginCsrErr error,
@@ -38,7 +39,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			name:         "happy path",
 			podName:      "testPodName",
 			podNamespace: "testPodNamespace",
-			assert: func(t *testing.T, authn *k8s.Authenticator, err error, loginCsr *x509.CertificateRequest, loginCsrErr error, _ string) {
+			assert: func(t *testing.T, authn *k8s.Authenticator, cfg *k8s.Config, err error, loginCsr *x509.CertificateRequest, loginCsrErr error, _ string) {
 				assert.NoError(t, err)
 
 				// Check the CSR
@@ -69,7 +70,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			name:         "empty podname",
 			podName:      "",
 			podNamespace: "",
-			assert: func(t *testing.T, authn *k8s.Authenticator, err error, loginCsr *x509.CertificateRequest, _ error, _ string) {
+			assert: func(t *testing.T, authn *k8s.Authenticator, cfg *k8s.Config, err error, loginCsr *x509.CertificateRequest, _ error, _ string) {
 				assert.NoError(t, err)
 
 				// Assert empty spiffe
@@ -84,7 +85,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			name:         "expired cert",
 			podName:      "testPodName",
 			podNamespace: "testPodNamespace",
-			assert: func(t *testing.T, authn *k8s.Authenticator, err error, _ *x509.CertificateRequest, _ error, _ string) {
+			assert: func(t *testing.T, authn *k8s.Authenticator, cfg *k8s.Config, err error, _ *x509.CertificateRequest, _ error, _ string) {
 				assert.NoError(t, err)
 				// Set the expiration date to now, and try to authenticate again
 				// This will cause the authenticator to try to refresh the cert
@@ -97,11 +98,30 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			},
 		},
 		{
+			name:         "invalid cert",
+			podName:      "testPodName",
+			podNamespace: "testPodNamespace",
+			assert: func(t *testing.T, authn *k8s.Authenticator, cfg *k8s.Config, err error, _ *x509.CertificateRequest, _ error, _ string) {
+				assert.NoError(t, err)
+
+				// Run the authenticate flow with an invalid cert
+				authn.PublicCert.Raw = []byte("invalid cert")
+				err = authn.AuthenticateWithContext(context.Background())
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "CAKC017")
+
+				// Check that the cert was cleared from memory and the filesystem
+				// even after a validation error
+				assert.Nil(t, authn.PublicCert)
+				assert.NoFileExists(t, cfg.Common.ClientCertPath)
+			},
+		},
+		{
 			name:               "injects log on failure",
 			podName:            "testPodName",
 			podNamespace:       "testPodNamespace",
 			skipWritingCSRFile: true,
-			assert: func(t *testing.T, _ *k8s.Authenticator, err error, _ *x509.CertificateRequest, _ error, logTxt string) {
+			assert: func(t *testing.T, _ *k8s.Authenticator, cfg *k8s.Config, err error, _ *x509.CertificateRequest, _ error, logTxt string) {
 				assert.Error(t, err)
 				// Check logs for the expected error
 				assert.Contains(t, logTxt, "error writing csr file")
@@ -141,7 +161,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 				PodName:           tc.podName,
 				PodNamespace:      tc.podNamespace,
 				Common: common.Config{
-					SSLCertificate:        	   sslcert,
+					SSLCertificate:            sslcert,
 					TokenFilePath:             tokenPath,
 					TokenRefreshTimeout:       0,
 					URL:                       ts.Server.URL,
@@ -167,7 +187,7 @@ func TestAuthenticator_Authenticate(t *testing.T) {
 			err = authn.AuthenticateWithContext(context.Background())
 
 			// ASSERT
-			tc.assert(t, authn, err, loginCsr, loginCsrErr, logTxt.String())
+			tc.assert(t, authn, &cfg, err, loginCsr, loginCsrErr, logTxt.String())
 		})
 	}
 }
