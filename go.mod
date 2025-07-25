@@ -4,7 +4,7 @@ go 1.24.2
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/cyberark/conjur-api-go v0.13.1
+	github.com/cyberark/conjur-api-go v0.13.2
 	// Version number used here is ignored
 	github.com/cyberark/conjur-opentelemetry-tracer v1.55.55
 	github.com/stretchr/testify v1.10.0
@@ -12,8 +12,8 @@ require (
 )
 
 require (
-	al.essio.dev/pkg/shellescape v1.5.1 // indirect
-	github.com/Masterminds/semver/v3 v3.3.1 // indirect
+	al.essio.dev/pkg/shellescape v1.6.0 // indirect
+	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/danieljoos/wincred v1.2.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -30,7 +30,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
