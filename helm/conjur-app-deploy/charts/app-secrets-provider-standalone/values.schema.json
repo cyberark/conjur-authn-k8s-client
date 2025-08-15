@@ -23,10 +23,8 @@
     "global": {
       "properties": {
         "appServiceType": {
-           "type": "string",
-           "pattern": "^(ClusterIP|NodePort|LoadBalancer|ExternalName)$"
-            }
-          }
+          "type": "string",
+          "pattern": "^(ClusterIP|NodePort|LoadBalancer|ExternalName)$"
         }
       }
     }
