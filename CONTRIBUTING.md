@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in contributing to the Conjur authn-k8s client! In
+Thanks for your interest in contributing to the Secrets Manager authn-k8s client! In
 this document you'll find guidelines for how to get started.
 
 For general contribution and community guidelines, please see the [community repo](https://github.com/cyberark/community).
@@ -164,7 +164,7 @@ Flags explanation :
 * -n Can be added for remaing the environment after script finished
 * -a Is for stating the app flow name
 * --jwt To enable jwt needed configurations to the cluster:
-  * Install K8S ca in Conjur so it will be able to fetch jwks from K8S API
+  * Install K8S ca in Secrets Manager so it will be able to fetch jwks from K8S API
   * Open K8S JWKS API for unauthenticated user
 
 You can use the kubectl edit command to edit the images in the deployment and replacing them with you develop and debug images for development porpuses. And fill free to play with the policy and the application K8S manifests to check convinently things on the sidecars.

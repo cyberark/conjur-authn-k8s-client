@@ -6,7 +6,7 @@ Available images:
 
 ## What's inside ?
 
-The Conjur authenticator client is designed to have a light footprint both in terms of storage and memory consumption. It has very few components:
+The Secrets Manager authenticator client is designed to have a light footprint both in terms of storage and memory consumption. It has very few components:
 
 + A static binary for the authenticator
 + The `sleep` binary from busybox for debugging
@@ -33,10 +33,10 @@ questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/
 - `CONTAINER_MODE`: Set this to `init` to run as an init container that will exit after performing authentication. All other values (including blank) will cause the container to run as a sidecar.
 
 ## Conjur
-- `CONJUR_ACCOUNT`: Conjur account name
+- `CONJUR_ACCOUNT`: Secrets Manager account name
 - `CONJUR_AUTHN_URL`: URL pointing to authenticator service endpoint
 - `CONJUR_AUTHN_LOGIN`: Host login for pod e.g. `namespace/service_account/some_service_account`
-- `CONJUR_SSL_CERTIFICATE`: Public SSL cert for Conjur connection
+- `CONJUR_SSL_CERTIFICATE`: Public SSL cert for Secrets Manager connection
 - `CONJUR_TOKEN_TIMEOUT`: Timeout for fetching a new token (defaults to 6 minutes). 
                           In most cases, this variable should not be modified. The value should be in a
                           format that can be parsed with [time.ParseDuration](https://golang.org/pkg/time/#ParseDuration) (e.g "6m0s")
@@ -47,14 +47,14 @@ The client's process logs its flow to `stdout` and `stderr`.
 + Exponential backoff is exercised when an error occurs
 + Client will re-login when certificate has expired
 
-1. Client goes through login by presenting certificate signing request (CSR) -> Server (authn-k8s or authn-jwt running inside the Conjur Enterprise) injects signed client certificate out of band into requesting pod
+1. Client goes through login by presenting certificate signing request (CSR) -> Server (authn-k8s or authn-jwt running inside Secrets Manager) injects signed client certificate out of band into requesting pod
 1. Client picks up signed client certificate, deletes it from disk and uses to authenticator via mutual TLS -> Server responds with auth token (retrieved via authn-local) encrypted with the public key of the client.
 1. Client decrypts the auth token and writes it to to the shared memory volume (`/run/conjur/access-token`)
 1. Client proceeds to authenticate time and time again
 
 ## Running Authenticator Client with a Non-Default User ID in Kubernetes
 
-By default, the Conjur Kubernetes authenticator client container runs using
+By default, the Secrets Manager Kubernetes authenticator client container runs using
 a default username `authenticator`, user ID `777`, and group ID `777`.
 
 If you would like to run the authenticator client on a *non-OpenShift*
@@ -71,7 +71,7 @@ _**NOTE:** This technique is not supported on OpenShift platforms. For
   for the desired user ID / group ID. Setting the `fsGroup` to the desired
   user group will cause Kubernetes to set that group as the owner of
   any files that are created in volumes of type `emptyDir`, including the
-  authenticator client's SSL certificate and the application's Conjur access
+  authenticator client's SSL certificate and the application's Secrets Manager access
   token.
 
   For example, to run with a user ID of `65534` (the `nobody` user) and a
