@@ -9,9 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
-## [0.26.8] - 2025-06-10
+## [0.26.8] - 2025-09-18
 
 ### Changed
+- Updated documentation to align with Conjur Enterprise name change to Secrets Manager. (CNJR-10981)
 - Clean up client cert file contents when a CAKC017 validation error occurs (CNJR-10032)
 - Refactored JWT authentication logic to use the official `conjur-api-go` SDK method (`JWTAuthenticate`) instead of custom HTTP requests. (CNJR-10028)
 
@@ -347,7 +348,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.7...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.8...HEAD
+[0.26.8]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.7...v0.26.8
 [0.26.7]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.6...v0.26.7
 [0.26.6]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.5...v0.26.6
 [0.26.5]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.4...v0.26.5
