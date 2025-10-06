@@ -41,7 +41,7 @@ $cli --namespace "$TEST_APP_NAMESPACE_NAME" \
 args=(install "$app_name" ../../vendor_helm/postgresql-10.16.2.tgz -n "$TEST_APP_NAMESPACE_NAME" --wait --timeout "$TIMEOUT" \
     --set image.repository="postgres" \
     --set image.tag="9.6" \
-    --set volumePermissions.image.repository=bitnami/os-shell \
+    --set volumePermissions.image.repository=bitnamilegacy/os-shell \
     --set volumePermissions.image.tag=11 \
     --set postgresqlDataDir="/data/pgdata" \
     --set persistence.mountPath="/data/" \
