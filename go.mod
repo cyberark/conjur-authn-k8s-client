@@ -1,6 +1,6 @@
 module github.com/cyberark/conjur-authn-k8s-client
 
-go 1.24.2
+go 1.25.3
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
