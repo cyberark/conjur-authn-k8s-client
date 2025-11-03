@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
+## [0.26.9] - 2025-10-30
+
+### Changed
+- Upgrade to Go 1.25 (CONJSE-2067)
+
 ## [0.26.8] - 2025-09-18
 
 ### Changed
@@ -348,7 +353,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.8...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.9...HEAD
+[0.26.9]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.8...v0.26.9
 [0.26.8]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.7...v0.26.8
 [0.26.7]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.6...v0.26.7
 [0.26.6]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.5...v0.26.6

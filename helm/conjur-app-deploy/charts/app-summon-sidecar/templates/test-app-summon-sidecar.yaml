@@ -52,6 +52,8 @@ spec:
         env:
           - name: CONJUR_AUTHN_TOKEN_FILE
             value: /run/conjur/access-token
+          - name: CONJUR_CREDENTIAL_STORAGE
+            value: none
         envFrom:
         - configMapRef:
             name: {{ .Values.global.conjur.conjurConnConfigMap }}
