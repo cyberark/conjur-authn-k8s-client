@@ -27,22 +27,26 @@ function build_docker_images {
   echo "---"
   echo "Building ${IMAGE_NAME} version ${VERSION} suffix ${TAG_SUFFIX} with tag ${TAG} <<"
 
+  # Disable provenance to ensure this builds a simple image, not a manifest, b/c we add it to a manifest later
   docker build --tag "${IMAGE_NAME}:${TAG}" \
                --build-arg VERSION="${VERSION}" \
                --build-arg TAG_SUFFIX="${TAG_SUFFIX}" \
                --target "authenticator-client" \
+               --provenance=false \
                .
 
   docker build --tag "${IMAGE_NAME}-redhat:${TAG}" \
                --build-arg VERSION="$VERSION" \
                --build-arg TAG_SUFFIX="${TAG_SUFFIX}" \
                --target "authenticator-client-redhat" \
+               --provenance=false \
                .
 
   docker build --tag conjur-k8s-cluster-test:${TAG} \
                --build-arg VERSION="$VERSION" \
                --build-arg TAG_SUFFIX="${TAG_SUFFIX}" \
                --target "k8s-cluster-test" \
+               --provenance=false \
                .
 
   echo "---"
