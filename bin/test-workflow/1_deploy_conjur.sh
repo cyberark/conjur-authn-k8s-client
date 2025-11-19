@@ -65,7 +65,8 @@ CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn-jwt/\"${AUTHENTICA
 
 function setup_conjur_open_source {
   # Pin Conjur OSS to specific version to avoid issues with latest
-  export IMAGE_TAG=1.19.3
+  export IMAGE_TAG=1.24.0
+  export NGINX_TAG="ubi8"
 
   pushd temp > /dev/null
     git clone --single-branch --branch main https://github.com/cyberark/conjur-oss-helm-chart.git "conjur-oss-helm-chart-$UNIQUE_TEST_ID"

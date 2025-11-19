@@ -3,7 +3,7 @@
 set -eo
 
 if [ "$CONJUR_APPLIANCE_URL" != "" ]; then
-  echo y | conjur init -u $CONJUR_APPLIANCE_URL -a $CONJUR_ACCOUNT --self-signed --force
+  echo y | conjur init oss -u $CONJUR_APPLIANCE_URL -a $CONJUR_ACCOUNT --self-signed --force
 fi
 
 # check for unset vars after checking for appliance url
