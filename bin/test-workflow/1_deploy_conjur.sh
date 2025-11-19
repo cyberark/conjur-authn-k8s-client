@@ -66,6 +66,7 @@ CONJUR_AUTHENTICATORS=authn-k8s/\"${AUTHENTICATOR_ID}\",authn-jwt/\"${AUTHENTICA
 function setup_conjur_open_source {
   # Pin Conjur OSS to specific version to avoid issues with latest
   export IMAGE_TAG=1.24.0
+  # TODO: Use newest image (CNJR-11853)
   export NGINX_TAG="ubi8"
 
   pushd temp > /dev/null
