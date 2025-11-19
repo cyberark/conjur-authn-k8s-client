@@ -30,7 +30,7 @@ docker compose -f "temp/conjur-intro-$UNIQUE_TEST_ID/docker-compose.yml" \
   -w /src/cli \
   --entrypoint /bin/sh \
   client -c "
-    echo y | conjur init -u $CONJUR_APPLIANCE_URL -a $CONJUR_ACCOUNT --self-signed --force
+    echo y | conjur init oss -u $CONJUR_APPLIANCE_URL -a $CONJUR_ACCOUNT --self-signed --force
     conjur login -i admin -p $CONJUR_ADMIN_PASSWORD
     conjur variable set -i conjur/authn-k8s/$AUTHENTICATOR_ID/kubernetes/ca-cert -v \"\$(cat /k8s-resources/api-ca.pem)\"
     conjur variable set -i conjur/authn-k8s/$AUTHENTICATOR_ID/kubernetes/service-account-token -v \"\$(cat /k8s-resources/service-account-token)\"

@@ -30,10 +30,10 @@ announce "Generating Conjur policy."
 prepare_conjur_cli_image() {
   announce "Pulling and pushing Conjur CLI image."
 
-  docker pull cyberark/conjur-cli:8
+  docker pull cyberark/conjur-cli:9
 
   cli_app_image="$(platform_image_for_push conjur-cli $CONJUR_NAMESPACE_NAME)"
-  docker tag cyberark/conjur-cli:8 "$cli_app_image"
+  docker tag cyberark/conjur-cli:9 "$cli_app_image"
 
   docker push "$cli_app_image"
 }
@@ -58,7 +58,7 @@ deploy_conjur_cli() {
 ensure_conjur_cli_initialized() {
   announce "Ensure that Conjur CLI pod has a connection with Conjur initialized."
 
-  "$cli" exec "$1" -- sh -c "echo y | conjur init -a '$CONJUR_ACCOUNT' -u '$CONJUR_APPLIANCE_URL' --self-signed --force"
+  "$cli" exec "$1" -- sh -c "echo y | conjur init oss -a '$CONJUR_ACCOUNT' -u '$CONJUR_APPLIANCE_URL' --self-signed --force"
   # Flaky with 500 Internal Server Error, mitigate with retry
   wait_for_it 300 "$cli exec $1 -- conjur login -i admin -p '$CONJUR_ADMIN_PASSWORD'"
 }

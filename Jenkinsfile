@@ -400,23 +400,24 @@ pipeline {
                 }
               }
             }
-            stage('OSS in OpenShift v(current)') {
-              steps {
-                script {
-                  INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --ci-apps'
-                }
-              }
-            }
-            stage('OSS in OpenShift v(next)') {
-              when {
-                expression { params.TEST_OCP_NEXT }
-              }
-              steps {
-                script {
-                  INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift --ci-apps'
-                }
-              }
-            }
+        // TODO: Re-enable openshift tests (CNJR-11852)
+        //     stage('OSS in OpenShift v(current)') {
+        //       steps {
+        //         script {
+        //           INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=current ./start --platform openshift --ci-apps'
+        //         }
+        //       }
+        //     }
+        //     stage('OSS in OpenShift v(next)') {
+        //       when {
+        //         expression { params.TEST_OCP_NEXT }
+        //       }
+        //       steps {
+        //         script {
+        //           INFRAPOOL_AZURE_AGENT_0.agentSh 'cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --platform openshift --ci-apps'
+        //         }
+        //       }
+        //     }
           }
         }
         // Since there is branching logic depending on authn-jwt vs authn-k8s workflows we have to run them separately
@@ -431,8 +432,8 @@ pipeline {
             }
           }
         }
-        stage('Enterprise in Jenkins') {
-          stages {
+        // stage('Enterprise in Jenkins') {
+        //   stages {
             // stage('Test app in GKE') {
             //   steps {
             //     script {
@@ -456,22 +457,23 @@ pipeline {
             //     }
             //   }
             // }
-            stage('Test app in OpenShift v(next)') {
-              when {
-                expression { params.TEST_OCP_NEXT }
-              }
-              steps {
-                script {
-                  INFRAPOOL_AZURE_AGENT_0.agentSh '''
-                    HOST_IP="$(curl https://checkip.amazonaws.com)";
-                    echo "HOST_IP=${HOST_IP}"
-                    cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --ci-apps
-                  '''
-                }
-              }
-            }
-          }
-        }
+            // TODO: Re-enable openshift tests (CNJR-11852)
+            // stage('Test app in OpenShift v(next)') {
+            //   when {
+            //     expression { params.TEST_OCP_NEXT }
+            //   }
+            //   steps {
+            //     script {
+            //       INFRAPOOL_AZURE_AGENT_0.agentSh '''
+            //         HOST_IP="$(curl https://checkip.amazonaws.com)";
+            //         echo "HOST_IP=${HOST_IP}"
+            //         cd bin/test-workflow && summon --environment openshift -D ENV=ci -D VER=next ./start --enterprise --platform jenkins  --ci-apps
+            //       '''
+            //     }
+            //   }
+            // }
+        //   }
+        // }
       }
     }
 
