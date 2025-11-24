@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"slices"
 	"strings"
 
 	"go.opentelemetry.io/otel"
@@ -39,15 +40,21 @@ func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*A
 	}
 
 	baseURL := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
+
+	// Add /api prefix if it was present in the original URL
+	if len(parts) > 0 && slices.Contains(parts, "api") {
+		baseURL += "/api"
+	}
+
 	serviceID := parts[len(parts)-1]
 
 	conjurClient, err := conjurapi.NewClient(conjurapi.Config{
-		Account:      config.Common.Account,
-		ApplianceURL: baseURL,
-		SSLCert:      string(config.Common.SSLCertificate),
-		ServiceID:    serviceID,
-		AuthnType:    "jwt",
-		JWTFilePath:  config.JWTTokenFilePath,
+		Account:           config.Common.Account,
+		ApplianceURL:      baseURL,
+		SSLCert:           string(config.Common.SSLCertificate),
+		ServiceID:         serviceID,
+		AuthnType:         "jwt",
+		JWTFilePath:       config.JWTTokenFilePath,
 		CredentialStorage: conjurapi.CredentialStorageNone,
 	})
 	if err != nil {
