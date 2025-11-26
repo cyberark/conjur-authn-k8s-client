@@ -37,7 +37,7 @@ func (token *AccessToken) Write(Data []byte) (err error) {
 	// Create the directory if it doesn't exist
 	tokenDir := filepath.Dir(token.FilePath)
 	if _, err := os.Stat(tokenDir); os.IsNotExist(err) {
-		err = os.MkdirAll(tokenDir, 755)
+		err = os.MkdirAll(tokenDir, 0755)
 		if err != nil {
 			// Do not specify the directory in the error message for security reasons
 			return log.RecordedError(log.CAKC004)

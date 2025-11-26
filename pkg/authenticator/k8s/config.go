@@ -1,11 +1,9 @@
 package k8s
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/common"
-	"github.com/cyberark/conjur-authn-k8s-client/pkg/log"
 )
 
 // Config defines the configuration parameters
@@ -62,14 +60,6 @@ var defaultValues = map[string]string{
 	"CONJUR_AUTHN_TOKEN_FILE":              DefaultTokenFilePath,
 	"CONJUR_TOKEN_TIMEOUT":                 DefaultTokenRefreshTimeout,
 	"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": DefaultClientCertRetryCountLimit,
-}
-
-func durationFromString(key, value string) (time.Duration, error) {
-	duration, err := time.ParseDuration(value)
-	if err != nil {
-		return 0, fmt.Errorf(log.CAKC060, key, value)
-	}
-	return duration, nil
 }
 
 func (config *Config) LoadConfig(settings map[string]string) {
