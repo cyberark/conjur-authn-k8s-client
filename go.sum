@@ -34,8 +34,8 @@ github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEe
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/cyberark/conjur-api-go v0.13.9 h1:Cd4uJmnEkZJBnU4hsIcZN1maqhqRT2fSax65SEvqvEs=
 github.com/cyberark/conjur-api-go v0.13.9/go.mod h1:hZ6lyBHQW5WFZNMngQb/QtHpB8l0pY8PLgcJ1Vp8H74=
-github.com/cyberark/conjur-opentelemetry-tracer v0.0.3 h1:AhVJ4Ufx8xcaFnm4NwryJD+E1A0nYxvqRwRnkaWxI3Y=
-github.com/cyberark/conjur-opentelemetry-tracer v0.0.3/go.mod h1:k3rT6YEkB+ZR3qgZNW2UGKxRGlHndQjd0BjeMUR7iWY=
+github.com/cyberark/conjur-opentelemetry-tracer v0.0.4 h1:ixD9Kx0FHEJwck2RIZ6bQVdOqNqjeYiQsm4sr6rAS7Q=
+github.com/cyberark/conjur-opentelemetry-tracer v0.0.4/go.mod h1:3kj5OgI55T9G6pLbGonx3Bq2dHoVyjKqiPUtXZfrOEM=
 github.com/danieljoos/wincred v1.2.2 h1:774zMFJrqaeYCK2W57BgAem/MLi6mtSE47MB6BOJ0i0=
 github.com/danieljoos/wincred v1.2.2/go.mod h1:w7w4Utbrz8lqeMbDAK0lkNJUv5sAOkFi7nd/ogr0Uh8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

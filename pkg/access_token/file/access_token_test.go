@@ -2,6 +2,7 @@ package file
 
 import (
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -15,7 +16,8 @@ type ProxyHandlerTokenFile struct {
 }
 
 func TestAccessTokenFile(t *testing.T) {
-	var accessToken, _ = NewAccessToken("/tmp/accessTokenFile1")
+	tempDir := t.TempDir()
+	var accessToken, _ = NewAccessToken(filepath.Join(tempDir, "accessTokenFile1"))
 
 	t.Run("Read", func(t *testing.T) {
 		dataActual := []byte{'t', 'e', 's', 't'}
@@ -39,12 +41,12 @@ func TestAccessTokenFile(t *testing.T) {
 	t.Run("Write", func(t *testing.T) {
 
 		dataActual := []byte{'t', 'e', 's', 't'}
-		accessToken.FilePath = "/tmp/accessTokenFileWrite1"
+		accessToken.FilePath = filepath.Join(tempDir, "accessTokenFileWrite1")
 
 		err := accessToken.Write(dataActual)
 		assert.NoError(t, err)
 
-		_, err = os.Stat("/tmp/accessTokenFileWrite1")
+		_, err = os.Stat(accessToken.FilePath)
 		assert.NoError(t, err)
 
 		dataExpected, _ := accessToken.Read()
@@ -57,13 +59,30 @@ func TestAccessTokenFile(t *testing.T) {
 		err = accessToken.Write(dataActual)
 		assert.NoError(t, err)
 
-		_, err = os.Stat("/tmp/accessTokenFileWrite1")
+		_, err = os.Stat(accessToken.FilePath)
 		assert.NoError(t, err)
 
 		// TODO: read the content with `os` methods (not with `accessToken`)
 		dataExpected, _ = accessToken.Read()
 		eq = reflect.DeepEqual(dataActual, dataExpected)
 		assert.True(t, eq)
+
+		t.Run("Creates nonexistent directory", func(t *testing.T) {
+			accessToken.FilePath = filepath.Join(tempDir, "nonexistent_dir", "accessTokenFileWrite2")
+			dataActual := []byte{'d', 'i', 'r', 'e', 'c', 't', 'o', 'r', 'y'}
+
+			err := accessToken.Write(dataActual)
+			assert.NoError(t, err)
+
+			_, err = os.Stat(accessToken.FilePath)
+			assert.NoError(t, err)
+
+			dataExpected, _ := accessToken.Read()
+
+			// Confirm data was written
+			eq := reflect.DeepEqual(dataActual, dataExpected)
+			assert.True(t, eq)
+		})
 
 		t.Run("Given an access token without data", func(t *testing.T) {
 			err := accessToken.Write(nil)
@@ -74,7 +93,7 @@ func TestAccessTokenFile(t *testing.T) {
 
 	t.Run("Delete", func(t *testing.T) {
 		dataActual := []byte{'t', 'e', 's', 't'}
-		accessToken.FilePath = "/tmp/accessTokenFileDel1"
+		accessToken.FilePath = filepath.Join(tempDir, "accessTokenFileDel1")
 		err := accessToken.Write(dataActual)
 		assert.NoError(t, err)
 
@@ -85,7 +104,7 @@ func TestAccessTokenFile(t *testing.T) {
 		err = accessToken.Delete()
 		assert.NoError(t, err)
 
-		_, err = os.Stat("/tmp/accessTokenFileDel1")
+		_, err = os.Stat(filepath.Join(tempDir, "accessTokenFileDel1"))
 		assert.Error(t, err)
 		// Both input & output arrays should be cleared from memory
 		empty := make([]byte, len(dataActual))
@@ -96,14 +115,15 @@ func TestAccessTokenFile(t *testing.T) {
 
 		t.Run("Given an access token with no data saved to a file", func(t *testing.T) {
 			accessToken.Data = nil
-			os.Create("/tmp/accessTokenFileDel2")
-			accessToken.FilePath = "/tmp/accessTokenFileDel2"
+			delFilePath := filepath.Join(tempDir, "accessTokenFileDel2")
+			os.Create(delFilePath)
+			accessToken.FilePath = delFilePath
 
 			err := accessToken.Delete()
 			assert.NoError(t, err)
 
 			// Check that file does not exist
-			_, err = os.Stat("/tmp/accessTokenFileDel2")
+			_, err = os.Stat(delFilePath)
 			assert.Error(t, err)
 			err = accessToken.Delete()
 
