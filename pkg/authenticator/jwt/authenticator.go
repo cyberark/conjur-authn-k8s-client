@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"path"
 	"slices"
 	"strings"
 
@@ -27,26 +26,10 @@ type Authenticator struct {
 
 // NewWithAccessToken creates a new authenticator instance from a given access token
 func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*Authenticator, error) {
-	parsedURL, err := url.Parse(config.Common.URL)
+	baseURL, serviceID, err := parseAuthnJWTURL(config.Common.URL)
 	if err != nil {
-		return nil, fmt.Errorf(log.CAKC083, err)
+		return nil, err
 	}
-
-	path := strings.TrimSuffix(path.Clean(parsedURL.Path), "/")
-	parts := strings.Split(path, "/")
-
-	if len(parts) < 2 || parts[len(parts)-2] != "authn-jwt" {
-		return nil, fmt.Errorf(log.CAKC083, "expected path to end with /authn-jwt/<service_id>")
-	}
-
-	baseURL := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
-
-	// Add /api prefix if it was present in the original URL
-	if len(parts) > 0 && slices.Contains(parts, "api") {
-		baseURL += "/api"
-	}
-
-	serviceID := parts[len(parts)-1]
 
 	conjurClient, err := conjurapi.NewClient(conjurapi.Config{
 		Account:           config.Common.Account,
@@ -66,6 +49,35 @@ func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*A
 		accessToken:  accessToken,
 		Config:       &config,
 	}, nil
+}
+
+// parseAuthnJWTURL extracts the base URL and service ID from a JWT authentication URL.
+// Expected format: {scheme}://{host}[/api]/authn-jwt/{service_id}
+func parseAuthnJWTURL(authnURL string) (string, string, error) {
+	parsedURL, err := url.Parse(authnURL)
+	if err != nil {
+		return "", "", fmt.Errorf(log.CAKC083, err)
+	}
+
+	pathParts := strings.Split(parsedURL.Path, "/")
+	// Remove empty parts resulting from leading, trailing, or multiple slashes
+	pathParts = slices.DeleteFunc(pathParts, func(s string) bool { return s == "" })
+
+	// Validate: must end with /authn-jwt/{service_id}
+	if len(pathParts) < 2 || pathParts[len(pathParts)-2] != "authn-jwt" {
+		return "", "", fmt.Errorf(log.CAKC083, "expected path to end with /authn-jwt/<service_id>")
+	}
+
+	serviceID := pathParts[len(pathParts)-1]
+	baseURL := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
+	// Add back all parts of the path except for /authn-jwt/{service_id}
+	// This will include "/api" for Conjur Cloud / Edge deployments, as
+	// well as any other custom path segments used with a proxy.
+	for _, part := range pathParts[:len(pathParts)-2] {
+		baseURL += "/" + part
+	}
+
+	return baseURL, serviceID, nil
 }
 
 // GetAccessToken is getter for accessToken
