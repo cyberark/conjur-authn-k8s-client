@@ -126,6 +126,19 @@ set_namespace() {
   "$cli" config set-context "$($cli config current-context)" --namespace="$1" > /dev/null
 }
 
+set_namespace_exp() {
+  # Set the namespace label to expire in an hour. This tells the cleanup job
+  # that it can safely delete this namespace after that time.
+  local namespace=$1
+  local fmt="+%Y-%m-%dT%H%M%SZ"
+  echo "Setting expiration label on namespace $namespace to 1 hour from now."
+  exp=$(date -u -d "+1Hour" $fmt 2>/dev/null||date -u -v "+1H" $fmt)
+  "$cli" label namespace $namespace safely_delete_after=$exp 2>/dev/null || {
+    echo "Warning: Failed to set expiration label on namespace $namespace. Continuing anyway."
+    return 0
+  }
+}
+
 load_policy() {
   local POLICY_FILE=$1
 

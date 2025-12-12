@@ -16,6 +16,7 @@ trap dump_application_namespace_upon_error EXIT
 announce "Deploying test app postgres backend for $TEST_APP_NAMESPACE_NAME."
 
 set_namespace "$TEST_APP_NAMESPACE_NAME"
+set_namespace_exp "$TEST_APP_NAMESPACE_NAME"
 
 # Delete existing backend resources if they exist
 echo "Cleaning up any existing backend deployment"
