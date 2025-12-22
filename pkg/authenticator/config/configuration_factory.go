@@ -31,8 +31,7 @@ func ConfigFromEnv(readFileFunc common.ReadFileFunc) (Configuration, error) {
 
 func NewConfigFromCustomEnv(readFileFunc common.ReadFileFunc, customEnv func(key string) string) (Configuration, error) {
 	log.Debug(log.CAKC068)
-	logLevel := getConfiguredLogLevel(customEnv)
-	log.SetLogLevel(logLevel)
+	SetLogLevel(customEnv)
 	authnUrl := customEnv(authnURLVarName)
 	conf, err := getConfiguration(authnUrl)
 	if err != nil {
@@ -73,6 +72,12 @@ func GatherSettings(conf Configuration, getters ...func(key string) string) Auth
 
 	log.Debug(log.CAKC072)
 	return settings
+}
+
+// SetLogLevel sets the log level based on the provided customEnv function
+func SetLogLevel(customEnv func(key string) string) {
+	logLevel := getConfiguredLogLevel(customEnv)
+	log.SetLogLevel(logLevel)
 }
 
 func getConfiguration(url string) (Configuration, error) {
