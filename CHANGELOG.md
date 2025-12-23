@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
+## [0.26.12] - 2026-01-09
+
+### Changed
+- Update the description of CONJUR_SSL_CERTIFICATE to make it less confusing (CNJR-4073)
+
 ## [0.26.11] - 2025-12-30
 
 ### Changed
