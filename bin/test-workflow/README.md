@@ -195,11 +195,11 @@ Kubernetes sidecar authenticator, and are performed by the Kubernetes Admin.
 
         2) Deploy App Backend
 
-            - Here, the application backend is deployed using Bitnami's PostgreSQL Helm chart. Secrets are created in the test app namespace for secure connection to the backend.
+            - Here, the application backend is deployed using a native Kubernetes StatefulSet with the official PostgreSQL Docker image. Secrets are created in the test app namespace for secure connection to the backend.
 
             - To deploy the app's backend, run:
               ```bash
-              ./7_app_deploy_backend.sh
+              ./6_app_deploy_backend.sh
               ```
 
         3) Deploy App

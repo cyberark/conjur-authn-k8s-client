@@ -1,0 +1,145 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-backend
+  labels:
+    app: test-app-backend
+spec:
+  ports:
+  - port: 5432
+    name: postgres
+  clusterIP: None
+  selector:
+    app: test-app-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-backend-external
+  labels:
+    app: test-app-backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: postgres
+  selector:
+    app: test-app-backend
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: test-app-backend
+spec:
+  serviceName: test-app-backend
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-app-backend
+  template:
+    metadata:
+      labels:
+        app: test-app-backend
+    spec:
+      initContainers:
+      - name: init-data-dir
+        image: registry.access.redhat.com/ubi9/ubi-minimal:9.4
+        command:
+        - sh
+        - -c
+        - |
+          mkdir -p /data/pgdata
+          chown -R 999:999 /data
+          chmod 700 /data/pgdata
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        securityContext:
+          runAsUser: 0
+      - name: copy-certs
+        image: registry.access.redhat.com/ubi9/ubi-minimal:9.4
+        command:
+        - sh
+        - -c
+        - |
+          cp /tmp/certs/* /var/lib/postgresql/certs/
+          chmod 600 /var/lib/postgresql/certs/server.key
+          chown -R 999:999 /var/lib/postgresql/certs
+        volumeMounts:
+        - name: certs-tmp
+          mountPath: /tmp/certs
+        - name: certs
+          mountPath: /var/lib/postgresql/certs
+        securityContext:
+          runAsUser: 0
+      containers:
+      - name: postgres
+        image: docker.io/postgres:15
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          value: "test_app"
+        - name: POSTGRES_USER
+          value: "test_app"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: test-app-backend-password
+              key: password
+        - name: PGDATA
+          value: /data/pgdata
+        args:
+        - -c
+        - ssl=on
+        - -c
+        - ssl_cert_file=/var/lib/postgresql/certs/server.crt
+        - -c
+        - ssl_key_file=/var/lib/postgresql/certs/server.key
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: certs
+          mountPath: /var/lib/postgresql/certs
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - test_app
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - test_app
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        securityContext:
+          runAsUser: 999
+          runAsGroup: 999
+          allowPrivilegeEscalation: false
+      volumes:
+      - name: data
+        emptyDir: {}
+      - name: certs-tmp
+        secret:
+          secretName: test-app-backend-certs
+      - name: certs
+        emptyDir: {}

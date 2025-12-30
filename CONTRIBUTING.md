@@ -168,6 +168,21 @@ Flags explanation :
 
 You can use the kubectl edit command to edit the images in the deployment and replacing them with you develop and debug images for development porpuses. And fill free to play with the policy and the application K8S manifests to check convinently things on the sidecars.
 
+## PostgreSQL Backend for Testing
+
+The test workflow uses a Kubernetes StatefulSet deployment with the official PostgreSQL image.
+
+The deployment manifests are located in:
+* `bin/test-workflow/kubernetes/postgres-backend.yaml` - For Kubernetes
+* `bin/test-workflow/openshift/postgres-backend.yaml` - For OpenShift
+
+To update the PostgreSQL version, edit the `image:` field in the manifest files:
+
+```yaml
+image: docker.io/postgres:15  # Change version here
+```
+
+
 ## Releases
 
 Releases should be created by maintainers only. To create and promote a

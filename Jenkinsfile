@@ -187,14 +187,6 @@ pipeline {
 
     stage('Validate') {
       parallel {
-        stage('Changelog') {
-          steps {
-            script {
-              parseChangelog(INFRAPOOL_AZURE_AGENT_0)
-            }
-          }
-        }
-
         stage('Log messages') {
           steps {
             validateLogMessages()

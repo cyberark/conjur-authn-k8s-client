@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
-## [0.26.11] - 2025-11-25
+## [0.26.11] - 2025-12-30
+
+### Changed
+- Refactor logging level configuration to use a dedicated function in the configuration factory
+- Update dependencies
 
 ## [0.26.10] - 2025-11-24
 
