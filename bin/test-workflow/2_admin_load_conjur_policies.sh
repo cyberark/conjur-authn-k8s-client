@@ -25,6 +25,8 @@ check_env_var TEST_APP_DATABASE
 check_env_var SAMPLE_APP_BACKEND_DB_PASSWORD
 TEST_JWT_FLOW="${TEST_JWT_FLOW:-false}"
 
+set_namespace_exp "$CONJUR_NAMESPACE_NAME"
+
 announce "Generating Conjur policy."
 
 prepare_conjur_cli_image() {
