@@ -2,7 +2,11 @@
 
 set -euo pipefail
 
-# This script will retrieve the Conjur SSL cert and save it to a file.
+# This script will retrieve the Conjur SSL certificate chain and save it to a file.
+# Note: This script retrieves the certificate chain presented by the
+#       Conjur server during the TLS handshake. Only the CA certificates
+#       (root CA and any required intermediate CAs) from this output are
+#       required for client trust configuration (for example, CONJUR_SSL_CERTIFICATE).
 #
 # Usage:
 #     get-conjur-cert.sh -u Conjur_Appliance_URL [Options]
