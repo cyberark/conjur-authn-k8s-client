@@ -17,9 +17,9 @@ test:
     enable: false
     conjurAccount: "mock-conjur-account"
     conjurApplianceUrl: "https://mock.example.com"
-    conjurSslCertificate: "-----BEGIN CERTIFICATE-----\n
-MIIC/ThisIsAMockThisIsOnlyAMock==\n
------END CERTIFICATE-----\n"
+    conjurSslCertificate: "-----BEGIN CERTIFICATE-----
+MIIC/ThisIsAMockThisIsOnlyAMock==
+-----END CERTIFICATE-----"
     authnK8sAuthenticatorID: "mock-authenticator-id"
     authnK8sClusterRole: "mock-clusterrole"
     authnK8sServiceAccount: "mock-serviceaccount"
