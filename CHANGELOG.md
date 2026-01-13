@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Update the description of CONJUR_SSL_CERTIFICATE to make it less confusing (CNJR-4073)
 
+### Fixed
+- Fix yaml in mock values ([cyberark/conjur-authn-k8s-client#530](https://github.com/cyberark/conjur-authn-k8s-client/pull/530))
+
 ## [0.26.11] - 2025-12-30
 
 ### Changed
@@ -370,7 +373,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fix an issue where sidecar fails when not run as root user.
 
-[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.9...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.12...HEAD
+[0.26.12]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.11...v0.26.12
+[0.26.11]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.10...v0.26.11
+[0.26.10]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.9...v0.26.10
 [0.26.9]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.8...v0.26.9
 [0.26.8]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.7...v0.26.8
 [0.26.7]: https://github.com/cyberark/conjur-authn-k8s-client/compare/v0.26.6...v0.26.7
