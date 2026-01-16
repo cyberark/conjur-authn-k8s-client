@@ -9,7 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
-## [0.26.12] - 2026-01-09
+## [0.26.12] - 2026-01-16
+
+### Added
+- Update Cluster Prep Helm chart to support authn-gcp (CNJR-11714)
 
 ### Added
 - Add support for configuring the Conjur HTTP timeout via the CONJUR_HTTP_TIMEOUT

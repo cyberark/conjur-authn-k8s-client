@@ -21,8 +21,14 @@ metadata:
 data:
   CONJUR_ACCOUNT: {{ get $g "conjurAccount" | required "conjurAccount must be set in Golden ConfigMap" }}
   CONJUR_APPLIANCE_URL: {{ get $g "conjurApplianceUrl" | required "conjurApplianceUrl must be set in Golden ConfigMap" }}
-  CONJUR_AUTHN_URL: {{ printf "%s/%s/%s" (get $g "conjurApplianceUrl" | trimSuffix "/") (.Values.conjurConfigMap.authnMethod) (get $g "authnK8sAuthenticatorID") }}
+  {{- if eq .Values.conjurConfigMap.authnMethod "authn-gcp" }}
+  CONJUR_AUTHN_URL: {{ printf "%s/%s" (get $g "conjurApplianceUrl" | trimSuffix "/") (.Values.conjurConfigMap.authnMethod) }}
+  {{- else }}
+  CONJUR_AUTHN_URL: {{ printf "%s/%s/%s" (get $g "conjurApplianceUrl" | trimSuffix "/") (.Values.conjurConfigMap.authnMethod) (get $g "authnK8sAuthenticatorID" | required "authnK8sAuthenticatorID must be set in Golden ConfigMap") }}
+  {{- end }}
   CONJUR_SSL_CERTIFICATE: |- 
 {{ get $g "conjurSslCertificate" | required "conjurSslCertificate must be set in Golden ConfigMap" | indent 4 }}
-  CONJUR_AUTHENTICATOR_ID: {{ get $g "authnK8sAuthenticatorID" | required "authnK8sAuthenticatorID must be set in Golden ConfigMap" }}
+  {{- if get $g "authnK8sAuthenticatorID" }}
+  CONJUR_AUTHENTICATOR_ID: {{ get $g "authnK8sAuthenticatorID" }}
+  {{- end }}
 {{- end }}

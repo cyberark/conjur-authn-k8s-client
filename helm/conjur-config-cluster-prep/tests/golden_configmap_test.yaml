@@ -205,16 +205,37 @@ tests:
           pattern: "^LS0tLS1.*LS0tCg==$"
 
   #=======================================================================
-  - it: should fail if authenticator ID is not set
+  - it: should fail if authenticator ID is not set for authn-k8s
   #=======================================================================
     set:
       # Set required values except conjur.authenticatorID
       conjur.applianceUrl: "https://conjur.example.com"
       conjur.certificateFilePath: "tests/test-cert.pem"
+      authnK8s.authnMethod: "authn-k8s"
 
     asserts:
       - failedTemplate:
-          errorMessage: "A valid authnK8s.authenticatorID is required!"
+          errorMessage: "A valid authnK8s.authenticatorID is required unless using authn-gcp!"
+
+  #=======================================================================
+  - it: should support authn-gcp without an authenticator ID
+  #=======================================================================
+    set:
+      # Set required values for authn-gcp without authenticatorID
+      conjur.applianceUrl: "https://conjur.example.com"
+      conjur.certificateFilePath: "tests/test-cert.pem"
+      authnK8s.authnMethod: "authn-gcp"
+
+    asserts:
+      # Confirm that a ConfigMap has been created
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ConfigMap
+
+      # Confirm that authnK8sAuthenticatorID is not present
+      - isNull:
+          path: data.authnK8sAuthenticatorID
 
   #=======================================================================
   - it: should allow ConfigMap name to be set explicitly
