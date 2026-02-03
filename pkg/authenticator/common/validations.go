@@ -39,6 +39,8 @@ func ValidateSetting(key string, value string) error {
 		return validUsername(key, value)
 	case "CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT":
 		return validInt(key, value)
+	case "CONJUR_HTTP_TIMEOUT":
+		return validTimeout(key, value)
 	case "CONJUR_TOKEN_TIMEOUT":
 		return validTimeout(key, value)
 	case "JWT_TOKEN_PATH":

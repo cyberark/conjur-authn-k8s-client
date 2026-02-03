@@ -55,6 +55,7 @@ func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*A
 	client, err := common.NewHTTPSClient(
 		config.Common.SSLCertificate,
 		tls.Certificate{},
+		config.Common.HTTPTimeout,
 	)
 	if err != nil {
 		return nil, err
@@ -317,6 +318,7 @@ func (auth *Authenticator) sendAuthenticationRequest(ctx context.Context, tracer
 	client, err := common.NewHTTPSClient(
 		auth.config.Common.SSLCertificate,
 		cert,
+		auth.config.Common.HTTPTimeout,
 	)
 	if err != nil {
 		span.RecordErrorAndSetStatus(err)

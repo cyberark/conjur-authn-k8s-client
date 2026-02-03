@@ -25,6 +25,8 @@ const (
 	// login for the client certificate file to exist, where each time we wait for a second.
 	DefaultClientCertRetryCountLimit = "10"
 
+	DefaultHTTPTimeout = "10s"
+
 	DefaultJWTTokenPath = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 
 	AuthnType = "authn-jwt"
@@ -40,6 +42,7 @@ var envVariables = []string{
 	"CONJUR_AUTHN_TOKEN_FILE",
 	"CONJUR_AUTHN_URL",
 	"CONJUR_CERT_FILE",
+	"CONJUR_HTTP_TIMEOUT",
 	"CONJUR_SSL_CERTIFICATE",
 	"CONJUR_TOKEN_TIMEOUT",
 	"CONTAINER_MODE",
@@ -52,6 +55,7 @@ var envVariables = []string{
 var defaultValues = map[string]string{
 	"CONJUR_CLIENT_CERT_PATH":              DefaultClientCertPath,
 	"CONJUR_AUTHN_TOKEN_FILE":              DefaultTokenFilePath,
+	"CONJUR_HTTP_TIMEOUT":                  DefaultHTTPTimeout,
 	"CONJUR_TOKEN_TIMEOUT":                 DefaultTokenRefreshTimeout,
 	"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": DefaultClientCertRetryCountLimit,
 	"JWT_TOKEN_PATH":                       DefaultJWTTokenPath,
@@ -84,6 +88,11 @@ func (config *Config) GetContainerMode() string {
 
 func (config *Config) GetTokenFilePath() string {
 	return config.Common.TokenFilePath
+}
+
+func (config *Config) GetHTTPTimeout() time.Duration {
+	// JWT authenticator uses conjurapi.Client which accepts HTTPTimeout in seconds
+	return config.Common.HTTPTimeout
 }
 
 func (config *Config) GetTokenTimeout() time.Duration {

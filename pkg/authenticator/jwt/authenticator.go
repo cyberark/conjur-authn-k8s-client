@@ -39,6 +39,7 @@ func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*A
 		AuthnType:         "jwt",
 		JWTFilePath:       config.JWTTokenFilePath,
 		CredentialStorage: conjurapi.CredentialStorageNone,
+		HTTPTimeout:       int(config.Common.HTTPTimeout.Seconds()),
 	})
 	if err != nil {
 		return nil, err

@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [0.26.12] - 2026-01-09
 
+### Added
+- Add support for configuring the Conjur HTTP timeout via the CONJUR_HTTP_TIMEOUT
+  environment variable. (CNJR-12865)
+
 ### Changed
 - Update the description of CONJUR_SSL_CERTIFICATE to make it less confusing (CNJR-4073)
 
