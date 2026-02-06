@@ -1,14 +1,14 @@
 module github.com/cyberark/conjur-authn-k8s-client
 
-go 1.25.3
+go 1.25.7
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/cyberark/conjur-api-go v0.13.9
+	github.com/cyberark/conjur-api-go v0.13.15
 	// Version number used here is ignored
 	github.com/cyberark/conjur-opentelemetry-tracer v1.55.55
 	github.com/stretchr/testify v1.11.1
-	go.opentelemetry.io/otel v1.39.0
+	go.opentelemetry.io/otel v1.40.0
 )
 
 require (
@@ -40,12 +40,12 @@ require (
 	github.com/zalando/go-keyring v0.2.6 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.17.0 // indirect
-	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.39.0 // indirect
-	go.opentelemetry.io/otel/metric v1.39.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.39.0 // indirect
-	go.opentelemetry.io/otel/trace v1.39.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.40.0 // indirect
+	go.opentelemetry.io/otel/metric v1.40.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.40.0 // indirect
+	go.opentelemetry.io/otel/trace v1.40.0 // indirect
+	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	golang.org/x/sys v0.40.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
