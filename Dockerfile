@@ -150,9 +150,6 @@ ARG YQ_VERSION=v4
 
 RUN git clone --branch $YQ_VERSION https://github.com/mikefarah/yq /yq && \
     cd /yq && \
-    # Update golang.org/x/net to v0.37.0 to resolve CVE-2025-22870
-    go get golang.org/x/net@v0.37.0 && \
-    go mod tidy && \
     go build && \
     mv yq /usr/bin/yq && \
     rm -rf /yq && \
