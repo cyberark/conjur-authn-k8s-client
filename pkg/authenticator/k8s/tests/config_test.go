@@ -67,6 +67,7 @@ func TestGatherSettings(t *testing.T) {
 				"CONJUR_AUTHN_TOKEN_FILE":              k8s.DefaultTokenFilePath,
 				"CONJUR_CLIENT_CERT_PATH":              k8s.DefaultClientCertPath,
 				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": k8s.DefaultClientCertRetryCountLimit,
+				"CONJUR_HTTP_TIMEOUT":                  k8s.DefaultHTTPTimeout,
 				"CONJUR_TOKEN_TIMEOUT":                 k8s.DefaultTokenRefreshTimeout,
 			},
 		},
@@ -86,6 +87,7 @@ func TestGatherSettings(t *testing.T) {
 				"CONTAINER_MODE":                       "",
 				"CONJUR_CLIENT_CERT_PATH":              k8s.DefaultClientCertPath,
 				"CONJUR_AUTHN_TOKEN_FILE":              k8s.DefaultTokenFilePath,
+				"CONJUR_HTTP_TIMEOUT":                  k8s.DefaultHTTPTimeout,
 				"CONJUR_TOKEN_TIMEOUT":                 k8s.DefaultTokenRefreshTimeout,
 				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": k8s.DefaultClientCertRetryCountLimit,
 			},
@@ -140,6 +142,74 @@ func TestFromEnv(t *testing.T) {
 				assert.Nil(t, err)
 			}
 			unsetEnv(tc.env)
+		})
+	}
+}
+
+func TestHTTPTimeoutConfiguration(t *testing.T) {
+	testCases := []struct {
+		description        string
+		httpTimeout        string
+		expectedError      bool
+		expectedDurationMs int64
+	}{
+		{
+			description:        "default timeout value when not set",
+			httpTimeout:        "",
+			expectedError:      false,
+			expectedDurationMs: 10000, // 10 seconds
+		},
+		{
+			description:        "valid timeout value",
+			httpTimeout:        "30s",
+			expectedError:      false,
+			expectedDurationMs: 30000, // 30 seconds
+		},
+		{
+			description:        "valid timeout with minutes",
+			httpTimeout:        "1m30s",
+			expectedError:      false,
+			expectedDurationMs: 90000, // 90 seconds
+		},
+		{
+			description:   "invalid timeout value returns error",
+			httpTimeout:   "invalid",
+			expectedError: true,
+		},
+	}
+
+	baseEnv := map[string]string{
+		"CONJUR_AUTHN_URL":       "authn-k8s",
+		"CONJUR_ACCOUNT":         "testAccount",
+		"CONJUR_AUTHN_LOGIN":     "host/test-user",
+		"MY_POD_NAME":            "testPodName",
+		"MY_POD_NAMESPACE":       "testNameSpace",
+		"CONJUR_SSL_CERTIFICATE": "samplecert",
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			// SETUP
+			env := baseEnv
+			if tc.httpTimeout != "" {
+				env["CONJUR_HTTP_TIMEOUT"] = tc.httpTimeout
+			}
+			setEnv(env)
+
+			// EXERCISE
+			cfg, err := config.ConfigFromEnv(successfulMockReadFile)
+
+			// ASSERT
+			if tc.expectedError {
+				assert.Nil(t, cfg)
+				assert.NotNil(t, err)
+			} else {
+				assert.NotNil(t, cfg)
+				assert.Nil(t, err)
+				assert.Equal(t, tc.expectedDurationMs, cfg.GetHTTPTimeout().Milliseconds())
+			}
+
+			unsetEnv(env)
 		})
 	}
 }

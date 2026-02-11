@@ -12,5 +12,6 @@ type Configuration interface {
 	GetDefaultValues() map[string]string
 	GetContainerMode() string
 	GetTokenFilePath() string
+	GetHTTPTimeout() time.Duration
 	GetTokenTimeout() time.Duration
 }

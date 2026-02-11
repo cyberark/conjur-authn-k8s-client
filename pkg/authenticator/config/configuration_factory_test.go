@@ -32,6 +32,7 @@ func TestValidate(t *testing.T) {
 				"MY_POD_NAMESPACE":   "testNameSpace",
 				// correct value types
 				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": "7",
+				"CONJUR_HTTP_TIMEOUT":                  "10s",
 				"CONJUR_TOKEN_TIMEOUT":                 "6m0s",
 				"CONTAINER_MODE":                       "init",
 				// certificate provided
@@ -48,6 +49,7 @@ func TestValidate(t *testing.T) {
 				"JWT_TOKEN_PATH":   "/tmp/token",
 				// correct value types
 				"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": "7",
+				"CONJUR_HTTP_TIMEOUT":                  "10s",
 				"CONJUR_TOKEN_TIMEOUT":                 "6m0s",
 				"CONTAINER_MODE":                       "init",
 				// certificate provided

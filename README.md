@@ -16,15 +16,15 @@ The Secrets Manager authenticator client is designed to have a light footprint b
 
 The client is configured entirely through environment variables. These are listed below.
 
-### Using conjur-authn-k8s-client with Conjur Open Source 
+### Using conjur-authn-k8s-client with Conjur Open Source
 
-Are you using this project with [Conjur Open Source](https://github.com/cyberark/conjur)? Then we 
-**strongly** recommend choosing the version of this project to use from the latest [Conjur OSS 
-suite release](https://docs.conjur.org/Latest/en/Content/Overview/Conjur-OSS-Suite-Overview.html). 
-Conjur maintainers perform additional testing on the suite release versions to ensure 
-compatibility. When possible, upgrade your Conjur version to match the 
-[latest suite release](https://docs.conjur.org/Latest/en/Content/ReleaseNotes/ConjurOSS-suite-RN.htm); 
-when using integrations, choose the latest suite release that matches your Conjur version. For any 
+Are you using this project with [Conjur Open Source](https://github.com/cyberark/conjur)? Then we
+**strongly** recommend choosing the version of this project to use from the latest [Conjur OSS
+suite release](https://docs.conjur.org/Latest/en/Content/Overview/Conjur-OSS-Suite-Overview.html).
+Conjur maintainers perform additional testing on the suite release versions to ensure
+compatibility. When possible, upgrade your Conjur version to match the
+[latest suite release](https://docs.conjur.org/Latest/en/Content/ReleaseNotes/ConjurOSS-suite-RN.htm);
+when using integrations, choose the latest suite release that matches your Conjur version. For any
 questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/c/conjur/5).
 
 ## Orchestrator
@@ -38,7 +38,10 @@ questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/
 - `CONJUR_AUTHN_LOGIN`: Host login for pod e.g. `namespace/service_account/some_service_account`
 - `CONJUR_SSL_CERTIFICATE`: CA certificate bundle used to validate the Secrets Manager TLS connection
                             (the server certificate itself is not pinned)
-- `CONJUR_TOKEN_TIMEOUT`: Timeout for fetching a new token (defaults to 6 minutes). 
+- `CONJUR_HTTP_TIMEOUT`: Timeout for HTTP requests to Conjur (defaults to 10 seconds).
+                         The value should be in a format that can be parsed with
+                         [time.ParseDuration](https://golang.org/pkg/time/#ParseDuration) (e.g "10s")
+- `CONJUR_TOKEN_TIMEOUT`: Timeout for fetching a new token (defaults to 6 minutes).
                           In most cases, this variable should not be modified. The value should be in a
                           format that can be parsed with [time.ParseDuration](https://golang.org/pkg/time/#ParseDuration) (e.g "6m0s")
 

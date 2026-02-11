@@ -27,6 +27,7 @@ const (
 	// DefaultClientCertRetryCountLimit is the amount of times we wait after successful
 	// login for the client certificate file to exist, where each time we wait for a second.
 	DefaultClientCertRetryCountLimit = "10"
+	DefaultHTTPTimeout               = "10s"
 	AuthnType                        = "authn-k8s"
 )
 
@@ -46,6 +47,7 @@ var envVariables = []string{
 	"CONJUR_CERT_FILE",
 	"CONJUR_CLIENT_CERT_PATH",
 	"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT",
+	"CONJUR_HTTP_TIMEOUT",
 	"CONJUR_SSL_CERTIFICATE",
 	"CONJUR_TOKEN_TIMEOUT",
 	"CONTAINER_MODE",
@@ -58,6 +60,7 @@ var envVariables = []string{
 var defaultValues = map[string]string{
 	"CONJUR_CLIENT_CERT_PATH":              DefaultClientCertPath,
 	"CONJUR_AUTHN_TOKEN_FILE":              DefaultTokenFilePath,
+	"CONJUR_HTTP_TIMEOUT":                  DefaultHTTPTimeout,
 	"CONJUR_TOKEN_TIMEOUT":                 DefaultTokenRefreshTimeout,
 	"CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT": DefaultClientCertRetryCountLimit,
 }
@@ -94,6 +97,10 @@ func (config *Config) GetContainerMode() string {
 
 func (config *Config) GetTokenFilePath() string {
 	return config.Common.TokenFilePath
+}
+
+func (config *Config) GetHTTPTimeout() time.Duration {
+	return config.Common.HTTPTimeout
 }
 
 func (config *Config) GetTokenTimeout() time.Duration {

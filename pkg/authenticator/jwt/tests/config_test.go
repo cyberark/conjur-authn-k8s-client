@@ -60,6 +60,7 @@ func TestGatherSettings(t *testing.T) {
 				"LOG_LEVEL":               "debug", // provided by annotation
 				"DEBUG":                   "",
 				"CONJUR_AUTHN_TOKEN_FILE": jwt.DefaultTokenFilePath,
+				"CONJUR_HTTP_TIMEOUT":     jwt.DefaultHTTPTimeout,
 				"CONJUR_TOKEN_TIMEOUT":    jwt.DefaultTokenRefreshTimeout,
 			},
 		},
@@ -77,6 +78,7 @@ func TestGatherSettings(t *testing.T) {
 				"DEBUG":                   "",
 				"CONTAINER_MODE":          "",
 				"CONJUR_AUTHN_TOKEN_FILE": jwt.DefaultTokenFilePath,
+				"CONJUR_HTTP_TIMEOUT":     jwt.DefaultHTTPTimeout,
 				"CONJUR_TOKEN_TIMEOUT":    jwt.DefaultTokenRefreshTimeout,
 			},
 		},
@@ -147,4 +149,67 @@ func fromAnnotations(key string) string {
 
 func emptyAnnotations(key string) string {
 	return ""
+}
+
+func TestHTTPTimeoutConfiguration(t *testing.T) {
+	testCases := []struct {
+		description        string
+		httpTimeout        string
+		expectedError      bool
+		expectedDurationMs int64
+	}{
+		{
+			description:        "default timeout value when not set",
+			httpTimeout:        "",
+			expectedError:      false,
+			expectedDurationMs: 10000, // 10 seconds
+		},
+		{
+			description:        "valid timeout value",
+			httpTimeout:        "30s",
+			expectedError:      false,
+			expectedDurationMs: 30000, // 30 seconds
+		},
+		{
+			description:        "valid timeout with minutes",
+			httpTimeout:        "1m30s",
+			expectedError:      false,
+			expectedDurationMs: 90000, // 90 seconds
+		},
+		{
+			description:   "invalid timeout value returns error",
+			httpTimeout:   "invalid",
+			expectedError: true,
+		},
+	}
+
+	baseEnv := map[string]string{
+		"JWT_TOKEN_PATH":         "good_jwt.token",
+		"CONJUR_AUTHN_URL":       "authn-jwt",
+		"CONJUR_ACCOUNT":         "testAccount",
+		"CONJUR_SSL_CERTIFICATE": "samplecert",
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			env := baseEnv
+			if tc.httpTimeout != "" {
+				env["CONJUR_HTTP_TIMEOUT"] = tc.httpTimeout
+			}
+			setEnv(env)
+
+			cfg, err := config.ConfigFromEnv(successfulMockReadFile)
+
+			if tc.expectedError {
+				assert.Nil(t, cfg)
+				assert.NotNil(t, err)
+			} else {
+				assert.NotNil(t, cfg)
+				assert.Nil(t, err)
+				assert.Equal(t, tc.expectedDurationMs, cfg.GetHTTPTimeout().Milliseconds())
+			}
+
+			unsetEnv(env)
+		})
+	}
 }

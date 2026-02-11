@@ -13,6 +13,7 @@ type Config struct {
 	ClientCertPath            string
 	ClientCertRetryCountLimit int
 	ContainerMode             string
+	HTTPTimeout               time.Duration
 	SSLCertificate            []byte
 	TokenFilePath             string
 	TokenRefreshTimeout       time.Duration
@@ -46,6 +47,9 @@ func (config *Config) LoadConfig(settings map[string]string) {
 		case "CONJUR_CLIENT_CERT_RETRY_COUNT_LIMIT":
 			limit, _ := strconv.Atoi(value)
 			config.ClientCertRetryCountLimit = limit
+		case "CONJUR_HTTP_TIMEOUT":
+			timeout, _ := durationFromString(key, value)
+			config.HTTPTimeout = timeout
 		case "CONJUR_TOKEN_TIMEOUT":
 			timeout, _ := durationFromString(key, value)
 			config.TokenRefreshTimeout = timeout
