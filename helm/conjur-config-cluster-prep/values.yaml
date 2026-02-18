@@ -18,8 +18,12 @@ conjur:
 
 authnK8s:
   # Conjur authn-k8s authenticator ID to use for authentication.
-  # (This is a required value).
+  # (This is a required value unless using authn-gcp).
   authenticatorID:
+
+  # Authentication method to use (authn-k8s, authn-gcp, etc.)
+  # Default is authn-k8s
+  authnMethod: "authn-k8s"
 
   configMap:
     create: true

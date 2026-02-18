@@ -16,8 +16,10 @@ metadata:
       conjur.org/name: "conjur-golden-configmap"
       helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 data:
-    # authn-k8s Configuration 
-    authnK8sAuthenticatorID: {{ required "A valid authnK8s.authenticatorID is required!" .Values.authnK8s.authenticatorID }}
+    # authn-k8s Configuration
+    {{- if ne .Values.authnK8s.authnMethod "authn-gcp" }}
+    authnK8sAuthenticatorID: {{ required "A valid authnK8s.authenticatorID is required unless using authn-gcp!" .Values.authnK8s.authenticatorID }}
+    {{- end }}
     authnK8sClusterRole: {{ .Values.authnK8s.clusterRole.name | default "conjur-clusterrole" }}
     authnK8sNamespace: {{ .Release.Namespace }}
     authnK8sServiceAccount: {{ .Values.authnK8s.serviceAccount.name | default "conjur-serviceaccount" }}

@@ -161,3 +161,38 @@ tests:
     asserts:
       - failedTemplate:
           errorMessage: "conjurSslCertificate must be set in Golden ConfigMap"
+
+
+  #=======================================================================
+  - it: should support authn-gcp without an authenticator ID
+  #=======================================================================
+    set:
+      # Set required values
+      authnK8s.goldenConfigMap: conjur-configmap
+      authnK8s.namespace: golden
+      conjurConfigMap.authnMethod: "authn-gcp"
+      test.mock.enable: true
+      test.mock.conjurAccount: "test-account"
+      test.mock.conjurApplianceUrl: "https://conjur.example.com"
+      test.mock.conjurSslCertificate: |
+        -----BEGIN CERTIFICATE-----
+        MIIC/ThisIsATest==
+        -----END CERTIFICATE-----
+      # Do not set authnK8sAuthenticatorID for authn-gcp
+      test.mock.authnK8sAuthenticatorID:
+
+    asserts:
+      # Confirm that a ConfigMap has been created
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ConfigMap
+
+      # Confirm that CONJUR_AUTHN_URL does not include an authenticator ID
+      - equal:
+          path: data.CONJUR_AUTHN_URL
+          value: "https://conjur.example.com/authn-gcp"
+
+      # Confirm that CONJUR_AUTHENTICATOR_ID is not set
+      - isNull:
+          path: data.CONJUR_AUTHENTICATOR_ID

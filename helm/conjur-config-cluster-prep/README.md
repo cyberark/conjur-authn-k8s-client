@@ -439,7 +439,7 @@ The following table lists the configurable parameters of the Conjur Open Source 
 |`conjur.applianceUrl:`|Conjur Appliance URL||Yes|
 |`conjur.ssl.certificateFile`|Path to a Conjur certificate file. The certificate file must exist within the Helm chart's root directory or its subdirectories. ||Either certificateFile or certificateBase64 must be supplied|
 |`conjur.ssl.certificateBase64`|Base64-encoded Conjur certificate file||Either certificateFile or certificateBase64 must be supplied|
-|`authnK8s.authenticatorID`|Conjur authenticator ID to use for authentication||Yes|
+|`authnK8s.authenticatorID`|Conjur authenticator ID to use for authentication||Yes, unless using authn-gcp|
 |`authnK8s.configMap.create`|Flag to generate the Golden ConfigMap |`true`||
 |`authnK8s.configMap.name`|The name of the Conjur ConfigMap|`"conjur-configmap"`||
 |`authnK8s.clusterRole.create`|Flag to generate the ClusterRole |`true`||
