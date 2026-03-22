@@ -36,10 +36,12 @@ RUN go build -installsuffix cgo \
 
 
 # =================== MAIN CONTAINER ===================
-FROM alpine:latest AS authenticator-client
+FROM alpine:3.23 AS authenticator-client
 LABEL maintainer="CyberArk Software Ltd."
 
-RUN apk add --no-cache -u shadow libc6-compat && \
+# Alpine 3.23 repos ship zlib 1.3.2-r0; upgrade baked-in base packages for that and apk-tools.
+RUN apk update && apk upgrade --no-cache zlib apk-tools libapk && \
+    apk add --no-cache shadow libc6-compat && \
     # Add Limited user
     groupadd -r authenticator \
              -g 777 && \
@@ -121,7 +123,7 @@ LABEL description="The authentication client required to expose secrets from a C
 
 # =================== CONTAINER FOR HELM TEST ===================
 
-FROM golang:1.26-alpine AS k8s-cluster-test
+FROM golang:1.26.1-alpine3.22 AS k8s-cluster-test
 
 COPY build_ca_certificate /usr/local/share/ca-certificates/
 RUN update-ca-certificates
