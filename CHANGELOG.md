@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
+## [0.26.13] - 2026-03-23
+
+### Added
+- Increase default HTTP timeout for the authn-jwt and authn-k8s paths to 60 seconds to match the 
+  previously used default timeout value from conjur-api-go. (CNJR-13222)
+
 ## [0.26.12] - 2026-03-18
 
 ### Added

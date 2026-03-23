@@ -162,7 +162,7 @@ func TestHTTPTimeoutConfiguration(t *testing.T) {
 			description:        "default timeout value when not set",
 			httpTimeout:        "",
 			expectedError:      false,
-			expectedDurationMs: 10000, // 10 seconds
+			expectedDurationMs: 60000, // 60 seconds
 		},
 		{
 			description:        "valid timeout value",

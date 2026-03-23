@@ -187,7 +187,7 @@ func (u *unsupportedConfig) GetTokenFilePath() string {
 }
 
 func (u *unsupportedConfig) GetHTTPTimeout() time.Duration {
-	return 10 * time.Second
+	return 60 * time.Second
 }
 
 func (u *unsupportedConfig) GetTokenTimeout() time.Duration {
