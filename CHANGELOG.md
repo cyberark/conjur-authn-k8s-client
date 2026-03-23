@@ -9,17 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
-## [0.26.12] - 2026-01-16
+## [0.26.12] - 2026-03-18
 
 ### Added
 - Update Cluster Prep Helm chart to support authn-gcp (CNJR-11714)
-
-### Added
 - Add support for configuring the Conjur HTTP timeout via the CONJUR_HTTP_TIMEOUT
   environment variable. (CNJR-12865)
 
 ### Changed
 - Update the description of CONJUR_SSL_CERTIFICATE to make it less confusing (CNJR-4073)
+- Upgrade to Go 1.26 (CNJR-13137)
 
 ### Fixed
 - Fix yaml in mock values ([cyberark/conjur-authn-k8s-client#530](https://github.com/cyberark/conjur-authn-k8s-client/pull/530))
