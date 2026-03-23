@@ -25,7 +25,8 @@ const (
 	// login for the client certificate file to exist, where each time we wait for a second.
 	DefaultClientCertRetryCountLimit = "10"
 
-	DefaultHTTPTimeout = "10s"
+	// DefaultHTTPTimeout matches the conjur-api-go SDK default (HTTPTimeoutDefaultValue = 60s).
+	DefaultHTTPTimeout = "60s"
 
 	DefaultJWTTokenPath = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 
