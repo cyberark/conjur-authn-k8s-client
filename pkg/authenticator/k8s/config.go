@@ -27,8 +27,10 @@ const (
 	// DefaultClientCertRetryCountLimit is the amount of times we wait after successful
 	// login for the client certificate file to exist, where each time we wait for a second.
 	DefaultClientCertRetryCountLimit = "10"
-	DefaultHTTPTimeout               = "10s"
-	AuthnType                        = "authn-k8s"
+
+	// DefaultHTTPTimeout matches the conjur-api-go SDK default (HTTPTimeoutDefaultValue = 60s).
+	DefaultHTTPTimeout = "60s"
+	AuthnType          = "authn-k8s"
 )
 
 var requiredEnvVariables = []string{
