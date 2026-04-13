@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Increase default HTTP timeout for the authn-jwt and authn-k8s paths to 60 seconds to match the 
   previously used default timeout value from conjur-api-go. (CNJR-13222)
 
+### Security
+- Upgrade otel module to 1.43 to resolve CVE-2026-29181. CNJR-13664
+
 ## [0.26.12] - 2026-03-18
 
 ### Added
