@@ -123,7 +123,7 @@ LABEL description="The authentication client required to expose secrets from a C
 
 # =================== CONTAINER FOR HELM TEST ===================
 
-FROM golang:1.26.1-alpine3.22 AS k8s-cluster-test
+FROM golang:1.26-alpine3.22 AS k8s-cluster-test
 
 COPY build_ca_certificate /usr/local/share/ca-certificates/
 RUN update-ca-certificates

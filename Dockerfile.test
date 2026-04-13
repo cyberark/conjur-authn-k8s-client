@@ -1,4 +1,4 @@
-FROM golang:1.26.1-alpine3.22
+FROM golang:1.26-alpine3.22
 LABEL maintainer="CyberArk Software Ltd."
 LABEL id="conjur-authn-k8s-client-test-runner"
 ENV GOFIPS140=latest
