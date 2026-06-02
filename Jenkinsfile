@@ -220,15 +220,19 @@ pipeline {
       parallel {
         stage('Build AMD64 image') {
           steps {
-            script {
-              INFRAPOOL_AZURE_AGENT_0.agentSh './bin/build'
+            retry(3) {
+              script {
+                INFRAPOOL_AZURE_AGENT_0.agentSh './bin/build'
+              }
             }
           }
         }
         stage('Build ARM64 image') {
           steps {
-            script {
-              INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentSh './bin/build'
+            retry(3) {
+              script {
+                INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentSh './bin/build'
+              }
             }
           }
         }
@@ -270,20 +274,24 @@ pipeline {
       parallel {
         stage('Push images AMD64 image') {
           steps {
-            script {
-              // Push images to the internal registry so that they can be used
-              // by tests, even if the tests run on a different executor.
-              INFRAPOOL_AZURE_AGENT_0.agentSh './bin/publish --internal'
+            retry(3) {
+              script {
+                // Push images to the internal registry so that they can be used
+                // by tests, even if the tests run on a different executor.
+                INFRAPOOL_AZURE_AGENT_0.agentSh './bin/publish --internal'
+              }
             }
           }
         }
 
         stage('Push images ARM64 image') {
           steps {
-            script {
-              // Push images to the internal registry so that they can be used
-              // by tests, even if the tests run on a different executor.
-              INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentSh './bin/publish --internal --arch arm64'
+            retry(3) {
+              script {
+                // Push images to the internal registry so that they can be used
+                // by tests, even if the tests run on a different executor.
+                INFRAPOOL_EXECUTORV2ARM_AGENT_0.agentSh './bin/publish --internal --arch arm64'
+              }
             }
           }
         }
@@ -292,9 +300,11 @@ pipeline {
 
     stage('Push multi-arch manifest to internal registry') {
       steps {
-        script {
-          // Push multi-architecture manifest to the internal registry.
-          INFRAPOOL_AZURE_AGENT_0.agentSh './bin/publish --manifest'
+        retry(3) {
+          script {
+            // Push multi-architecture manifest to the internal registry.
+            INFRAPOOL_AZURE_AGENT_0.agentSh './bin/publish --manifest'
+          }
         }
       }
     }

@@ -25,7 +25,10 @@ COPY . /opt/conjur-authn-k8s-client
 
 EXPOSE 8080
 
-RUN apt-get update && apt-get install --no-install-recommends -y jq && apt-get clean
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends --only-upgrade libgnutls30t64 && \
+    apt-get install --no-install-recommends -y jq && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN go install github.com/jstemmer/go-junit-report@latest
 
@@ -152,6 +155,9 @@ ARG YQ_VERSION=v4
 
 RUN git clone --branch $YQ_VERSION https://github.com/mikefarah/yq /yq && \
     cd /yq && \
+    # Update golang.org/x/net to v0.55.0 to resolve CVE-2026-39821
+    go get golang.org/x/net@v0.55.0 && \
+    go mod tidy && \
     go build && \
     mv yq /usr/bin/yq && \
     rm -rf /yq && \

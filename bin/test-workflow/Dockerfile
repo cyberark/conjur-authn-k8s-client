@@ -5,11 +5,12 @@ WORKDIR /src
 
 # Install Docker client
 RUN apt-get update -y && \
-    apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common wget jq && \
+    apt-get install -y --no-install-recommends --only-upgrade libgnutls30t64 && \
+    apt-get install -y --no-install-recommends apt-transport-https ca-certificates curl gnupg2 wget jq && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list && \
     apt-get update && \
-    apt-get install -y docker-ce && \
+    apt-get install -y --no-install-recommends docker-ce && \
     rm -rf /var/lib/apt/lists/*
 
 # Install kubectl CLI
