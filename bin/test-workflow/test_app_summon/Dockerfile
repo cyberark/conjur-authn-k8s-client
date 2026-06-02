@@ -4,7 +4,10 @@ LABEL builder="test-app-builder"
 
 #---some useful tools for interactive usage---#
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl
+    (apt-get install -y --no-install-recommends --only-upgrade libgnutls30t64 || \
+     apt-get install -y --no-install-recommends --only-upgrade libgnutls30) && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
 
 #---install summon and summon-conjur---#
 RUN curl -sSL https://raw.githubusercontent.com/cyberark/summon/master/install.sh \

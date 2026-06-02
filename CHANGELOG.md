@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Security
 - Bumped `golang.org/x/net` to v0.55.0 when building yq from source in test images to resolve CVE-2026-39821.
+- Upgraded `libgnutls30t64` / `libgnutls30` in Debian-based images to address CVE-2026-42010.
 
 ### Fixed
 - E2E workflow platform image build on current `google/cloud-sdk` (Debian Trixie): drop unavailable `software-properties-common` and use `VERSION_CODENAME` for the Docker apt repo.
