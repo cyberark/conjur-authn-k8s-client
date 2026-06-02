@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Wrap Jenkins Docker build and internal-registry push steps in `retry(3)` to tolerate transient upstream registry failures.
 
+### Security
+- Bumped `golang.org/x/net` to v0.55.0 when building yq from source in test images to resolve CVE-2026-39821.
+
 ### Fixed
 - Align JWT invalid-SSL unit test expectation with enterprise `conjur-api-go` v0.14.1 error text.
 

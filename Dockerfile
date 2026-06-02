@@ -152,6 +152,9 @@ ARG YQ_VERSION=v4
 
 RUN git clone --branch $YQ_VERSION https://github.com/mikefarah/yq /yq && \
     cd /yq && \
+    # Update golang.org/x/net to v0.55.0 to resolve CVE-2026-39821
+    go get golang.org/x/net@v0.55.0 && \
+    go mod tidy && \
     go build && \
     mv yq /usr/bin/yq && \
     rm -rf /yq && \
