@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Nothing should go in this section, please add to the latest unreleased version (and update the corresponding date), or add a new version.
 
+## [0.27.0] - 2026-06-01
+
+### Changed
+- Wrap Jenkins Docker build and internal-registry push steps in `retry(3)` to tolerate transient upstream registry failures.
+
 ## [0.26.13] - 2026-03-23
 
 ### Added
