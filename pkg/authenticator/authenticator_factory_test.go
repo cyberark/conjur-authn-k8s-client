@@ -110,7 +110,7 @@ func buildTestCases() []testCase {
 				},
 				JWTTokenFilePath: "/var/run/secrets/tokens/jwt",
 			},
-			expectedError:     "Can't append Secrets Manager SSL cert",
+			expectedError:     "Can't append Idira Secrets Manager SSL cert",
 			expectedAuthnType: nil,
 		},
 		{
