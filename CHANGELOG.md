@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bumped `golang.org/x/net` to v0.55.0 when building yq from source in test images to resolve CVE-2026-39821.
 
 ### Fixed
+- E2E workflow platform image build on current `google/cloud-sdk` (Debian Trixie): drop unavailable `software-properties-common` and use `VERSION_CODENAME` for the Docker apt repo.
 - Align JWT invalid-SSL unit test expectation with enterprise `conjur-api-go` v0.14.1 error text.
 
 ## [0.26.13] - 2026-03-23
