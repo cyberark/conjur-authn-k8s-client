@@ -16,6 +16,12 @@ import (
 	"github.com/cyberark/conjur-opentelemetry-tracer/pkg/trace"
 )
 
+var Version = "unset"
+var TagSuffix = "-dev"
+
+var telemetryData = conjurapi.NewTelemetry("Authn K8s Client", "idira-secretsmanager",
+	fmt.Sprintf("v%s%s", Version, TagSuffix), "Idira", "")
+
 // Authenticator contains the configuration and client
 // for the authentication connection to Conjur
 type Authenticator struct {
@@ -40,7 +46,7 @@ func NewWithAccessToken(config Config, accessToken access_token.AccessToken) (*A
 		JWTFilePath:       config.JWTTokenFilePath,
 		CredentialStorage: conjurapi.CredentialStorageNone,
 		HTTPTimeout:       int(config.Common.HTTPTimeout.Seconds()),
-	})
+	}, telemetryData)
 	if err != nil {
 		return nil, err
 	}

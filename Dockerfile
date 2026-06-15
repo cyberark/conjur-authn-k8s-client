@@ -34,7 +34,9 @@ RUN go install github.com/jstemmer/go-junit-report@latest
 
 RUN go build -installsuffix cgo \
     -ldflags="-X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.TagSuffix=$TAG_SUFFIX' \
-        -X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.Version=$VERSION'" \
+        -X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator.Version=$VERSION' \
+        -X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/jwt.TagSuffix=$TAG_SUFFIX' \
+        -X 'github.com/cyberark/conjur-authn-k8s-client/pkg/authenticator/jwt.Version=$VERSION'" \
     -o authenticator ./cmd/authenticator
 
 

@@ -4,7 +4,7 @@ go 1.26.2
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/cyberark/conjur-api-go v0.13.19
+	github.com/cyberark/conjur-api-go v0.14.1
 	// Version number used here is ignored
 	github.com/cyberark/conjur-opentelemetry-tracer v1.55.55
 	github.com/stretchr/testify v1.11.1
@@ -54,3 +54,5 @@ replace gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c => gopkg.in/yaml.v3 
 
 // DO NOT EDIT: CHANGES TO THE BELOW LINE WILL BREAK AUTOMATED RELEASES
 replace github.com/cyberark/conjur-opentelemetry-tracer => github.com/cyberark/conjur-opentelemetry-tracer latest
+
+replace github.com/cyberark/conjur-api-go => github.com/cyberark/conjur-api-go latest
