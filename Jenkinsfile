@@ -110,8 +110,11 @@ pipeline {
   }
 
   triggers {
-    cron(getDailyCronString())
-    parameterizedCron(getWeeklyCronString("H(1-5)","%MODE=RELEASE"))
+    // Both schedules share one parameterizedCron call so their hashes don't collide.
+    parameterizedCron("""
+      ${getDailyCronString()}
+      ${getWeeklyCronString("H(1-5)", "%MODE=RELEASE")}
+    """)
   }
 
   parameters {
