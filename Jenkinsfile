@@ -84,6 +84,14 @@ if (params.MODE == "PROMOTE") {
       summon ./bin/publish --promote --source ${sourceVersion} --target ${targetVersion}
     """
 
+    // Save the image as a tar.gz, sign it, then attach the signed artifacts
+    // to assetDirectory so they're included in the Github release
+    def dockerImage = "conjur-authn-k8s-client-${targetVersion}.tar.gz"
+    infrapool.agentSh "docker save cyberark/conjur-authn-k8s-client:${targetVersion} | gzip > ${dockerImage}"
+    infrapool.agentGet from: "${dockerImage}", to: "./"
+    signArtifacts patterns: ["${dockerImage}"]
+    infrapool.agentPut from: "${dockerImage}*", to: "${assetDirectory}"
+
     sh 'git config --global --add safe.directory "$(pwd)"'
   }
 
